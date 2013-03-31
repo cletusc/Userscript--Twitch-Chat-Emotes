@@ -1,4 +1,5 @@
 # [Install](https://raw.github.com/cletusc/Userscript--Twitch-Chat-Emotes/master/script.user.js)
+Click the install link above to install this userscript. Please make sure to check out the compatibility section below to see if your userscript engine is compatible.
 
 # Description
 Adds a button to Twitch that allows you to "click-to-insert" an emote. Emotes are always up-to-date using Twitch's API and will only show the emotes that you can actually use.
