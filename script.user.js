@@ -10,8 +10,10 @@
 //
 // @include         http://www.twitch.tv/*
 //
-// @version         0.2.6
+// @version         0.2.7
 // ==/UserScript==
+
+(function (window, undefined) {
 
 // Script-wide variables.
 //-----------------------
@@ -197,7 +199,7 @@ function setup() {
 			userInfo.emoteSets = [];
 			return;
 		}
-		if (typeof window.CurrentChat.user_to_emote_sets[userInfo.name] == 'undefined') {
+		if (window.CurrentChat.user_to_emote_sets[userInfo.name] === undefined) {
 			setTimeout(function () {
 				checkEmoteSets(++count);
 			}, 50);
@@ -406,7 +408,7 @@ function setup() {
  */
 function emotePopularityAdd(text, forceAmount) {
 	emotePopularityInit();
-	if (typeof emotePopularity[text] == 'undefined') {
+	if (emotePopularity[text] === undefined) {
 		emotePopularity[text] = 0;
 	}
 	if (typeof forceAmount == 'number' && forceAmount >= 0) {
@@ -507,3 +509,5 @@ function addStyle(text) {
 	style.textContent = text;
 	document.querySelector('head').appendChild(style);
 }
+
+})(unsafeWindow || window);
