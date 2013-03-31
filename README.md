@@ -21,7 +21,10 @@ All emotes that you can possibly use, including subscription sets and Turbo sets
 # Compatibility
 This script has only been tested using the following platforms:
 - [![](http://wiki.greasespot.net/favicon.ico) Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) on [![](http://www.mozilla.org/favicon.ico) Mozilla Firefox](http://www.mozilla.org/en-US/firefox/fx/#desktop)
+
+### Incompatible
 - [![](http://i.imgur.com/cNJcsCS.png) Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) on [![](http://www.google.com/images/icons/product/chrome-16.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/)
+	- Note: During the last round of changes, Tampermonkey compatibility broke. I am in the process of trying to fix it. Ref: http://forum.tampermonkey.net/viewtopic.php?f=17&t=527
 
 Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest stable release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform.
 
