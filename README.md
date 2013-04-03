@@ -1,6 +1,6 @@
 # [Install](https://raw.github.com/cletusc/Userscript--Twitch-Chat-Emotes/master/script.user.js)
 
-Click the install link above to install this userscript. Please make sure to check out the compatibility section below to see if your userscript engine is compatible.
+Click the install link above to install this userscript. Please make sure to check out the [compatibility section](#compatibility) to see if your userscript engine is compatible.
 
 # Description
 
@@ -35,8 +35,10 @@ A: Twitch's API sometimes does not load all of your emotes. Refresh until they c
 
 This script has only been tested using the following platforms:
 
-- [![](http://wiki.greasespot.net/favicon.ico) Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) on [![](http://www.mozilla.org/favicon.ico) Mozilla Firefox](http://www.mozilla.org/en-US/firefox/fx/#desktop)
-- [![](http://i.imgur.com/cNJcsCS.png) Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) on [![](http://www.google.com/images/icons/product/chrome-16.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/)
+- [![](http://i.imgur.com/iItvdC8.png) Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) on [![](http://i.imgur.com/Ek0Ouut.png) Mozilla Firefox Desktop](http://www.mozilla.org/en-US/firefox/fx/#desktop)
+- [![](http://i.imgur.com/0RJuSKV.png) Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) on [![](http://i.imgur.com/QWkH8kp.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/)
+- Natively on [![](http://i.imgur.com/9SCCsBJ.png) Opera Desktop](http://www.opera.com/)
+- [![](http://i.imgur.com/FPVLRpu.png) Violent monkey](https://addons.opera.com/en/extensions/details/violent-monkey/) on [![](http://i.imgur.com/9SCCsBJ.png) Opera Desktop](http://www.opera.com/)
 
 Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest stable release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform.
 

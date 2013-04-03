@@ -13,6 +13,10 @@
 // @version         0.2.7
 // ==/UserScript==
 
+// Compatibility with Opera.
+if (window.opera && !window.unsafeWindow) {window.unsafeWindow = false;}
+
+// Start wrapper.
 (function (window, undefined) {
 
 // Script-wide variables.
@@ -24,7 +28,8 @@ var emotes = [],
 		emoteSets: [],
 		name: '',
 		displayName: ''
-	};
+	},
+	$ = false;
 
 // Only enable script if we have the right variables.
 //---------------------------------------------------
@@ -81,14 +86,14 @@ function populateEmotes() {
 	});
 	
 	// Adjust the height of the popup, requires special handling due to scrolling element.
-	var height = window.$j('#chat_emote_dropmenu').outerHeight() - window.$j('#chat_emote_dropmenu .emotes-all').outerHeight();
-	height = window.$j('#chat_lines').height() - height;
-	window.$j('#chat_emote_dropmenu .emotes-all').height(height);
+	var height = $('#chat_emote_dropmenu').outerHeight() - $('#chat_emote_dropmenu .emotes-all').outerHeight();
+	height = $('#chat_lines').height() - height;
+	$('#chat_emote_dropmenu .emotes-all').height(height);
 	
 	// Adjust the width and position of the popup.
-	window.$j('#chat_emote_dropmenu')
-		.width(window.$j('#chat_lines').width() - 23)
-		.offset(window.$j('#chat_lines').offset());
+	$('#chat_emote_dropmenu')
+		.width($('#chat_lines').width() - 23)
+		.offset($('#chat_lines').offset());
 	
 	
 	/**
@@ -191,6 +196,9 @@ function populateEmotes() {
 function setup() {
 	// Populate script-wide variables.
 	//--------------------------------
+	// jQuery
+	$ = window.$j;
+	
 	// User info.
 	userInfo.name = window.PP.login;
 	userInfo.displayName = window.PP.display_name;
@@ -219,21 +227,21 @@ function setup() {
 	var chatButton = document.querySelector('#chat_speak');
 	if (chatButton) {
 		chatButton.parentNode.insertBefore(button, chatButton);
-		window.$j('#chat_emote_dropmenu_button').hide();
+		$('#chat_emote_dropmenu_button').hide();
 		if (chatButton.classList.contains('cap')) {
-			window.$j('#control_input').animate({'margin-right': '175px'});
-			window.$j('#control_buttons').css('width', '175px');
-			window.$j('#chat_speak').animate({'margin-right': '51px'}, {
+			$('#control_input').animate({'margin-right': '175px'});
+			$('#control_buttons').css('width', '175px');
+			$('#chat_speak').animate({'margin-right': '51px'}, {
 				complete: function () {
-					window.$j('#chat_speak').css('margin-right', '5px');
-					window.$j('#chat_emote_dropmenu_button').css('margin-right', '5px').fadeIn();
+					$('#chat_speak').css('margin-right', '5px');
+					$('#chat_emote_dropmenu_button').css('margin-right', '5px').fadeIn();
 				}
 			});
 		}
 		else {
-			window.$j(chatButton).css('float', 'right').animate({'width': '128px'}, {
+			$(chatButton).css('float', 'right').animate({'width': '128px'}, {
 				complete: function () {
-					window.$j('#chat_emote_dropmenu_button').fadeIn();
+					$('#chat_emote_dropmenu_button').fadeIn();
 				}
 			});
 		}
@@ -383,22 +391,22 @@ function setup() {
 	// Create listeners.
 	//------------------
 	// Popup on click.
-	window.$j('#chat_emote_dropmenu_button').popup(window.$j('#chat_emote_dropmenu'), {
+	$('#chat_emote_dropmenu_button').popup($('#chat_emote_dropmenu'), {
 		above: !0
 	});
 	
 	// Repopulate emotes.
-	window.$j('#chat_emote_dropmenu_button').on('click', populateEmotes);
+	$('#chat_emote_dropmenu_button').on('click', populateEmotes);
 	
 	// Enable the popularity reset.
-	window.$j('#emotes-popularity-reset').on('click', function () {
+	$('#emotes-popularity-reset').on('click', function () {
 		emotePopularityClear();
 		populateEmotes();
 	});
 	
 	// TODO: Implement customScroll if it doesn't exist (popout/embed do not work).
 	// Create custom scroll bar.
-	window.$j('#chat_emote_dropmenu .scroll.emotes-all').customScroll();
+	$('#chat_emote_dropmenu .scroll.emotes-all').customScroll();
 }
 
 /**
@@ -438,7 +446,7 @@ function emotePopularityGet(text) {
  * Clears the current emote popularity tracking data.
  */
 function emotePopularityClear() {
-	window.$j('#chat_text_input').click();
+	$('#chat_text_input').click();
 	// TODO: Remove legacy localStorage names upon next major version.
 	localStorage.removeItem('emote-popularity-tracking');
 	localStorage.removeItem('emote-frequency-tracking'); // Legacy
@@ -478,7 +486,7 @@ function insertEmote(text) {
 	// Get input.
 	var element = document.querySelector('#chat_text_input');
 	// Simulate click to close popup.
-	window.$j(element).click();
+	$(element).click();
 	
 	// Insert at cursor / replace selection.
 	// https://developer.mozilla.org/en-US/docs/Code_snippets/Miscellaneous
@@ -510,4 +518,5 @@ function addStyle(text) {
 	document.querySelector('head').appendChild(style);
 }
 
+// End wrapper.
 })(unsafeWindow || window);
