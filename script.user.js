@@ -10,7 +10,7 @@
 //
 // @include         http://www.twitch.tv/*
 //
-// @version         0.2.7
+// @version         0.2.8
 // ==/UserScript==
 
 // Compatibility with Opera.

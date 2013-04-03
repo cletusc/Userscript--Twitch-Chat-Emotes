@@ -1,6 +1,6 @@
 # [Install](https://raw.github.com/cletusc/Userscript--Twitch-Chat-Emotes/master/script.user.js)
 
-Click the install link above to install this userscript. Please make sure to check out the [compatibility section](#compatibility) to see if your userscript engine is compatible.
+Click the install link above to install this userscript. Please make sure to check out the compatibility section to see if your userscript engine is compatible.
 
 # Description
 
