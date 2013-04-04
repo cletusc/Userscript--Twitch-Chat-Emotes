@@ -35,12 +35,13 @@ A: Twitch's API sometimes does not load all of your emotes. Refresh until they c
 
 This script has only been tested using the following platforms:
 
-- [![](http://i.imgur.com/iItvdC8.png) Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) on [![](http://i.imgur.com/Ek0Ouut.png) Mozilla Firefox Desktop](http://www.mozilla.org/en-US/firefox/fx/#desktop)
-- [![](http://i.imgur.com/0RJuSKV.png) Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) on [![](http://i.imgur.com/QWkH8kp.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/)
-- Natively on [![](http://i.imgur.com/9SCCsBJ.png) Opera Desktop](http://www.opera.com/)
-- [![](http://i.imgur.com/FPVLRpu.png) Violent monkey](https://addons.opera.com/en/extensions/details/violent-monkey/) on [![](http://i.imgur.com/9SCCsBJ.png) Opera Desktop](http://www.opera.com/)
+- [![](http://i.imgur.com/IOKeLzP.png) Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) on [![](http://i.imgur.com/JuYGnoB.png) Mozilla Firefox Desktop](http://www.mozilla.org/en-US/firefox/fx/#desktop)
+- [![](http://i.imgur.com/MNYcKd0.png) Scriptish](https://addons.mozilla.org/en-US/firefox/addon/scriptish/) on [![](http://i.imgur.com/JuYGnoB.png) Mozilla Firefox Desktop](http://www.mozilla.org/en-US/firefox/fx/#desktop)
+- [![](http://i.imgur.com/OHKOagu.png) Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) on [![](http://i.imgur.com/HVYSfs3.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/)
+- Natively on [![](http://i.imgur.com/ytNXBe7.png) Opera Desktop](http://www.opera.com/)
+- [![](http://i.imgur.com/6B00N1P.png) Violent monkey](https://addons.opera.com/en/extensions/details/violent-monkey/) on [![](http://i.imgur.com/ytNXBe7.png) Opera Desktop](http://www.opera.com/)
 
-Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest stable release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform.
+Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest stable release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform. If you find a problem with the script, or want compatibility with a certain userscript engine, please post an issue and I will see what I can do.
 
 # Donate
 
