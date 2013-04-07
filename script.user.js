@@ -10,7 +10,7 @@
 //
 // @include         http://www.twitch.tv/*
 //
-// @version         0.2.8
+// @version         0.2.9
 // ==/UserScript==
 
 // Compatibility with Opera.
@@ -29,19 +29,43 @@ var emotes = [],
 		name: '',
 		displayName: ''
 	},
-	$ = false;
+	$ = false,
+	MESSAGES = {
+		NO_CHAT_LOAD: 'Unable to add emotes button for some reason, stopping.',
+		EMOTES_NOT_LOADED: 'Emotes aren\'t loaded from the API yet, try again.',
+		NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
+		NOT_LOGGED_IN: 'You are not logged in, please log in first.'
+	};
 
 // Only enable script if we have the right variables.
 //---------------------------------------------------
-(function init() {
+(function init(time) {
+	if (!time) {
+		var time = 0;
+	}
+	else if (time >= 10000) {
+		// Taking too much time, error out.
+		console.error(
+			MESSAGES.NO_CHAT_LOAD,
+			'[PP: ' + (window.PP !== undefined),
+			' / Logged in: ' + (window.PP ? window.PP.login !== '' : false),
+			' / Twitch Object: ' + (window.Twitch !== undefined),
+			' / Chat Object: ' + (window.CurrentChat !== undefined),
+			' / Chat Loaded: ' + (window.CurrentChat ? window.CurrentChat.last_sender !== false : false),
+			' / jQuery: ' + (window.$j !== undefined),
+			' / userAgent: ' + navigator.userAgent + ']'
+		);
+		return;
+	}
 	if (
 		!window.PP ||
+		window.PP.login === '' ||
 		!window.Twitch ||
 		!window.CurrentChat ||
 		window.CurrentChat.last_sender === false ||
 		!window.$j
 	) {
-		setTimeout(init, 50);
+		setTimeout(init, 50, (time + 50));
 		return;
 	}
 	setup();
@@ -54,6 +78,7 @@ var emotes = [],
  */
 function populateEmotes() {
 	if (emotes.length < 1) {
+		console.warn(MESSAGES.EMOTES_NOT_LOADED);
 		setTimeout(populateEmotes, 50);
 		return;
 	}
@@ -248,6 +273,7 @@ function setup() {
 	}
 	else {
 		// No chat, just exit.
+		console.warn(MESSAGES.NO_CHAT_ELEMENT);
 		return;
 	}
 	
