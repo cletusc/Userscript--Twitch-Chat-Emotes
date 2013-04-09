@@ -451,7 +451,7 @@ function emotePopularityAdd(text, forceAmount) {
 	else {
 		emotePopularity[text] += 1;
 	}
-	localStorage.setItem('emote-popularity-tracking', JSON.stringify(emotePopularity));
+	setSetting('emote-popularity-tracking', JSON.stringify(emotePopularity));
 }
 
 /**
@@ -474,8 +474,7 @@ function emotePopularityGet(text) {
 function emotePopularityClear() {
 	$('#chat_text_input').click();
 	// TODO: Remove legacy localStorage names upon next major version.
-	localStorage.removeItem('emote-popularity-tracking');
-	localStorage.removeItem('emote-frequency-tracking'); // Legacy
+	deleteSetting('emote-popularity-tracking');
 	emotePopularity = false;
 	emotePopularityInit();
 }
@@ -485,21 +484,13 @@ function emotePopularityClear() {
  */
 function emotePopularityInit() {
 	if (!emotePopularity) {
-		// TODO: Remove legacy localStorage names upon next major version.
-		var settings = localStorage.getItem('emote-popularity-tracking') ||
-			localStorage.getItem('emote-frequency-tracking'); // Legacy
-		if (settings != null) {
-			emotePopularity = JSON.parse(settings);
-		}
-		else {
-			emotePopularity = {};
-			emotePopularityAdd('BibleThump', 0);
-			emotePopularityAdd('DansGame', 0);
-			emotePopularityAdd('FailFish', 0);
-			emotePopularityAdd('Kappa', 0);
-			emotePopularityAdd('Kreygasm', 0);
-			emotePopularityAdd('SwiftRage', 0);
-		}
+		emotePopularity = JSON.parse(getSetting('emote-popularity-tracking', '{}'));
+		emotePopularityAdd('BibleThump', 0);
+		emotePopularityAdd('DansGame', 0);
+		emotePopularityAdd('FailFish', 0);
+		emotePopularityAdd('Kappa', 0);
+		emotePopularityAdd('Kreygasm', 0);
+		emotePopularityAdd('SwiftRage', 0);
 	}
 }
 
@@ -542,6 +533,38 @@ function addStyle(text) {
 	var style = document.createElement('style');
 	style.textContent = text;
 	document.querySelector('head').appendChild(style);
+}
+
+// Generic functions.
+//-------------------
+/**
+ * Gets a storage value.
+ * @param aKey [string] The key you want to get.
+ * @param aDefault [mixed] The default value to return if there isn't anything in storage.
+ * @return The value in storage or `aDefault` if there isn't anything in storage.
+ */
+function getSetting(aKey, aDefault) {
+	var val = localStorage.getItem(aKey)
+	if (val === null && typeof aDefault != 'undefined') {
+		return aDefault;
+	}
+	return val;
+}
+/**
+ * Sets a storage value.
+ * @param aKey [string] The key you want to set.
+ * @param aVal [mixed] The value you want to store.
+ */
+function setSetting(aKey, aVal) {
+	localStorage.setItem(aKey, aVal);
+}
+
+/**
+ * Deletes a storage key.
+ * @param aKey [string] The key you want to set.
+ */
+function deleteSetting(aKey) {
+	localStorage.removeItem(aKey);
 }
 
 // End wrapper.
