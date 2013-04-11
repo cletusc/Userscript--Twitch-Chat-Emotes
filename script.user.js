@@ -29,7 +29,8 @@ var emotes = [],
 		name: '',
 		displayName: ''
 	},
-	$ = false,
+	$,
+	jQuery,
 	MESSAGES = {
 		NO_CHAT_LOAD: 'Unable to add emotes button for some reason, stopping.',
 		EMOTES_NOT_LOADED: 'Emotes aren\'t loaded from the API yet, try again.',
@@ -110,16 +111,20 @@ function populateEmotes() {
 		addEmote(emote, container);
 	});
 	
-	// Adjust the height of the popup, requires special handling due to scrolling element.
-	var height = $('#chat_emote_dropmenu').outerHeight() - $('#chat_emote_dropmenu .emotes-all').outerHeight();
-	height = $('#chat_lines').height() - height;
-	$('#chat_emote_dropmenu .emotes-all').height(height);
-	
-	// Adjust the width and position of the popup.
-	$('#chat_emote_dropmenu')
-		.width($('#chat_lines').width() - 23)
-		.offset($('#chat_lines').offset());
-	
+	var chatEmoteDropmenu = $('#chat_emote_dropmenu'),
+		chatLines = $('#chat_lines');
+	// Only adjust dimensions if the menu hasn't been moved.
+	if (!chatEmoteDropmenu.hasClass('has_moved')) {
+		// Adjust the height of the popup, requires special handling due to scrolling element.
+		var height = chatEmoteDropmenu.outerHeight() - chatEmoteDropmenu.find('.emotes-all').outerHeight();
+		height = chatLines.height() - height;
+		chatEmoteDropmenu.find('.emotes-all').height(height);
+		
+		// Adjust the width and position of the popup.
+		chatEmoteDropmenu
+			.width($('#speak').outerWidth() - 12)
+			.offset(chatLines.offset());
+	}
 	
 	/**
 	 * Adds the emote to document and listens for a click event that will add the emote text to the chat.
@@ -222,7 +227,7 @@ function setup() {
 	// Populate script-wide variables.
 	//--------------------------------
 	// jQuery
-	$ = window.$j;
+	$ = jQuery = window.$j;
 	
 	// User info.
 	userInfo.name = window.PP.login;
@@ -282,18 +287,21 @@ function setup() {
 	var popup = document.createElement('div');
 	popup.id = 'chat_emote_dropmenu';
 	popup.className = 'dropmenu';
-	popup.innerHTML = ''+
-		'<h4>Popular <small id="emotes-popularity-reset">reset</small>'+
-		'</h4>'+
-		'<div class="scroll emotes-popular">'+
-		'	<div class="scroll-content emotes-container"></div>'+
-		'</div>'+
-		'<h4>All</h4>'+
-		'<div class="scroll scroll-dark emotes-all">'+
-		'	<div class="scroll-content-contain">'+
-		'		<div class="scroll-content emotes-container"></div>'+
-		'	</div>'+
-		'</div>';
+	popup.innerHTML = [
+		'<h4 class="draggable">Popular</h4>',
+		'<div class="scroll emotes-popular">',
+		'	<div class="tse-content emotes-container"></div>',
+		'</div>',
+		'<h4>All</h4>',
+		'<div class="scroll scroll-dark emotes-all">',
+		'	<div class="tse-content emotes-container"></div>',
+		'</div>',
+		'<p class="dropmenu_alt_section">',
+		'	<a class="left icon github" href="https://github.com/cletusc/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the Github homepage"></a>',
+		'	<a class="reset" title="Reset the popularity of the emotes back to default">Reset Popularity</a>',
+		'	<a class="right icon resize-handle"></a>',
+		'</p>'
+	].join('\n');
 	document.body.appendChild(popup);
 	
 	// Get current emotes from API.
@@ -344,15 +352,24 @@ function setup() {
 	
 	// Add styles.
 	//------------
-	var buttonDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAOtJREFUOE+NkLERgzAMRdkgS2QGpvAYqVNRpmMDimyRo2YiVqBz/ncknSTIAXfvwPL/L467WmtgGIYeTGA5gPM+d8ICgdc4jvUM5nzPC3oG5nk+RUR2IpNg43NU+AfzQYLnfvUUCvPsmaSU8lYJjlmxbm9fynPm2WsS/jduqoTfipfkuUja3VDy5EIluqlrJc91zX63bVs4yVVUwn67E3zYnVyFefbsYvHcMFx9IEvzjHn2TCKneaTQDr/HvHZNQrC5+vARIlx9L0hgLxIKv+zKDeZ8L0gIA6CdKMN5FpCw8IhsAou8d+UftfsCjtrm7yD1aJgAAAAASUVORK5CYII=';
+	var icons = {
+		dropmenuButton: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAOtJREFUOE+NkLERgzAMRdkgS2QGpvAYqVNRpmMDimyRo2YiVqBz/ncknSTIAXfvwPL/L467WmtgGIYeTGA5gPM+d8ICgdc4jvUM5nzPC3oG5nk+RUR2IpNg43NU+AfzQYLnfvUUCvPsmaSU8lYJjlmxbm9fynPm2WsS/jduqoTfipfkuUja3VDy5EIluqlrJc91zX63bVs4yVVUwn67E3zYnVyFefbsYvHcMFx9IEvzjHn2TCKneaTQDr/HvHZNQrC5+vARIlx9L0hgLxIKv+zKDeZ8L0gIA6CdKMN5FpCw8IhsAou8d+UftfsCjtrm7yD1aJgAAAAASUVORK5CYII=',
+		resizeHandle: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=',
+		// Inverted color to suit dark theme and resized to 16x16.
+		// @attribution Github, Inc. (https://github.com/github/media/blob/master/octocats/blacktocats.ai)
+		github: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC'
+	};
 	// Add main style.
 	addStyle([		
 		'#chat_emote_dropmenu_button span {',
-		'	background: url("' + buttonDataUrl + '") no-repeat 50% 50%;',
+		'	background: url("' + icons.dropmenuButton + '") no-repeat 50%;',
 		'	cursor: pointer;',
 		'}',
 		'#chat_emote_dropmenu {',
-		'	padding: 5px 0 5px 5px;',
+		'	padding: 5px;',
+		'}',
+		'#chat_emote_dropmenu .tse-scroll-content {',
+		'	right: -17px;',
 		'}',
 		'#chat_emote_dropmenu h4 small {',
 		'	font-size: 70%;',
@@ -364,11 +381,10 @@ function setup() {
 		'#chat_emote_dropmenu .emotes-popular {',
 		'	height: 48px;',
 		'}',
-		'#chat_emote_dropmenu .scroll.emotes-all {',
-		'	height: 300px;', // Note: .scroll MUST have a height otherwise scroll bar breaks.
-		'}',
-		'#chat_emote_dropmenu .scroll-scrollbar .drag-handle {',
-		'	opacity: 0.7;',
+		'#chat_emote_dropmenu h4.draggable:hover {',
+		'	background-color: rgba(255, 255, 255, 0.1);',
+		'	border-radius: 5px;',
+		'	cursor: move;',
 		'}',
 		'#chat_emote_dropmenu .userscript_emoticon {',
 		'	display: inline-block;',
@@ -377,16 +393,43 @@ function setup() {
 		'	cursor: pointer;',
 		'	border-radius: 5px;',
 		'	text-align: center;',
+		'	vertical-align: middle;',
 		'}',
 		'#chat_emote_dropmenu .userscript_emoticon .emoticon {',
-		'	min-height: 35px;',
-		'	min-width: 39px;',
+		'	min-width: 38px;',
 		'	margin: 0 !important;',
 		'}',
 		'#chat_emote_dropmenu .userscript_emoticon:hover {',
 		'	background-color: rgba(255, 255, 255, 0.1);',
 		'}',
+		'#chat_emote_dropmenu .dropmenu_alt_section a {',
+		'	cursor: pointer;',
+		'}',
+		'#chat_emote_dropmenu .dropmenu_alt_section .left {',
+		'	float: left;',
+		'	margin-right: 5px;',
+		'}',
+		'#chat_emote_dropmenu .dropmenu_alt_section .right {',
+		'	float: right;',
+		'	margin-left: 5px;',
+		'}',
+		'#chat_emote_dropmenu .dropmenu_alt_section a.icon {',
+		'	height: 16px;',
+		'	width: 16px;',
+		'	opacity: 0.5;',
+		'}',
+		'#chat_emote_dropmenu .dropmenu_alt_section a.icon:hover {',
+		'	opacity: 1.0;',
+		'}',
+		'#chat_emote_dropmenu .dropmenu_alt_section a.github {',
+		'	background: url("' + icons.github + '") no-repeat 50%;',
+		'}',
+		'#chat_emote_dropmenu .dropmenu_alt_section a.resize-handle {',
+		'	background: url("' + icons.resizeHandle + '") no-repeat 50%;',
+		'	cursor: nwse-resize;',
+		'}'
 	].join('\n'));
+	
 	// Add style for set-unique background colors.
 	function addSetStyles() {
 		var css = [],
@@ -417,22 +460,97 @@ function setup() {
 	// Create listeners.
 	//------------------
 	// Popup on click.
-	$('#chat_emote_dropmenu_button').popup($('#chat_emote_dropmenu'), {
+	$('#chat_emote_dropmenu_button').popup('click_to_close', $('#chat_emote_dropmenu'), {
 		above: !0
 	});
 	
+	// Restore outside clicks to close popup, but only when it hasn't been moved.
+	$('#chat_emote_dropmenu').on('clickoutside', function () {
+		if (!$(this).hasClass('has_moved') && $(this).is(':visible')) {
+			$('#chat_emote_dropmenu_button').click();
+		}
+	});
+	
+	// Make draggable.
+	$('#chat_emote_dropmenu').draggable({
+		handle: 'h4.draggable',
+		start: function () {
+			$(this).addClass('has_moved')
+		}
+	});
+	
+	// Make resizable.
+    var originalX, originalY, originalWidth, originalHeight,
+        chatEmoteDropmenu = $('#chat_emote_dropmenu'),
+        chatEmoteAll = chatEmoteDropmenu.find('.emotes-all');
+    function adjustSize(evt) {
+    	    console.log(evt);
+		    var diffX = evt.pageX - originalX,
+		        diffY = evt.pageY - originalY;
+		    chatEmoteDropmenu.width(originalWidth + diffX);
+		    chatEmoteAll.height(originalHeight + diffY);
+		    
+    }
+	$('#chat_emote_dropmenu .resize-handle').on('mousedown', function (evt) {
+		$('#chat_emote_dropmenu').addClass('has_moved');
+		console.log(evt);
+		originalX = evt.pageX;
+		originalY = evt.pageY;
+		originalWidth = chatEmoteDropmenu.width();
+		originalHeight = chatEmoteAll.height();
+		
+		$(document).on('mousemove', '*', adjustSize);
+	});
+	$(document).on('mouseup', function () {
+		$(document).off('mousemove', '*', adjustSize);
+	});
+	
 	// Repopulate emotes.
-	$('#chat_emote_dropmenu_button').on('click', populateEmotes);
+	$('#chat_emote_dropmenu_button').on('click', function () {
+		$('#chat_emote_dropmenu').removeClass('has_moved');
+		populateEmotes();
+	});
 	
 	// Enable the popularity reset.
-	$('#emotes-popularity-reset').on('click', function () {
+	$('#chat_emote_dropmenu .dropmenu_alt_section a.reset').on('click', function () {
 		emotePopularityClear();
 		populateEmotes();
 	});
 	
-	// TODO: Implement customScroll if it doesn't exist (popout/embed do not work).
+	// Create scroll function if needed.
+	if (!$().TrackpadScrollEmulator) {
+		/**
+		 * TrackpadScrollEmulator
+		 * Version: 1.0.2
+		 * Author: Jonathan Nicol @f6design
+		 * https://github.com/jnicol/trackpad-scroll-emulator
+		 *
+		 * The MIT License
+		 *
+		 * Copyright (c) 2012-2013 Jonathan Nicol
+		 *
+		 * Permission is hereby granted, free of charge, to any person obtaining a copy
+		 * of this software and associated documentation files (the "Software"), to deal
+		 * in the Software without restriction, including without limitation the rights
+		 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		 * copies of the Software, and to permit persons to whom the Software is
+		 * furnished to do so, subject to the following conditions:
+		 *
+		 * The above copyright notice and this permission notice shall be included in
+		 * all copies or substantial portions of the Software.
+		 *
+		 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+		 * THE SOFTWARE.
+		 */(function(e){function n(n,r){function m(){if(s.hasClass("horizontal")){h="horiz";p="scrollLeft";d="width";v="left"}s.prepend('<div class="tse-scrollbar"><div class="drag-handle"></div></div>');a=s.find(".tse-scrollbar");f=s.find(".drag-handle");if(r.wrapContent){u.wrap('<div class="tse-scroll-content" />')}o=s.find(".tse-scroll-content");N();s.on("mouseenter",S);f.on("mousedown",g);o.on("scroll",w);E()}function g(t){t.preventDefault();var n=t.pageY;if(h==="horiz"){n=t.pageX}l=n-f.offset()[v];e(document).on("mousemove",y);e(document).on("mouseup",b)}function y(e){e.preventDefault();var t=e.pageY;if(h==="horiz"){t=e.pageX}var n=t-a.offset()[v]-l;var r=n/a[d]();var i=r*u[d]();o[p](i)}function b(){e(document).off("mousemove",y);e(document).off("mouseup",b)}function w(e){S()}function E(){var e=u[d]();var t=o[p]();var n=a[d]();var r=n/e;var i=Math.round(r*t)+2;var s=Math.floor(r*(n-2))-2;if(n<e){if(h==="vert"){f.css({top:i,height:s})}else{f.css({left:i,width:s})}a.show()}else{a.hide()}}function S(){E();x()}function x(){f.addClass("visible");if(typeof c==="number"){window.clearTimeout(c)}c=window.setTimeout(function(){T()},1e3)}function T(){f.removeClass("visible");if(typeof c==="number"){window.clearTimeout(c)}}function N(){if(h==="vert"){o.width(s.width()+C());o.height(s.height())}else{o.width(s.width());o.height(s.height()+C());u.height(s.height())}}function C(){var t=e('<div class="scrollbar-width-tester" style="width:50px;height:50px;overflow-y:scroll;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>');e("body").append(t);var n=e(t).innerWidth();var r=e("div",t).innerWidth();t.remove();return n-r}function k(){N();E()}function L(e,t){if(t){r[e]=t}else{return r[e]}}function A(){u.insertBefore(a);a.remove();o.remove();u.css({height:s.height()+"px","overflow-y":"scroll"});O("onDestroy");s.removeData("plugin_"+t)}function O(e){if(r[e]!==undefined){r[e].call(i)}}var i=n;var s=e(n);var o;var u=s.find(".tse-content");var a;var f;var l;var c;var h="vert";var p="scrollTop";var d="height";var v="top";r=e.extend({},e.fn[t].defaults,r);m();return{option:L,destroy:A,recalculate:k}}var t="TrackpadScrollEmulator";e.fn[t]=function(r){if(typeof arguments[0]==="string"){var i=arguments[0];var s=Array.prototype.slice.call(arguments,1);var o;this.each(function(){if(e.data(this,"plugin_"+t)&&typeof e.data(this,"plugin_"+t)[i]==="function"){o=e.data(this,"plugin_"+t)[i].apply(this,s)}else{throw new Error("Method "+i+" does not exist on jQuery."+t)}});if(o!==undefined){return o}else{return this}}else if(typeof r==="object"||!r){return this.each(function(){if(!e.data(this,"plugin_"+t)){e.data(this,"plugin_"+t,new n(this,r))}})}};e.fn[t].defaults={onInit:function(){},onDestroy:function(){},wrapContent:true}})(jQuery)
+	}
+	
 	// Create custom scroll bar.
-	$('#chat_emote_dropmenu .scroll.emotes-all').customScroll();
+	$('#chat_emote_dropmenu .scroll.emotes-all').TrackpadScrollEmulator();
 }
 
 /**
@@ -472,8 +590,6 @@ function emotePopularityGet(text) {
  * Clears the current emote popularity tracking data.
  */
 function emotePopularityClear() {
-	$('#chat_text_input').click();
-	// TODO: Remove legacy localStorage names upon next major version.
 	deleteSetting('emote-popularity-tracking');
 	emotePopularity = false;
 	emotePopularityInit();
@@ -502,8 +618,6 @@ function insertEmote(text) {
 	emotePopularityAdd(text);
 	// Get input.
 	var element = document.querySelector('#chat_text_input');
-	// Simulate click to close popup.
-	$(element).click();
 	
 	// Insert at cursor / replace selection.
 	// https://developer.mozilla.org/en-US/docs/Code_snippets/Miscellaneous
@@ -523,6 +637,15 @@ function insertEmote(text) {
 	// Put cursor at end.
 	selectionEnd = element.selectionStart + text.length;
 	element.setSelectionRange(selectionEnd, selectionEnd);
+	
+	// Close popup if it hasn't been moved by the user.
+	if (!$('#chat_emote_dropmenu').hasClass('has_moved')) {
+		$('#chat_emote_dropmenu_button').click();
+	}
+	// Re-populate as it is still open.
+	else {
+		populateEmotes();
+	}
 }
 
 /**

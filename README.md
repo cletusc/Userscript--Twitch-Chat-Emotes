@@ -8,7 +8,7 @@ Adds a button to Twitch that allows you to "click-to-insert" an emote. Emotes ar
 
 # Screenshots
 
-![Emotes menu shown](http://i.imgur.com/YLfFIBG.png "Emotes menu shown")
+![Emotes menu shown](http://i.imgur.com/Agm1Awg.png "Emotes menu shown")
 
 # Categories
 
