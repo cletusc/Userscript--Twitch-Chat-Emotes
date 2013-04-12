@@ -365,6 +365,20 @@ function setup() {
 		'	background: url("' + icons.dropmenuButton + '") no-repeat 50%;',
 		'	cursor: pointer;',
 		'}',
+		'#chat_emote_dropmenu_button.toggled {',
+		'	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
+		'	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
+		'	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
+		'	border-top: 1px solid rgba(0, 0, 0, 0.35);',
+		'	border-left: 1px solid rgba(0, 0, 0, 0.3);',
+		'	border-right: 1px solid rgba(0, 0, 0, 0.3);',
+		'	border-bottom: 1px solid rgba(0, 0, 0, 0.3);',
+		'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#bbb));',
+		'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -moz-linear-gradient(top, #ddd, #bbb);',
+		'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -o-linear-gradient(top, #ddd, #bbb);',
+		'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, linear-gradient(top, #ddd, #bbb);',
+		'	background-color: #ccc;',
+		'}',
 		'#chat_emote_dropmenu {',
 		'	padding: 5px;',
 		'}',
@@ -510,6 +524,7 @@ function setup() {
 	// Repopulate emotes.
 	$('#chat_emote_dropmenu_button').on('click', function () {
 		$('#chat_emote_dropmenu').removeClass('has_moved');
+		$(this).toggleClass('toggled');
 		populateEmotes();
 	});
 	
