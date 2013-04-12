@@ -492,6 +492,8 @@ function setup() {
 		    
     }
 	$('#chat_emote_dropmenu .resize-handle').on('mousedown', function (evt) {
+		// Prevent text selection.
+		evt.preventDefault();
 		$('#chat_emote_dropmenu').addClass('has_moved');
 		console.log(evt);
 		originalX = evt.pageX;
