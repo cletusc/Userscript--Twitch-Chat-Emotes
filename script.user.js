@@ -232,21 +232,19 @@ function setup() {
 	// User info.
 	userInfo.name = window.PP.login;
 	userInfo.displayName = window.PP.display_name;
-	(function checkEmoteSets(count) {
-		if (count > 20) {
+	userInfo.emoteSets = [];
+	(function checkEmoteSets(time) {
+		if (time >= 20000) {
 			userInfo.emoteSets = [];
-			return;
 		}
-		if (window.CurrentChat.user_to_emote_sets[userInfo.name] === undefined) {
-			setTimeout(function () {
-				checkEmoteSets(++count);
-			}, 50);
+		else if (window.CurrentChat.user_to_emote_sets[userInfo.name] === undefined) {
+			setTimeout(checkEmoteSets, 50, time + 50);
+			return;
 		}
 		else {
 			userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name];
 		}
 	})(0);
-	userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name] || [];
 	
 	// Create button element.
 	//-----------------------
