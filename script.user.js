@@ -244,6 +244,7 @@ function setup() {
 		else {
 			userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name];
 		}
+		checkEmotesUsable();
 	})(0);
 	
 	// Create button element.
@@ -318,29 +319,12 @@ function setup() {
 					.replace(/\\/g, ''); // unescape
 			emote.regex = RegExp(emote.regex, "g");
 			
-			var imageDefault = false;
 			emote.images.forEach(function (image) {
 				c += 1;
 				image.html = window.ich["chat-emoticon"]({
 					id: c
 				}).prop("outerHTML");
-				
-				// Check if emoticon is usable.
-				if (image.emoticon_set == null) {
-					imageDefault = image;
-				}
-				if (userInfo.emoteSets.indexOf(image.emoticon_set) >= 0) {
-					emote.image = image;
-				}
 			});
-			
-			// No emotes from sets.
-			if (!emote.image) {
-				// Use the non-set emote if available.
-				if (imageDefault) {
-					emote.image = imageDefault;
-				}
-			}
 			
 			emotes.push(emote);
 		});
@@ -569,6 +553,31 @@ function setup() {
 	
 	// Create custom scroll bar.
 	$('#chat_emote_dropmenu .scroll.emotes-all').TrackpadScrollEmulator();
+}
+
+function checkEmotesUsable() {
+	var imageDefault = false,
+		newEmotes = [];
+	emotes.forEach(function (emote) {
+		emote.images.forEach(function (image) {
+			if (image.emoticon_set == null) {
+				imageDefault = image;
+			}
+			if (userInfo.emoteSets.indexOf(image.emoticon_set) >= 0) {
+				emote.image = image;
+			}
+		});
+
+		// No emotes from sets.
+		if (!emote.image) {
+			// Use the non-set emote if available.
+			if (imageDefault) {
+				emote.image = imageDefault;
+			}
+		}
+		newEmotes.push(emote);
+	});
+	emotes = newEmotes;
 }
 
 /**
