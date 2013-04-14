@@ -43,12 +43,17 @@ var emotes = [],
 		NO_CHAT_LOAD: 'Unable to add emotes button for some reason, stopping.',
 		EMOTES_NOT_LOADED: 'Emotes aren\'t loaded from the API yet, try again.',
 		NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
-		NOT_LOGGED_IN: 'You are not logged in, please log in first.'
+		NOT_LOGGED_IN: 'You are not logged in, please log in first.',
+		ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.'
 	};
 
 // Only enable script if we have the right variables.
 //---------------------------------------------------
 (function init(time) {
+	if (document.querySelector('#chat_emote_dropmenu_button')) {
+		console.error(MESSAGES.ALREADY_RUNNING);
+		return;
+	}
 	if (!time) {
 		var time = 0;
 	}
