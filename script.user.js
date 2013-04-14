@@ -435,10 +435,12 @@ function setup() {
 		var css = [],
 			sets = {};
 		rawEmotes.forEach(function (emote) {
-			if (emote.image && emote.image.emoticon_set) {
-				sets[emote.image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + emote.image.emoticon_set + '"] { background-color: hsla(' + (emote.image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
-				sets[emote.image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + emote.image.emoticon_set + '"]:hover { background-color: hsla(' + (emote.image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
-			}
+			emote.images.forEach(function (image) {
+				if (image.emoticon_set !== null) {
+					sets[image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"] { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
+					sets[image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"]:hover { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
+				}
+			});
 		});
 		for (var set in sets) {
 			css.push(sets[set]);
@@ -560,7 +562,7 @@ function checkEmotesUsable() {
 
 	emotes = [];
 	rawEmotes.forEach(function (emote) {
-		let imageDefault = false;
+		var imageDefault = false;
 		emote.images.forEach(function (image) {
 			if (image.emoticon_set == null) {
 				imageDefault = image;
