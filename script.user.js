@@ -22,6 +22,7 @@ if (window.opera && !window.unsafeWindow) {window.unsafeWindow = false;}
 // Script-wide variables.
 //-----------------------
 var emotes = [],
+	rawEmotes = [],
 	emoteListeners = [],
 	emotePopularity = false,
 	userInfo = {
@@ -78,6 +79,7 @@ var emotes = [],
  * Populates the popup menu with current emote data.
  */
 function populateEmotes() {
+	checkEmotesUsable();
 	if (emotes.length < 1) {
 		console.warn(MESSAGES.EMOTES_NOT_LOADED);
 		setTimeout(populateEmotes, 50);
@@ -244,7 +246,7 @@ function setup() {
 		else {
 			userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name];
 		}
-		checkEmotesUsable();
+		populateEmotes();
 	})(0);
 	
 	// Create button element.
@@ -325,8 +327,7 @@ function setup() {
 					id: c
 				}).prop("outerHTML");
 			});
-			
-			emotes.push(emote);
+			rawEmotes.push(emote);
 		});
 		addSetStyles();
 		populateEmotes();
@@ -433,7 +434,7 @@ function setup() {
 	function addSetStyles() {
 		var css = [],
 			sets = {};
-		emotes.forEach(function (emote) {
+		rawEmotes.forEach(function (emote) {
 			if (emote.image && emote.image.emoticon_set) {
 				sets[emote.image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + emote.image.emoticon_set + '"] { background-color: hsla(' + (emote.image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
 				sets[emote.image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + emote.image.emoticon_set + '"]:hover { background-color: hsla(' + (emote.image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
@@ -556,9 +557,10 @@ function setup() {
 }
 
 function checkEmotesUsable() {
-	var imageDefault = false,
-		newEmotes = [];
-	emotes.forEach(function (emote) {
+
+	emotes = [];
+	rawEmotes.forEach(function (emote) {
+		let imageDefault = false;
 		emote.images.forEach(function (image) {
 			if (image.emoticon_set == null) {
 				imageDefault = image;
@@ -575,9 +577,8 @@ function checkEmotesUsable() {
 				emote.image = imageDefault;
 			}
 		}
-		newEmotes.push(emote);
+		emotes.push(emote);
 	});
-	emotes = newEmotes;
 }
 
 /**
