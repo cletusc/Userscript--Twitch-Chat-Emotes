@@ -10,7 +10,7 @@
 //
 // @include         http://www.twitch.tv/*
 //
-// @version         0.3.1
+// @version         0.3.2
 // ==/UserScript==
 
 // Fix undefined unsafeWindow.
