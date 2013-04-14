@@ -31,9 +31,21 @@ All emotes that you can possibly use, including subscription sets and Turbo sets
 #### Q: Why aren't my Turbo / Subscription emotes showing up?
 A: Twitch's API sometimes does not load all of your emotes. Refresh until they come back--this is not something I can fix at the moment.
 
+#### Q: Using Chrome Beta (v27+), the button does not appear, how do I fix it?
+A: Chrome 27+ prevents Tampermonkey from accessing page variables, so this script will fail. A fix is in the works [see [issue #10](https://github.com/cletusc/Userscript--Twitch-Chat-Emotes/issues/10)], but there are 2 workarounds:
+
+1. [EASY] [Change back to Chrome Stable channel.](http://www.chromium.org/getting-involved/dev-channel)
+2. [HARD] Use Tampermonkey Beta with a few extra changes. [*Note: this could be unsafe and I highly recommend you try option 1 first*]
+
+	- Disable your current Tampermonkey extension.
+	- Install [Tampermonkey Beta](https://chrome.google.com/webstore/detail/tampermonkey-beta/gcalenpjmijncebpfijmoaglllgpjagf).
+	- Go to Tampermonkey Beta settings.
+	- Change "Config mode" to "Beginner".
+	- Under the "Runtime" category, change "UnsafeWindow retrieval method" to "Unsafe".
+
 # Compatibility
 
-Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest stable release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform. If you find a problem with the script, or want compatibility with a certain userscript engine, please post an issue and I will see what I can do.
+Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest **stable** release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform. If you find a problem with the script, or want compatibility with a certain userscript engine, please post an issue and I will see what I can do.
 
 ## Compatible (fully tested, confirmed working)
 
@@ -46,6 +58,7 @@ Although the script may work on other platforms, they have not been fully tested
 ## Incompatible (confirmed not working)
 
 - Natively on [![](http://i.imgur.com/HVYSfs3.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/) [see [issue #1](https://github.com/cletusc/Userscript--Twitch-Chat-Emotes/issues/1)]
+- [![](http://i.imgur.com/OHKOagu.png) Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) on [![](http://i.imgur.com/HVYSfs3.png) Google Chrome Beta (v27+)](https://www.google.com/intl/en/chrome/browser/) [see [issue #10](https://github.com/cletusc/Userscript--Twitch-Chat-Emotes/issues/10)]
 
 # Donate
 
