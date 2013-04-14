@@ -29,7 +29,7 @@ All emotes that you can possibly use, including subscription sets and Turbo sets
 # FAQ
 
 #### Q: Why aren't my Turbo / Subscription emotes showing up?
-A: Twitch's API sometimes does not load all of your emotes. Refresh until they come back--this is not something I can fix at the moment.
+A: Twitch API needs to fully load before your emotes will appear. Once your Turbo / Subscription emotes are "usable" according to Twitch, the emotes popup will update.
 
 #### Q: Using Chrome Beta (v27+), the button does not appear, how do I fix it?
 A: Chrome 27+ prevents Tampermonkey from accessing page variables, so this script will fail. A fix is in the works [see [issue #10](https://github.com/cletusc/Userscript--Twitch-Chat-Emotes/issues/10)], but there are 2 workarounds:

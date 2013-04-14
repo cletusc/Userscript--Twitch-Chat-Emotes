@@ -13,15 +13,23 @@
 // @version         0.3.1
 // ==/UserScript==
 
-// Compatibility with Opera.
-if (window.opera && !window.unsafeWindow) {window.unsafeWindow = false;}
+// Fix undefined unsafeWindow.
+if (!window.unsafeWindow) {window.unsafeWindow = false;}
 
 // Start wrapper.
-(function (window, undefined) {
+(function wrapper(window, injectNeeded, undefined) {
+// Script injection if needed.
+if (injectNeeded) {
+	var script = document.createElement('script');
+	script.textContent = '(' + wrapper + ')(window, false)';
+	document.body.appendChild(script);
+	document.body.removeChild(script);
+}
 
 // Script-wide variables.
 //-----------------------
 var emotes = [],
+	rawEmotes = [],
 	emoteListeners = [],
 	emotePopularity = false,
 	userInfo = {
@@ -35,12 +43,17 @@ var emotes = [],
 		NO_CHAT_LOAD: 'Unable to add emotes button for some reason, stopping.',
 		EMOTES_NOT_LOADED: 'Emotes aren\'t loaded from the API yet, try again.',
 		NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
-		NOT_LOGGED_IN: 'You are not logged in, please log in first.'
+		NOT_LOGGED_IN: 'You are not logged in, please log in first.',
+		ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.'
 	};
 
 // Only enable script if we have the right variables.
 //---------------------------------------------------
 (function init(time) {
+	if (document.querySelector('#chat_emote_dropmenu_button')) {
+		console.error(MESSAGES.ALREADY_RUNNING);
+		return;
+	}
 	if (!time) {
 		var time = 0;
 	}
@@ -78,6 +91,7 @@ var emotes = [],
  * Populates the popup menu with current emote data.
  */
 function populateEmotes() {
+	checkEmotesUsable();
 	if (emotes.length < 1) {
 		console.warn(MESSAGES.EMOTES_NOT_LOADED);
 		setTimeout(populateEmotes, 50);
@@ -232,21 +246,20 @@ function setup() {
 	// User info.
 	userInfo.name = window.PP.login;
 	userInfo.displayName = window.PP.display_name;
-	(function checkEmoteSets(count) {
-		if (count > 20) {
+	userInfo.emoteSets = [];
+	(function checkEmoteSets(time) {
+		if (time >= 20000) {
 			userInfo.emoteSets = [];
-			return;
 		}
-		if (window.CurrentChat.user_to_emote_sets[userInfo.name] === undefined) {
-			setTimeout(function () {
-				checkEmoteSets(++count);
-			}, 50);
+		else if (window.CurrentChat.user_to_emote_sets[userInfo.name] === undefined) {
+			setTimeout(checkEmoteSets, 50, time + 50);
+			return;
 		}
 		else {
 			userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name];
 		}
+		populateEmotes();
 	})(0);
-	userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name] || [];
 	
 	// Create button element.
 	//-----------------------
@@ -288,11 +301,11 @@ function setup() {
 	popup.id = 'chat_emote_dropmenu';
 	popup.className = 'dropmenu';
 	popup.innerHTML = [
-		'<h4 class="draggable">Popular</h4>',
+		'<h4 class="draggable">Popular Emotes</h4>',
 		'<div class="scroll emotes-popular">',
 		'	<div class="tse-content emotes-container"></div>',
 		'</div>',
-		'<h4>All</h4>',
+		'<h4>All Emotes</h4>',
 		'<div class="scroll scroll-dark emotes-all">',
 		'	<div class="tse-content emotes-container"></div>',
 		'</div>',
@@ -320,31 +333,13 @@ function setup() {
 					.replace(/\\/g, ''); // unescape
 			emote.regex = RegExp(emote.regex, "g");
 			
-			var imageDefault = false;
 			emote.images.forEach(function (image) {
 				c += 1;
 				image.html = window.ich["chat-emoticon"]({
 					id: c
 				}).prop("outerHTML");
-				
-				// Check if emoticon is usable.
-				if (image.emoticon_set == null) {
-					imageDefault = image;
-				}
-				if (userInfo.emoteSets.indexOf(image.emoticon_set) >= 0) {
-					emote.image = image;
-				}
 			});
-			
-			// No emotes from sets.
-			if (!emote.image) {
-				// Use the non-set emote if available.
-				if (imageDefault) {
-					emote.image = imageDefault;
-				}
-			}
-			
-			emotes.push(emote);
+			rawEmotes.push(emote);
 		});
 		addSetStyles();
 		populateEmotes();
@@ -382,18 +377,19 @@ function setup() {
 		'#chat_emote_dropmenu {',
 		'	padding: 5px;',
 		'}',
+		'#chat_emote_dropmenu:hover {',
+		'	background-color: #202020;',
+		'	transition: background-color 0.25s;',
+		'}',
 		'#chat_emote_dropmenu .tse-scroll-content {',
 		'	right: -17px;',
 		'}',
-		'#chat_emote_dropmenu h4 small {',
-		'	font-size: 70%;',
-		'	font-weight: normal;',
-		'	margin-left: 10px;',
-		'	vertical-align: middle;',
-		'	cursor: pointer;',
+		'#chat_emote_dropmenu h4 {',
+		'	text-align: center;',
+		'	padding: 3px;',
 		'}',
 		'#chat_emote_dropmenu .emotes-popular {',
-		'	height: 48px;',
+		'	height: 38px;',
 		'}',
 		'#chat_emote_dropmenu h4.draggable:hover {',
 		'	background-color: rgba(255, 255, 255, 0.1);',
@@ -402,16 +398,18 @@ function setup() {
 		'}',
 		'#chat_emote_dropmenu .userscript_emoticon {',
 		'	display: inline-block;',
-		'	padding: 5px;',
+		'	padding: 2px;',
 		'	margin: 1px;',
 		'	cursor: pointer;',
 		'	border-radius: 5px;',
 		'	text-align: center;',
-		'	vertical-align: middle;',
+		'	width: 32px;',
 		'}',
 		'#chat_emote_dropmenu .userscript_emoticon .emoticon {',
-		'	min-width: 38px;',
+		'	max-width: 32px;',
 		'	margin: 0 !important;',
+		'	height: 32px;',
+		'	background-size: contain;',
 		'}',
 		'#chat_emote_dropmenu .userscript_emoticon:hover {',
 		'	background-color: rgba(255, 255, 255, 0.1);',
@@ -448,11 +446,13 @@ function setup() {
 	function addSetStyles() {
 		var css = [],
 			sets = {};
-		emotes.forEach(function (emote) {
-			if (emote.image && emote.image.emoticon_set) {
-				sets[emote.image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + emote.image.emoticon_set + '"] { background-color: hsla(' + (emote.image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
-				sets[emote.image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + emote.image.emoticon_set + '"]:hover { background-color: hsla(' + (emote.image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
-			}
+		rawEmotes.forEach(function (emote) {
+			emote.images.forEach(function (image) {
+				if (image.emoticon_set !== null) {
+					sets[image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"] { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
+					sets[image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"]:hover { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
+				}
+			});
 		});
 		for (var set in sets) {
 			css.push(sets[set]);
@@ -568,6 +568,31 @@ function setup() {
 	
 	// Create custom scroll bar.
 	$('#chat_emote_dropmenu .scroll.emotes-all').TrackpadScrollEmulator();
+}
+
+function checkEmotesUsable() {
+
+	emotes = [];
+	rawEmotes.forEach(function (emote) {
+		var imageDefault = false;
+		emote.images.forEach(function (image) {
+			if (image.emoticon_set == null) {
+				imageDefault = image;
+			}
+			if (userInfo.emoteSets.indexOf(image.emoticon_set) >= 0) {
+				emote.image = image;
+			}
+		});
+
+		// No emotes from sets.
+		if (!emote.image) {
+			// Use the non-set emote if available.
+			if (imageDefault) {
+				emote.image = imageDefault;
+			}
+		}
+		emotes.push(emote);
+	});
 }
 
 /**
@@ -708,4 +733,4 @@ function deleteSetting(aKey) {
 }
 
 // End wrapper.
-})(unsafeWindow || window);
+})(unsafeWindow || window, window.chrome ? true : false);
