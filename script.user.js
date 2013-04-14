@@ -13,11 +13,18 @@
 // @version         0.3.1
 // ==/UserScript==
 
-// Compatibility with Opera.
-if (window.opera && !window.unsafeWindow) {window.unsafeWindow = false;}
+// Fix undefined unsafeWindow.
+if (!window.unsafeWindow) {window.unsafeWindow = false;}
 
 // Start wrapper.
-(function (window, undefined) {
+(function wrapper(window, injectNeeded, undefined) {
+// Script injection if needed.
+if (injectNeeded) {
+	var script = document.createElement('script');
+	script.textContent = '(' + wrapper + ')(window, false)';
+	document.body.appendChild(script);
+	document.body.removeChild(script);
+}
 
 // Script-wide variables.
 //-----------------------
@@ -721,4 +728,4 @@ function deleteSetting(aKey) {
 }
 
 // End wrapper.
-})(unsafeWindow || window);
+})(unsafeWindow || window, window.chrome ? true : false);
