@@ -13,240 +13,122 @@
 // @version         0.3.2
 // ==/UserScript==
 
-// Fix undefined unsafeWindow.
-if (!window.unsafeWindow) {window.unsafeWindow = false;}
-
 // Start wrapper.
 (function wrapper(window, injectNeeded, undefined) {
+	'use strict';
+
 	// Script injection if needed.
 	if (injectNeeded) {
 		var script = document.createElement('script');
 		script.textContent = '(' + wrapper + ')(window, false)';
 		document.body.appendChild(script);
 		document.body.removeChild(script);
+		return;
 	}
 
 	// Script-wide variables.
 	//-----------------------
 	var emotes = [],
-		rawEmotes = [],
+		emotesRaw = [],
 		emoteListeners = [],
 		emotePopularity = false,
-		userInfo = {
-			emoteSets: [],
-			name: '',
-			displayName: ''
-		},
 		$,
 		jQuery,
+
+		userInfo = {
+			displayName: '',
+			emoteSets: [],
+			name: ''
+		},
+
+		elemChatButton,
+		elemChatButtonsContainer,
+		elemChatInput,
+		elemEmoteButton,
+		elemEmoteMenu,
+
+		SCRIPT_NAME = 'Twitch Chat Emotes',
 		MESSAGES = {
-			NO_CHAT_LOAD: 'Unable to add emotes button for some reason, stopping.',
-			EMOTES_NOT_LOADED: 'Emotes aren\'t loaded from the API yet, try again.',
+			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
+			CHAT_NOT_LOADED: 'Chat hasn\'t loaded yet.',
+			EMOTES_NOT_LOADED: 'Emotes aren\'t loaded from the API yet.',
 			NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
 			NOT_LOGGED_IN: 'You are not logged in, please log in first.',
-			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.'
+			OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
+			TIMEOUT_EMOTE_SETS: 'Took too long to find turbo/subscription emote sets.',
+			TIMEOUT_SCRIPT_LOAD: 'Script took too long to load.'
 		};
+
+	// Quick manipulation of script-wide variables.
+	//---------------------------------------------
+	// Prefix all messages with script name.
+	for (var message in MESSAGES) {
+		if (MESSAGES.hasOwnProperty(message)) {
+			MESSAGES[message] = '[' + SCRIPT_NAME + ']: ' + MESSAGES[message];
+		}
+	}
 
 	// Only enable script if we have the right variables.
 	//---------------------------------------------------
 	(function init(time) {
-		if (document.querySelector('#chat_emote_dropmenu_button')) {
-			console.error(MESSAGES.ALREADY_RUNNING);
-			return;
-		}
-		if (!time) {
-			var time = 0;
-		}
-		else if (time >= 10000) {
-			// Taking too much time, error out.
-			console.error(
-				MESSAGES.NO_CHAT_LOAD,
-				'[PP: ' + (window.PP !== undefined),
-				' / Logged in: ' + (window.PP ? window.PP.login !== '' : false),
-				' / Twitch Object: ' + (window.Twitch !== undefined),
-				' / Chat Object: ' + (window.CurrentChat !== undefined),
-				' / Chat Loaded: ' + (window.CurrentChat ? window.CurrentChat.last_sender !== false : false),
-				' / jQuery: ' + (window.$j !== undefined),
-				' / userAgent: ' + navigator.userAgent + ']'
+		var	chatLoaded = (window.CurrentChat ? window.CurrentChat.last_sender !== false : false),
+			loggedIn = (window.PP ? window.PP.login !== '' : false),
+			objectsLoaded = (
+				window.PP !== undefined &&
+				window.Twitch !== undefined &&
+				window.CurrentChat !== undefined &&
+				window.jQuery !== undefined
 			);
+
+		if (document.querySelector('#chat_emote_dropmenu_button')) {
+			console.warn(MESSAGES.ALREADY_RUNNING);
 			return;
 		}
+
 		if (
-			!window.PP ||
-			window.PP.login === '' ||
-			!window.Twitch ||
-			!window.CurrentChat ||
-			window.CurrentChat.last_sender === false ||
-			!window.$j
+			!objectsLoaded ||
+			!loggedIn ||
+			!chatLoaded
 		) {
-			setTimeout(init, 50, (time + 50));
+			if (time >= 10000) {
+				if (!loggedIn) {
+					console.error(MESSAGES.NOT_LOGGED_IN);
+					return;
+				}
+				if (!objectsLoaded) {
+					console.warn(MESSAGES.OBJECTS_NOT_LOADED);
+				}
+				if (!chatLoaded) {
+					console.warn(MESSAGES.CHAT_NOT_LOADED);
+				}
+			}
+			setTimeout(init, 50, (time +50));
 			return;
 		}
 		setup();
-	})();
+	})(0);
 
 	// Start of functions.
 	//--------------------
 	/**
-	 * Populates the popup menu with current emote data.
-	 */
-	function populateEmotes() {
-		checkEmotesUsable();
-		if (emotes.length < 1) {
-			console.warn(MESSAGES.EMOTES_NOT_LOADED);
-			setTimeout(populateEmotes, 50);
-			return;
-		}
-		// Remove old listeners.
-		emoteListeners.forEach(function (listener) {
-			listener.element.removeEventListener(listener.type, listener.func, false);
-		});
-		emoteListeners = [];
-		var container = false;
-
-		// Get container for popular emotes.
-		container = document.querySelector('#chat_emote_dropmenu .emotes-popular .emotes-container');
-		// Remove old emotes.
-		container.innerHTML = '';
-		emotes.sort(sortByNormal);
-		emotes.sort(sortByPopularity);
-		emotes.forEach(function (emote) {
-			addEmote(emote, container);
-		});
-		
-		// Get container for all emotes.
-		container = document.querySelector('#chat_emote_dropmenu .emotes-all .emotes-container');
-		// Remove old emotes.
-		container.innerHTML = '';
-		// Add all emotes.
-		emotes.sort(sortByNormal);
-		emotes.sort(sortBySet);
-		emotes.forEach(function (emote) {
-			addEmote(emote, container);
-		});
-		
-		var chatEmoteDropmenu = $('#chat_emote_dropmenu'),
-			chatLines = $('#chat_lines');
-		// Only adjust dimensions if the menu hasn't been moved.
-		if (!chatEmoteDropmenu.hasClass('has_moved')) {
-			// Adjust the height of the popup, requires special handling due to scrolling element.
-			var height = chatEmoteDropmenu.outerHeight() - chatEmoteDropmenu.find('.emotes-all').outerHeight();
-			height = chatLines.height() - height;
-			chatEmoteDropmenu.find('.emotes-all').height(height);
-			
-			// Adjust the width and position of the popup.
-			chatEmoteDropmenu
-				.width($('#speak').outerWidth() - 12)
-				.offset(chatLines.offset());
-		}
-		
-		/**
-		 * Adds the emote to document and listens for a click event that will add the emote text to the chat.
-		 * @param [object] The emote that you want to add.
-		 * @param [element] The HTML element that the emote should be appended to.
-		 */
-		function addEmote(emote, container) {
-			// Emote not usable or no container, can't add.
-			if (!emote || !emote.image || !container) {
-				return;
-			}
-			
-			// Create element.
-			var element = document.createElement('div');
-			element.className = 'userscript_emoticon';
-			element.innerHTML = emote.image.html;
-			element.dataset.emote = emote.text;
-			if (emote.image.emoticon_set) {
-				element.dataset.emoteSet = emote.image.emoticon_set;
-			}
-			element.title = emote.text;
-			container.appendChild(element);
-			
-			// Add listeners.
-			var listener = {
-				'element': element,
-				'func': function () {
-					insertEmote(emote.text);
-				},
-				'type': 'click'
-			};
-			listener.element.addEventListener(listener.type, listener.func, false);
-			emoteListeners.push(listener);
-		}
-		
-		/**
-		 * Sort by popularity: most used -> least used
-		 */
-		function sortByPopularity(a, b) {
-			var aGet = emotePopularityGet(a.text),
-				bGet = emotePopularityGet(b.text),
-				aNumber = typeof aGet == 'number',
-				bNumber = typeof bGet == 'number';
-			if (aNumber && !bNumber) return -1;
-			if (bNumber && !aNumber) return 1;
-			if (aGet < bGet) return 1;
-			if (aGet > bGet) return -1;
-			return 0;
-		}
-		
-		/**
-		 * Sort by alphanumeric in this order: symbols -> numbers -> AaBb... -> numbers
-		 */
-		function sortByNormal(a, b){
-			a = a.text;
-			b = b.text;
-			var aTest = /[\W]/.test(a);
-			var bTest = /[\W]/.test(b);
-			if (aTest && !bTest) return -1;
-			if (bTest && !aTest) return 1;
-			if (a.toLowerCase() < b.toLowerCase()) return -1;
-			if (a.toLowerCase() > b.toLowerCase()) return 1;
-			if (a < b) return -1;
-			if (a > b) return 1;
-			return 0;
-		}
-		
-		/**
-		 * Sort by emoticon set: basic smileys -> no set -> set 0-9...
-		 */
-		function sortBySet(a, b){
-			if (a.image && !b.image) return 1;
-			if (b.image && !a.image) return -1;
-			if (a.image && b.image) {
-				// Override for turbo emotes.
-				if ((a.image.emoticon_set == 33 || a.image.emoticon_set == 42) && (b.image.emoticon_set != 33 && b.image.emoticon_set != 42)) return -1;
-				if ((b.image.emoticon_set == 33 || b.image.emoticon_set == 42) && (a.image.emoticon_set != 33 && a.image.emoticon_set != 42)) return 1;
-				// Override for basic emotes.
-				var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o'];
-				if (basicEmotes.indexOf(a.text) >= 0 && basicEmotes.indexOf(b.text) < 0) return -1;
-				if (basicEmotes.indexOf(b.text) >= 0 && basicEmotes.indexOf(a.text) < 0) return 1;
-				// Sort by set number.
-				if (a.image.emoticon_set < b.image.emoticon_set) return -1;
-				if (a.image.emoticon_set > b.image.emoticon_set) return 1;
-			}
-			return 0;
-		}
-	}
-
-	/**
-	 * Runs all setup procedures listed:
-	 * - Populate script-wide variables.
-	 * - Create button element.
-	 * - Create popup element.
-	 * - Get current emotes from API.
-	 * - Add styles.
-	 * - Create listeners.
+	 * Runs initial setup of DOM and variables.
 	 */
 	function setup() {
-		// Populate script-wide variables.
-		//--------------------------------
-		// jQuery
-		$ = jQuery = window.$j;
-		
-		// User info.
-		userInfo.name = window.PP.login;
+		$ = jQuery = window.jQuery;
+
+		elemChatButton = $('#chat_speak');
+		elemChatButtonsContainer = $('#control_buttons');
+		elemChatInput = $('#control_input');
+
+		// No chat, just exit.
+		if (!elemChatButton.length) {
+			console.warn(MESSAGES.NO_CHAT_ELEMENT);
+			return;
+		}
+
 		userInfo.displayName = window.PP.display_name;
 		userInfo.emoteSets = [];
+		userInfo.name = window.PP.login;
 		(function checkEmoteSets(time) {
 			if (time >= 20000) {
 				userInfo.emoteSets = [];
@@ -258,49 +140,71 @@ if (!window.unsafeWindow) {window.unsafeWindow = false;}
 			else {
 				userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name];
 			}
-			populateEmotes();
+			populateEmotesMenu();
 		})(0);
-		
-		// Create button element.
-		//-----------------------
-		var button = document.createElement('a');
-		button.id = 'chat_emote_dropmenu_button';
-		button.className = 'dropdown_glyph';
-		button.innerHTML = '<span>emotes</span>';
-		var chatButton = document.querySelector('#chat_speak');
-		if (chatButton) {
-			chatButton.parentNode.insertBefore(button, chatButton);
-			$('#chat_emote_dropmenu_button').hide();
-			if (chatButton.classList.contains('cap')) {
-				$('#control_input').animate({'margin-right': '175px'});
-				$('#control_buttons').css('width', '175px');
-				$('#chat_speak').animate({'margin-right': '51px'}, {
-					complete: function () {
-						$('#chat_speak').css('margin-right', '5px');
-						$('#chat_emote_dropmenu_button').css('margin-right', '5px').fadeIn();
-					}
+
+		// Get current emotes from API.
+		window.Twitch.api.get('chat/emoticons').done(function (api) {
+			var count = 0;
+			api.emoticons.forEach(function (emote) {
+				// Taken from http://userscripts.org/scripts/show/160183
+				emote.text = decodeURI(emote.regex)
+					.replace('&gt\\;', '>') // right angle bracket
+					.replace('&lt\\;', '<') // left angle bracket
+					.replace(/\(\?![^)]*\)/g, '') // remove negative group
+					.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
+					.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
+					.replace(/[^\\]\?/g, '') // remove optional chars
+					.replace(/\\/g, ''); // unescape
+
+				emote.images.forEach(function (image) {
+					count++;
+					image.html = window.ich['chat-emoticon']({
+						id: count
+					}).prop('outerHTML');
 				});
-			}
-			else {
-				$(chatButton).css('float', 'right').animate({'width': '128px'}, {
-					complete: function () {
-						$('#chat_emote_dropmenu_button').fadeIn();
-					}
-				});
-			}
+				emotesRaw.push(emote);
+			});
+			addSetStyle();
+			populateEmotesMenu();
+		});
+
+		createMenuElements();
+		addBaseStyle();
+		bindListeners();
+	}
+
+	/**
+	 * Creates the initial menu elements
+	 */
+	function createMenuElements() {
+		// Create emote button.
+		elemEmoteButton = $('<a class="dropdown_glyph" id="chat_emote_dropmenu_button"><span>emotes</span></a>');
+		elemEmoteButton.insertBefore(elemChatButton);
+		elemEmoteButton.hide();
+		// Animate for non-channel pages (dashboard, popout, etc.).
+		if (elemChatButton.hasClass('cap')) {
+			elemChatInput.animate({'margin-right': '175px'});
+			elemChatButtonsContainer.css('width', '175px');
+			elemChatButton.animate({'margin-right': '51px'}, {
+				complete: function () {
+					elemChatButton.css('margin-right', '5px');
+					elemEmoteButton.css('margin-right', '5px').fadeIn();
+				}
+			});
 		}
+		// Animate for channel page.
 		else {
-			// No chat, just exit.
-			console.warn(MESSAGES.NO_CHAT_ELEMENT);
-			return;
+			elemChatButton.css('float', 'right').animate({'width': '128px'}, {
+				complete: function () {
+					elemEmoteButton.fadeIn();
+				}
+			});
 		}
-		
-		// Create popup element.
-		//----------------------
-		var popup = document.createElement('div');
-		popup.id = 'chat_emote_dropmenu';
-		popup.className = 'dropmenu';
-		popup.innerHTML = [
+
+		// Create emote menu.
+		elemEmoteMenu = $('<div class="dropmenu" id="chat_emote_dropmenu"></div>');
+		elemEmoteMenu.html([
 			'<h4 class="draggable">Popular Emotes</h4>',
 			'<div class="scroll emotes-popular">',
 			'	<div class="tse-content emotes-container"></div>',
@@ -314,48 +218,426 @@ if (!window.unsafeWindow) {window.unsafeWindow = false;}
 			'	<a class="reset" title="Reset the popularity of the emotes back to default">Reset Popularity</a>',
 			'	<a class="right icon resize-handle"></a>',
 			'</p>'
-		].join('\n');
-		document.body.appendChild(popup);
-		
-		// Get current emotes from API.
-		//-----------------------------
-		window.Twitch.api.get("chat/emoticons").done(function (a) {
-			var c = 0;
-			a.emoticons.forEach(function (emote) {
-				// Taken from http://userscripts.org/scripts/show/160183
-				emote.text = unescape(emote.regex)
-						.replace('&gt\\;', '>') // right angle bracket
-						.replace('&lt\\;', '<') // left angle bracket
-						.replace(/\(\?![^)]*\)/g, '') // remove negative group
-						.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
-						.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
-						.replace(/[^\\]\?/g, '') // remove optional chars
-						.replace(/\\/g, ''); // unescape
-				emote.regex = RegExp(emote.regex, "g");
-				
-				emote.images.forEach(function (image) {
-					c += 1;
-					image.html = window.ich["chat-emoticon"]({
-						id: c
-					}).prop("outerHTML");
-				});
-				rawEmotes.push(emote);
-			});
-			addSetStyles();
-			populateEmotes();
+		].join('\n'));
+		elemEmoteMenu.appendTo(document.body);
+	}
+
+	/**
+	 * Bind event listeners.
+	 */
+	function bindListeners() {
+		// Handle popup.
+		elemEmoteButton.popup('click_to_close', elemEmoteMenu, {
+			above: true
 		});
-		
-		// Add styles.
-		//------------
+
+		// Toggle buttons.
+		elemEmoteButton.on('click', function () {
+			elemEmoteMenu.removeClass('has_moved');
+			$(this).toggleClass('toggled');
+			populateEmotesMenu();
+		});
+
+		// Restore outside clicks to close popup, but only when it hasn't been moved.
+		elemEmoteMenu.on('clickoutside', function () {
+			if (!$(this).hasClass('has_moved') && $(this).is(':visible')) {
+				elemEmoteButton.click();
+			}
+		});
+
+		// Make draggable.
+		elemEmoteMenu.draggable({
+			handle: 'h4.draggable',
+			start: function () {
+				$(this).addClass('has_moved');
+			}
+		});
+
+		// Make resizable.
+		var originalX,
+			originalY,
+			originalHeight,
+			originalWidth,
+			elemEmotesAll = elemEmoteMenu.find('.emotes-all');
+		function adjustSize(evt) {
+			var diffX = evt.pageX - originalX,
+				diffY = evt.pageY - originalY;
+			elemEmoteMenu.width(originalWidth + diffX);
+			elemEmotesAll.height(originalHeight + diffY);
+		}
+		elemEmoteMenu.find('.resize-handle').on('mousedown', function (evt) {
+			// Prevent text selection.
+			evt.preventDefault();
+			elemEmoteMenu.addClass('has_moved');
+			originalX = evt.pageX;
+			originalY = evt.pageY;
+			originalWidth = elemEmoteMenu.width();
+			originalHeight = elemEmotesAll.height();
+			$(document).on('mousemove', '*', adjustSize);
+		});
+		$(document).on('mouseup', function () {
+			$(document).off('mousemove', '*', adjustSize);
+		});
+
+		// Enable the popularity reset.
+		elemEmoteMenu.find('.dropmenu_alt_section a.reset').on('click', function () {
+			emotePopularityClear();
+			populateEmotesMenu();
+		});
+
+		// Create scroll function if needed.
+		if (!$().TrackpadScrollEmulator) {
+			/**
+			 * TrackpadScrollEmulator
+			 * Version: 1.0.2
+			 * Author: Jonathan Nicol @f6design
+			 * https://github.com/jnicol/trackpad-scroll-emulator
+			 *
+			 * The MIT License
+			 *
+			 * Copyright (c) 2012-2013 Jonathan Nicol
+			 *
+			 * Permission is hereby granted, free of charge, to any person obtaining a copy
+			 * of this software and associated documentation files (the "Software"), to deal
+			 * in the Software without restriction, including without limitation the rights
+			 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+			 * copies of the Software, and to permit persons to whom the Software is
+			 * furnished to do so, subject to the following conditions:
+			 *
+			 * The above copyright notice and this permission notice shall be included in
+			 * all copies or substantial portions of the Software.
+			 *
+			 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+			 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+			 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+			 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+			 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+			 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+			 * THE SOFTWARE.
+			 */(function(e){function n(n,r){function m(){if(s.hasClass("horizontal")){h="horiz";p="scrollLeft";d="width";v="left"}s.prepend('<div class="tse-scrollbar"><div class="drag-handle"></div></div>');a=s.find(".tse-scrollbar");f=s.find(".drag-handle");if(r.wrapContent){u.wrap('<div class="tse-scroll-content" />')}o=s.find(".tse-scroll-content");N();s.on("mouseenter",S);f.on("mousedown",g);o.on("scroll",w);E()}function g(t){t.preventDefault();var n=t.pageY;if(h==="horiz"){n=t.pageX}l=n-f.offset()[v];e(document).on("mousemove",y);e(document).on("mouseup",b)}function y(e){e.preventDefault();var t=e.pageY;if(h==="horiz"){t=e.pageX}var n=t-a.offset()[v]-l;var r=n/a[d]();var i=r*u[d]();o[p](i)}function b(){e(document).off("mousemove",y);e(document).off("mouseup",b)}function w(e){S()}function E(){var e=u[d]();var t=o[p]();var n=a[d]();var r=n/e;var i=Math.round(r*t)+2;var s=Math.floor(r*(n-2))-2;if(n<e){if(h==="vert"){f.css({top:i,height:s})}else{f.css({left:i,width:s})}a.show()}else{a.hide()}}function S(){E();x()}function x(){f.addClass("visible");if(typeof c==="number"){window.clearTimeout(c)}c=window.setTimeout(function(){T()},1e3)}function T(){f.removeClass("visible");if(typeof c==="number"){window.clearTimeout(c)}}function N(){if(h==="vert"){o.width(s.width()+C());o.height(s.height())}else{o.width(s.width());o.height(s.height()+C());u.height(s.height())}}function C(){var t=e('<div class="scrollbar-width-tester" style="width:50px;height:50px;overflow-y:scroll;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>');e("body").append(t);var n=e(t).innerWidth();var r=e("div",t).innerWidth();t.remove();return n-r}function k(){N();E()}function L(e,t){if(t){r[e]=t}else{return r[e]}}function A(){u.insertBefore(a);a.remove();o.remove();u.css({height:s.height()+"px","overflow-y":"scroll"});O("onDestroy");s.removeData("plugin_"+t)}function O(e){if(r[e]!==undefined){r[e].call(i)}}var i=n;var s=e(n);var o;var u=s.find(".tse-content");var a;var f;var l;var c;var h="vert";var p="scrollTop";var d="height";var v="top";r=e.extend({},e.fn[t].defaults,r);m();return{option:L,destroy:A,recalculate:k}}var t="TrackpadScrollEmulator";e.fn[t]=function(r){if(typeof arguments[0]==="string"){var i=arguments[0];var s=Array.prototype.slice.call(arguments,1);var o;this.each(function(){if(e.data(this,"plugin_"+t)&&typeof e.data(this,"plugin_"+t)[i]==="function"){o=e.data(this,"plugin_"+t)[i].apply(this,s)}else{throw new Error("Method "+i+" does not exist on jQuery."+t)}});if(o!==undefined){return o}else{return this}}else if(typeof r==="object"||!r){return this.each(function(){if(!e.data(this,"plugin_"+t)){e.data(this,"plugin_"+t,new n(this,r))}})}};e.fn[t].defaults={onInit:function(){},onDestroy:function(){},wrapContent:true}})(jQuery)
+		}
+
+		// Create custom scroll bar.
+		elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator();
+	}
+
+	/**
+	 * Populates the popup menu with current emote data.
+	 */
+	function populateEmotesMenu() {
+		var container,
+			height,
+			elemChatLines = $('#chat_lines');
+
+		refreshUsableEmotes();
+
+		if (emotes.length < 1) {
+			console.warn(MESSAGES.EMOTES_NOT_LOADED);
+			setTimeout(populateEmotesMenu, 50);
+			return;
+		}
+
+		// Remove old listeners.
+		emoteListeners.forEach(function (listener) {
+			listener.element.off(listener.type, listener.func);
+		});
+		emoteListeners = [];
+
+		// Add popular emotes.
+		container = elemEmoteMenu.find('.emotes-popular .emotes-container');
+		container.html('');
+		emotes.sort(sortByNormal);
+		emotes.sort(sortByPopularity);
+		emotes.forEach(function (emote) {
+			createEmote(emote, container);
+		});
+
+		// Add all emotes.
+		container = elemEmoteMenu.find('.emotes-all .emotes-container');
+		container.html('');
+		emotes.sort(sortByNormal);
+		emotes.sort(sortBySet);
+		emotes.forEach(function (emote) {
+			createEmote(emote, container);
+		});
+
+		// Adjust dimensions if the menu hasn't been moved.
+		if (!elemEmoteMenu.hasClass('has_moved')) {
+			// Adjust the height of the popup, requires special handling due to scrolling element.
+			height = elemEmoteMenu.outerHeight() - elemEmoteMenu.find('.emotes-all').outerHeight();
+			height = elemChatLines.height() - height;
+			elemEmoteMenu.find('.emotes-all').height(height);
+
+			// Adjust the width and position of the popup.
+			elemEmoteMenu.width($('#speak').outerWidth() - 12);
+			elemEmoteMenu.offset(elemChatLines.offset());
+		}
+
+		/**
+		 * Sort by popularity: most used -> least used
+		 */
+		function sortByPopularity(a, b) {
+			var aGet = emotePopularityGet(a.text),
+				bGet = emotePopularityGet(b.text),
+				aNumber = typeof aGet === 'number',
+				bNumber = typeof bGet === 'number';
+			if (aNumber && !bNumber) {
+				return -1;
+			}
+			if (bNumber && !aNumber) {
+				return 1;
+			}
+			if (aGet < bGet) {
+				return 1;
+			}
+			if (aGet > bGet) {
+				return -1;
+			}
+			return 0;
+		}
+
+		/**
+		 * Sort by alphanumeric in this order: symbols -> numbers -> AaBb... -> numbers
+		 */
+		function sortByNormal(a, b){
+			a = a.text;
+			b = b.text;
+			var aTest = /[\W]/.test(a),
+				bTest = /[\W]/.test(b);
+			if (aTest && !bTest) {
+				return -1;
+			}
+			if (bTest && !aTest) {
+				return 1;
+			}
+			if (a.toLowerCase() < b.toLowerCase()) {
+				return -1;
+			}
+			if (a.toLowerCase() > b.toLowerCase()) {
+				return 1;
+			}
+			if (a < b) {
+				return -1;
+			}
+			if (a > b) {
+				return 1;
+			}
+			return 0;
+		}
+
+		/**
+		 * Sort by emoticon set: basic smileys -> no set -> set 0-9...
+		 */
+		function sortBySet(a, b){
+			if (a.image && !b.image) {
+				return 1;
+			}
+			if (b.image && !a.image) {
+				return -1;
+			}
+			if (a.image && b.image) {
+				// Override for turbo emotes.
+				if (
+					(a.image.emoticon_set === 33 || a.image.emoticon_set === 42) &&
+					(b.image.emoticon_set !== 33 && b.image.emoticon_set !== 42)
+				) {
+					return -1;
+				}
+				if (
+					(b.image.emoticon_set === 33 || b.image.emoticon_set === 42) &&
+					(a.image.emoticon_set !== 33 && a.image.emoticon_set !== 42)
+				) {
+					return 1;
+				}
+				// Override for basic emotes.
+				var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o'];
+				if (basicEmotes.indexOf(a.text) >= 0 &&	basicEmotes.indexOf(b.text) < 0) {
+					return -1;
+				}
+				if (basicEmotes.indexOf(b.text) >= 0 &&	basicEmotes.indexOf(a.text) < 0) {
+					return 1;
+				}
+				// Sort by set number.
+				if (a.image.emoticon_set < b.image.emoticon_set) {
+					return -1;
+				}
+				if (a.image.emoticon_set > b.image.emoticon_set) {
+					return 1;
+				}
+			}
+			return 0;
+		}
+	}
+
+	function refreshUsableEmotes() {
+		emotes = [];
+		emotesRaw.forEach(function (emote) {
+			var defaultImage = false;
+			emote.images.forEach(function (image) {
+				if (image.emoticon_set === null) {
+					defaultImage = image;
+				}
+				if (userInfo.emoteSets.indexOf(image.emoticon_set) >= 0) {
+					emote.image = image;
+				}
+			});
+
+			// No emotes from sets.
+			if (!emote.image) {
+				// Use the non-set emote if available.
+				if (defaultImage) {
+					emote.image = defaultImage;
+				}
+			}
+			emotes.push(emote);
+		});
+	}
+
+	/**
+	 * Adds / sets popularity of an emote. Note: saves popularity data to storage each time this is called.
+	 * @param {string} text          The text of the emote (e.g. "Kappa").
+	 * @param {number} [forceAmount] The amount of popularity to force the emote to have. If not specificed, popularity will increase by 1.
+	 */
+	function emotePopularityAdd(text, forceAmount) {
+		emotePopularityInit();
+		if (emotePopularity[text] === undefined) {
+			emotePopularity[text] = 0;
+		}
+		if (typeof forceAmount === 'number' && forceAmount >= 0) {
+			emotePopularity[text] = forceAmount;
+		}
+		else {
+			emotePopularity[text]++;
+		}
+		setSetting('emote-popularity-tracking', JSON.stringify(emotePopularity));
+	}
+
+	/**
+	 * Gets the current popularity of an emote.
+	 * @param  {string} text The text of the emote (e.g. "Kappa").
+	 * @return {number}      The amount of popularity. Possible to be 0 if it has been forced.
+	 * @return {boolean}     `false` if the emote is not in the popularity tracking data (never been added by `emotePopularityAdd`).
+	 */
+	function emotePopularityGet(text) {
+		emotePopularityInit();
+		if (typeof emotePopularity[text] === 'number' && emotePopularity[text] >= 0) {
+			return emotePopularity[text];
+		}
+		return false;
+	}
+
+	/**
+	 * Clears the current emote popularity tracking data.
+	 */
+	function emotePopularityClear() {
+		deleteSetting('emote-popularity-tracking');
+		emotePopularity = false;
+		emotePopularityInit();
+	}
+
+	/**
+	 * Initiates the popularity tracking. This will pull data from storage, or if none exists, set some common defaults.
+	 */
+	function emotePopularityInit() {
+		if (!emotePopularity) {
+			emotePopularity = JSON.parse(getSetting('emote-popularity-tracking', '{}'));
+			emotePopularityAdd('BibleThump', 0);
+			emotePopularityAdd('DansGame', 0);
+			emotePopularityAdd('FailFish', 0);
+			emotePopularityAdd('Kappa', 0);
+			emotePopularityAdd('Kreygasm', 0);
+			emotePopularityAdd('SwiftRage', 0);
+		}
+	}
+
+	/**
+	 * Inserts an emote into the chat box.
+	 * @param {string} text The text of the emote (e.g. "Kappa").
+	 */
+	function insertEmoteText(text) {
+		emotePopularityAdd(text);
+		// Get input.
+		var element = document.querySelector('#chat_text_input');
+
+		// Insert at cursor / replace selection.
+		// https://developer.mozilla.org/en-US/docs/Code_snippets/Miscellaneous
+		var selectionEnd = element.selectionStart + text.length;
+		var currentValue = element.value;
+		var beforeText = currentValue.substring(0, element.selectionStart);
+		var afterText = currentValue.substring(element.selectionEnd, currentValue.length);
+		// Smart padding, only put space at start if needed.
+		if (
+			beforeText !== '' &&
+			beforeText.substr(-1) !== ' '
+		) {
+			text = ' ' + text;
+		}
+		// Always put space at end.
+		text += ' ';
+		// Set the text.
+		element.value = beforeText + text + afterText;
+		element.focus();
+		// Put cursor at end.
+		selectionEnd = element.selectionStart + text.length;
+		element.setSelectionRange(selectionEnd, selectionEnd);
+
+		// Close popup if it hasn't been moved by the user.
+		if (!elemEmoteMenu.hasClass('has_moved')) {
+			elemEmoteButton.click();
+		}
+		// Re-populate as it is still open.
+		else {
+			populateEmotesMenu();
+		}
+	}
+
+	/**
+	 * Creates the emote element and listens for a click event that will add the emote text to the chat.
+	 * @param {object}  emote     The emote that you want to add. This object should be one coming from `emotes`.
+	 * @param {element} container The HTML element that the emote should be appended to.
+	 */
+	function createEmote(emote, container) {
+		// Emote not usable or no container, can't add.
+		if (!emote || !emote.image || !container.length) {
+			return;
+		}
+
+		// Create element.
+		var element = $('<div class="userscript_emoticon"></div>');
+		element.html(emote.image.html);
+
+		element.attr('data-emote', emote.text);
+		if (emote.image.emoticon_set) {
+			element.attr('data-emote-set', emote.image.emoticon_set);
+		}
+		element.attr('title', emote.text);
+		container.append(element);
+
+		// Add listeners.
+		var listener = {
+			'element': element,
+			'func': function () {
+				insertEmoteText(emote.text);
+			},
+			'type': 'click'
+		};
+		listener.element.on(listener.type, listener.func);
+		emoteListeners.push(listener);
+	}
+
+	/**
+	 * Adds the base style.
+	 */
+	function addBaseStyle() {
 		var icons = {
 			dropmenuButton: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAOtJREFUOE+NkLERgzAMRdkgS2QGpvAYqVNRpmMDimyRo2YiVqBz/ncknSTIAXfvwPL/L467WmtgGIYeTGA5gPM+d8ICgdc4jvUM5nzPC3oG5nk+RUR2IpNg43NU+AfzQYLnfvUUCvPsmaSU8lYJjlmxbm9fynPm2WsS/jduqoTfipfkuUja3VDy5EIluqlrJc91zX63bVs4yVVUwn67E3zYnVyFefbsYvHcMFx9IEvzjHn2TCKneaTQDr/HvHZNQrC5+vARIlx9L0hgLxIKv+zKDeZ8L0gIA6CdKMN5FpCw8IhsAou8d+UftfsCjtrm7yD1aJgAAAAASUVORK5CYII=',
 			resizeHandle: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=',
-			// Inverted color to suit dark theme and resized to 16x16.
-			// @attribution Github, Inc. (https://github.com/github/media/blob/master/octocats/blacktocats.ai)
+			// "The mark": inverted color to suit dark theme and resized to 16x16.
+			// @attribution Github, Inc. (https://github.com/logos)
 			github: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC'
-		};
-		// Add main style.
-		addStyle([		
+		},
+		// Base style.
+		css = [
 			'#chat_emote_dropmenu_button span {',
 			'	background: url("' + icons.dropmenuButton + '") no-repeat 50%;',
 			'	cursor: pointer;',
@@ -440,259 +722,47 @@ if (!window.unsafeWindow) {window.unsafeWindow = false;}
 			'	background: url("' + icons.resizeHandle + '") no-repeat 50%;',
 			'	cursor: nwse-resize;',
 			'}'
-		].join('\n'));
-		
-		// Add style for set-unique background colors.
-		function addSetStyles() {
-			var css = [],
-				sets = {};
-			rawEmotes.forEach(function (emote) {
-				emote.images.forEach(function (image) {
-					if (image.emoticon_set !== null) {
-						sets[image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"] { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
-						sets[image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"]:hover { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
-					}
-				});
-			});
-			for (var set in sets) {
-				css.push(sets[set]);
-			}
-			addStyle(css.join('\n'));
-		}
-		// TODO: Fix emotes on black background, substitute out for fixed ones.
-		// TODO: Consider contacting Twitch to fix emotes on their end.
-		// Add style to fix white-background emotes.
-		var fixedEmotes = {
+		],
+		fixedEmotes = {
 			'DansGame': 'http://i.imgur.com/qonn0aV.png'
 		};
-		var css = [];
+
+		// Fix white-background emotes.
 		for (var emote in fixedEmotes) {
-			css.push('#chat_emote_dropmenu .userscript_emoticon[data-emote="' + emote + '"] .emoticon { background-image: url("' + fixedEmotes[emote] + '") !important; }');
+			if (fixedEmotes.hasOwnProperty(emote)) {
+				css.push('#chat_emote_dropmenu .userscript_emoticon[data-emote="' + emote + '"] .emoticon { background-image: url("' + fixedEmotes[emote] + '") !important; }');
+			}
 		}
 		addStyle(css.join('\n'));
-
-		// Create listeners.
-		//------------------
-		// Popup on click.
-		$('#chat_emote_dropmenu_button').popup('click_to_close', $('#chat_emote_dropmenu'), {
-			above: !0
-		});
-		
-		// Restore outside clicks to close popup, but only when it hasn't been moved.
-		$('#chat_emote_dropmenu').on('clickoutside', function () {
-			if (!$(this).hasClass('has_moved') && $(this).is(':visible')) {
-				$('#chat_emote_dropmenu_button').click();
-			}
-		});
-		
-		// Make draggable.
-		$('#chat_emote_dropmenu').draggable({
-			handle: 'h4.draggable',
-			start: function () {
-				$(this).addClass('has_moved')
-			}
-		});
-		
-		// Make resizable.
-		var originalX, originalY, originalWidth, originalHeight,
-			chatEmoteDropmenu = $('#chat_emote_dropmenu'),
-			chatEmoteAll = chatEmoteDropmenu.find('.emotes-all');
-		function adjustSize(evt) {
-				console.log(evt);
-				var diffX = evt.pageX - originalX,
-					diffY = evt.pageY - originalY;
-				chatEmoteDropmenu.width(originalWidth + diffX);
-				chatEmoteAll.height(originalHeight + diffY);
-				
-		}
-		$('#chat_emote_dropmenu .resize-handle').on('mousedown', function (evt) {
-			// Prevent text selection.
-			evt.preventDefault();
-			$('#chat_emote_dropmenu').addClass('has_moved');
-			console.log(evt);
-			originalX = evt.pageX;
-			originalY = evt.pageY;
-			originalWidth = chatEmoteDropmenu.width();
-			originalHeight = chatEmoteAll.height();
-			
-			$(document).on('mousemove', '*', adjustSize);
-		});
-		$(document).on('mouseup', function () {
-			$(document).off('mousemove', '*', adjustSize);
-		});
-		
-		// Repopulate emotes.
-		$('#chat_emote_dropmenu_button').on('click', function () {
-			$('#chat_emote_dropmenu').removeClass('has_moved');
-			$(this).toggleClass('toggled');
-			populateEmotes();
-		});
-		
-		// Enable the popularity reset.
-		$('#chat_emote_dropmenu .dropmenu_alt_section a.reset').on('click', function () {
-			emotePopularityClear();
-			populateEmotes();
-		});
-		
-		// Create scroll function if needed.
-		if (!$().TrackpadScrollEmulator) {
-			/**
-			 * TrackpadScrollEmulator
-			 * Version: 1.0.2
-			 * Author: Jonathan Nicol @f6design
-			 * https://github.com/jnicol/trackpad-scroll-emulator
-			 *
-			 * The MIT License
-			 *
-			 * Copyright (c) 2012-2013 Jonathan Nicol
-			 *
-			 * Permission is hereby granted, free of charge, to any person obtaining a copy
-			 * of this software and associated documentation files (the "Software"), to deal
-			 * in the Software without restriction, including without limitation the rights
-			 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-			 * copies of the Software, and to permit persons to whom the Software is
-			 * furnished to do so, subject to the following conditions:
-			 *
-			 * The above copyright notice and this permission notice shall be included in
-			 * all copies or substantial portions of the Software.
-			 *
-			 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-			 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-			 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-			 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-			 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-			 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-			 * THE SOFTWARE.
-			 */(function(e){function n(n,r){function m(){if(s.hasClass("horizontal")){h="horiz";p="scrollLeft";d="width";v="left"}s.prepend('<div class="tse-scrollbar"><div class="drag-handle"></div></div>');a=s.find(".tse-scrollbar");f=s.find(".drag-handle");if(r.wrapContent){u.wrap('<div class="tse-scroll-content" />')}o=s.find(".tse-scroll-content");N();s.on("mouseenter",S);f.on("mousedown",g);o.on("scroll",w);E()}function g(t){t.preventDefault();var n=t.pageY;if(h==="horiz"){n=t.pageX}l=n-f.offset()[v];e(document).on("mousemove",y);e(document).on("mouseup",b)}function y(e){e.preventDefault();var t=e.pageY;if(h==="horiz"){t=e.pageX}var n=t-a.offset()[v]-l;var r=n/a[d]();var i=r*u[d]();o[p](i)}function b(){e(document).off("mousemove",y);e(document).off("mouseup",b)}function w(e){S()}function E(){var e=u[d]();var t=o[p]();var n=a[d]();var r=n/e;var i=Math.round(r*t)+2;var s=Math.floor(r*(n-2))-2;if(n<e){if(h==="vert"){f.css({top:i,height:s})}else{f.css({left:i,width:s})}a.show()}else{a.hide()}}function S(){E();x()}function x(){f.addClass("visible");if(typeof c==="number"){window.clearTimeout(c)}c=window.setTimeout(function(){T()},1e3)}function T(){f.removeClass("visible");if(typeof c==="number"){window.clearTimeout(c)}}function N(){if(h==="vert"){o.width(s.width()+C());o.height(s.height())}else{o.width(s.width());o.height(s.height()+C());u.height(s.height())}}function C(){var t=e('<div class="scrollbar-width-tester" style="width:50px;height:50px;overflow-y:scroll;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>');e("body").append(t);var n=e(t).innerWidth();var r=e("div",t).innerWidth();t.remove();return n-r}function k(){N();E()}function L(e,t){if(t){r[e]=t}else{return r[e]}}function A(){u.insertBefore(a);a.remove();o.remove();u.css({height:s.height()+"px","overflow-y":"scroll"});O("onDestroy");s.removeData("plugin_"+t)}function O(e){if(r[e]!==undefined){r[e].call(i)}}var i=n;var s=e(n);var o;var u=s.find(".tse-content");var a;var f;var l;var c;var h="vert";var p="scrollTop";var d="height";var v="top";r=e.extend({},e.fn[t].defaults,r);m();return{option:L,destroy:A,recalculate:k}}var t="TrackpadScrollEmulator";e.fn[t]=function(r){if(typeof arguments[0]==="string"){var i=arguments[0];var s=Array.prototype.slice.call(arguments,1);var o;this.each(function(){if(e.data(this,"plugin_"+t)&&typeof e.data(this,"plugin_"+t)[i]==="function"){o=e.data(this,"plugin_"+t)[i].apply(this,s)}else{throw new Error("Method "+i+" does not exist on jQuery."+t)}});if(o!==undefined){return o}else{return this}}else if(typeof r==="object"||!r){return this.each(function(){if(!e.data(this,"plugin_"+t)){e.data(this,"plugin_"+t,new n(this,r))}})}};e.fn[t].defaults={onInit:function(){},onDestroy:function(){},wrapContent:true}})(jQuery)
-		}
-		
-		// Create custom scroll bar.
-		$('#chat_emote_dropmenu .scroll.emotes-all').TrackpadScrollEmulator();
 	}
 
-	function checkEmotesUsable() {
-
-		emotes = [];
-		rawEmotes.forEach(function (emote) {
-			var imageDefault = false;
+	/**
+	 * Add style for set-unique background colors.
+	 */
+	function addSetStyle() {
+		var css = [],
+			sets = {};
+		emotesRaw.forEach(function (emote) {
 			emote.images.forEach(function (image) {
-				if (image.emoticon_set == null) {
-					imageDefault = image;
-				}
-				if (userInfo.emoteSets.indexOf(image.emoticon_set) >= 0) {
-					emote.image = image;
+				if (image.emoticon_set !== null && !sets[image.emoticon_set]) {
+					sets[image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"] { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
+					sets[image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"]:hover { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
 				}
 			});
-
-			// No emotes from sets.
-			if (!emote.image) {
-				// Use the non-set emote if available.
-				if (imageDefault) {
-					emote.image = imageDefault;
-				}
-			}
-			emotes.push(emote);
 		});
+		for (var set in sets) {
+			if (sets.hasOwnProperty(set)) {
+				css.push(sets[set]);
+			}
+		}
+		addStyle(css.join('\n'));
 	}
 
-	/**
-	 * Adds / sets popularity of an emote. Note: saves popularity data to storage each time this is called.
-	 * @param text [string] The text of the emote (e.g. "Kappa").
-	 * @param forceAmount [number, optional] The amount of popularity to force the emote to have. If not specificed, popularity will increase by 1.
-	 */
-	function emotePopularityAdd(text, forceAmount) {
-		emotePopularityInit();
-		if (emotePopularity[text] === undefined) {
-			emotePopularity[text] = 0;
-		}
-		if (typeof forceAmount == 'number' && forceAmount >= 0) {
-			emotePopularity[text] = forceAmount;
-		}
-		else {
-			emotePopularity[text] += 1;
-		}
-		setSetting('emote-popularity-tracking', JSON.stringify(emotePopularity));
-	}
-
-	/**
-	 * Gets the current popularity of an emote.
-	 * @param text [string] The text of the emote (e.g. "Kappa").
-	 * @return [number] The amount of popularity. Possible to be 0 if it has been forced.
-	 * @return [boolean] `false` if the emote is not in the popularity tracking data (never been added by `emotePopularityAdd`).
-	 */
-	function emotePopularityGet(text) {
-		emotePopularityInit();
-		if (typeof emotePopularity[text] == 'number' && emotePopularity[text] >= 0) {
-			return emotePopularity[text];
-		}
-		return false;
-	}
-
-	/**
-	 * Clears the current emote popularity tracking data.
-	 */
-	function emotePopularityClear() {
-		deleteSetting('emote-popularity-tracking');
-		emotePopularity = false;
-		emotePopularityInit();
-	}
-
-	/**
-	 * Initiates the popularity tracking. This will pull data from storage, or if none exists, set some common defaults.
-	 */
-	function emotePopularityInit() {
-		if (!emotePopularity) {
-			emotePopularity = JSON.parse(getSetting('emote-popularity-tracking', '{}'));
-			emotePopularityAdd('BibleThump', 0);
-			emotePopularityAdd('DansGame', 0);
-			emotePopularityAdd('FailFish', 0);
-			emotePopularityAdd('Kappa', 0);
-			emotePopularityAdd('Kreygasm', 0);
-			emotePopularityAdd('SwiftRage', 0);
-		}
-	}
-
-	/**
-	 * Inserts an emote into the chat box.
-	 * @param text [string] The text of the emote (e.g. "Kappa").
-	 */
-	function insertEmote(text) {
-		emotePopularityAdd(text);
-		// Get input.
-		var element = document.querySelector('#chat_text_input');
-		
-		// Insert at cursor / replace selection.
-		// https://developer.mozilla.org/en-US/docs/Code_snippets/Miscellaneous
-		var selectionEnd = element.selectionStart + text.length;
-		var currentValue = element.value;
-		var beforeText = currentValue.substring(0, element.selectionStart);
-		var afterText = currentValue.substring(element.selectionEnd, currentValue.length);
-		// Smart padding, only put space at start if needed.
-		if (beforeText != '' && beforeText.substr(-1) != ' ') {
-			text = ' ' + text;
-		}
-		// Always put space at end.
-		text += ' ';
-		// Set the text.
-		element.value = beforeText + text + afterText;
-		element.focus();
-		// Put cursor at end.
-		selectionEnd = element.selectionStart + text.length;
-		element.setSelectionRange(selectionEnd, selectionEnd);
-		
-		// Close popup if it hasn't been moved by the user.
-		if (!$('#chat_emote_dropmenu').hasClass('has_moved')) {
-			$('#chat_emote_dropmenu_button').click();
-		}
-		// Re-populate as it is still open.
-		else {
-			populateEmotes();
-		}
-	}
-
+	// Generic functions.
+	//-------------------
 	/**
 	 * Adds a stylesheet to the document.
-	 * @param text [string] The styles to be added.
+	 * @param {string} text The styles to be added.
 	 */
 	function addStyle(text) {
 		var style = document.createElement('style');
@@ -700,25 +770,23 @@ if (!window.unsafeWindow) {window.unsafeWindow = false;}
 		document.querySelector('head').appendChild(style);
 	}
 
-	// Generic functions.
-	//-------------------
 	/**
 	 * Gets a storage value.
-	 * @param aKey [string] The key you want to get.
-	 * @param aDefault [mixed] The default value to return if there isn't anything in storage.
-	 * @return The value in storage or `aDefault` if there isn't anything in storage.
+	 * @param  {string} aKey     The key you want to get.
+	 * @param  {mixed}  aDefault The default value to return if there isn't anything in storage.
+	 * @return {mixed}           The value in storage or `aDefault` if there isn't anything in storage.
 	 */
 	function getSetting(aKey, aDefault) {
-		var val = localStorage.getItem(aKey)
-		if (val === null && typeof aDefault != 'undefined') {
+		var val = localStorage.getItem(aKey);
+		if (val === null && typeof aDefault !== 'undefined') {
 			return aDefault;
 		}
 		return val;
 	}
 	/**
 	 * Sets a storage value.
-	 * @param aKey [string] The key you want to set.
-	 * @param aVal [mixed] The value you want to store.
+	 * @param {string} aKey The key you want to set.
+	 * @param {mixed}  aVal The value you want to store.
 	 */
 	function setSetting(aKey, aVal) {
 		localStorage.setItem(aKey, aVal);
@@ -726,11 +794,11 @@ if (!window.unsafeWindow) {window.unsafeWindow = false;}
 
 	/**
 	 * Deletes a storage key.
-	 * @param aKey [string] The key you want to set.
+	 * @param {string} aKey The key you want to set.
 	 */
 	function deleteSetting(aKey) {
 		localStorage.removeItem(aKey);
 	}
 
 // End wrapper.
-})(unsafeWindow || window, window.chrome ? true : false);
+})(this.unsafeWindow || window, window.chrome ? true : false);
