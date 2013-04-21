@@ -55,8 +55,8 @@
 			NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
 			NOT_LOGGED_IN: 'You are not logged in, please log in first.',
 			OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
-			TIMEOUT_EMOTE_SETS: 'Took too long to find turbo/subscription emote sets.',
-			TIMEOUT_SCRIPT_LOAD: 'Script took too long to load.'
+			TIMEOUT_EMOTE_SETS: 'Took too long to find turbo/subscription emote sets, using default. Refresh to try again.',
+			TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
 		};
 
 	// Quick manipulation of script-wide variables.
@@ -72,6 +72,7 @@
 	//---------------------------------------------------
 	(function init(time) {
 		var	chatLoaded = (window.CurrentChat ? window.CurrentChat.last_sender !== false : false),
+			frequency = 50,
 			loggedIn = (window.PP ? window.PP.login !== '' : false),
 			objectsLoaded = (
 				window.PP !== undefined &&
@@ -90,7 +91,13 @@
 			!loggedIn ||
 			!chatLoaded
 		) {
+			if (time >= 60000) {
+				console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
+				return;
+			}
 			if (time >= 10000) {
+				frequency = 1000;
+
 				if (!loggedIn) {
 					console.error(MESSAGES.NOT_LOGGED_IN);
 					return;
@@ -102,7 +109,7 @@
 					console.warn(MESSAGES.CHAT_NOT_LOADED);
 				}
 			}
-			setTimeout(init, 50, (time +50));
+			setTimeout(init, frequency, time + frequency);
 			return;
 		}
 		setup();
@@ -127,19 +134,23 @@
 		}
 
 		userInfo.displayName = window.PP.display_name;
-		userInfo.emoteSets = [];
 		userInfo.name = window.PP.login;
 		(function checkEmoteSets(time) {
-			if (time >= 20000) {
-				userInfo.emoteSets = [];
-			}
-			else if (window.CurrentChat.user_to_emote_sets[userInfo.name] === undefined) {
-				setTimeout(checkEmoteSets, 50, time + 50);
+			var	emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name],
+				frequency = 50;
+
+			if (!emoteSets) {
+				if (time >= 60000) {
+					console.warn(MESSAGES.TIMEOUT_EMOTE_SETS);
+					return;
+				}
+				if (time >= 10000) {
+					frequency = 1000;
+				}
+				setTimeout(checkEmoteSets, frequency, time + frequency);
 				return;
 			}
-			else {
-				userInfo.emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name];
-			}
+			userInfo.emoteSets = emoteSets;
 			populateEmotesMenu();
 		})(0);
 
