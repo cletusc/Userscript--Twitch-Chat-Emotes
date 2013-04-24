@@ -30,7 +30,6 @@
 	//-----------------------
 	var emotes = [],
 		emotesRaw = [],
-		emoteListeners = [],
 		emotePopularity = false,
 		$,
 		jQuery,
@@ -296,6 +295,11 @@
 			populateEmotesMenu();
 		});
 
+		// Enable emote clicking (delegated).
+		elemEmoteMenu.on('click', '.userscript_emoticon', function () {
+			insertEmoteText($(this).attr('data-emote'));
+		});
+
 		// Create scroll function if needed.
 		if (!$().TrackpadScrollEmulator) {
 			/**
@@ -347,12 +351,6 @@
 			setTimeout(populateEmotesMenu, 50);
 			return;
 		}
-
-		// Remove old listeners.
-		emoteListeners.forEach(function (listener) {
-			listener.element.off(listener.type, listener.func);
-		});
-		emoteListeners = [];
 
 		// Add popular emotes.
 		container = elemEmoteMenu.find('.emotes-popular .emotes-container');
@@ -480,6 +478,9 @@
 		}
 	}
 
+	/**
+	 * Refreshes the usable emotes. An emote is deemed usable if it either has no set or the set is in your user info. For turbo sets, it will use the turbo if in your user info, otherwise fall back to default.
+	 */
 	function refreshUsableEmotes() {
 		emotes = [];
 		emotesRaw.forEach(function (emote) {
@@ -623,17 +624,6 @@
 		}
 		element.attr('title', emote.text);
 		container.append(element);
-
-		// Add listeners.
-		var listener = {
-			'element': element,
-			'func': function () {
-				insertEmoteText(emote.text);
-			},
-			'type': 'click'
-		};
-		listener.element.on(listener.type, listener.func);
-		emoteListeners.push(listener);
 	}
 
 	/**
