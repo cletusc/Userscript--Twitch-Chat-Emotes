@@ -8,7 +8,7 @@
 //
 // @grant           none
 //
-// @include         http://www.twitch.tv/*
+// @include         http://*.twitch.tv/*
 //
 // @version         0.3.3
 // ==/UserScript==
