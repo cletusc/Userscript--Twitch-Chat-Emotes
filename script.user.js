@@ -8,9 +8,9 @@
 //
 // @grant           none
 //
-// @include         http://www.twitch.tv/*
+// @include         http://*.twitch.tv/*
 //
-// @version         0.3.3
+// @version         0.3.4
 // ==/UserScript==
 
 // Start wrapper.
