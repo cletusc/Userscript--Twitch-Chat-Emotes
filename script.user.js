@@ -77,7 +77,7 @@
 				window.PP !== undefined &&
 				window.Twitch !== undefined &&
 				window.CurrentChat !== undefined &&
-				window.jQuery !== undefined
+				window.$j !== undefined
 			);
 
 		if (document.querySelector('#chat_emote_dropmenu_button')) {
@@ -120,7 +120,7 @@
 	 * Runs initial setup of DOM and variables.
 	 */
 	function setup() {
-		$ = jQuery = window.jQuery;
+		$ = jQuery = window.$j;
 
 		elemChatButton = $('#chat_speak');
 		elemChatButtonsContainer = $('#control_buttons');
