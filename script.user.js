@@ -205,7 +205,7 @@
 		}
 		// Animate for channel page.
 		else {
-			elemChatButton.css('float', 'right').animate({'width': '128px'}, {
+			elemChatButton.css('float', 'right').animate({'width': '149px'}, {
 				complete: function () {
 					elemEmoteButton.fadeIn();
 				}
