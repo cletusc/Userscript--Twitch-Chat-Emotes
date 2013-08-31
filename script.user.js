@@ -227,7 +227,7 @@
 			'	<div class="tse-content emotes-container"></div>',
 			'</div>',
 			'<p class="dropmenu_alt_section">',
-			'	<a class="left icon github" href="https://github.com/cletusc/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the Github homepage"></a>',
+			'	<a class="left icon github" href="https://github.com/cletusc/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the project page on Github"></a>',
 			'	<a class="left icon popular-emotes-location" title="Change popular emotes location"></a>',
 			'	<a class="reset" title="Reset the popularity of the emotes back to default">Reset Popularity</a>',
 			'	<a class="right icon resize-handle"></a>',
