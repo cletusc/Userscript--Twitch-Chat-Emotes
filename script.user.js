@@ -10,6 +10,9 @@
 //
 // @include         http://*.twitch.tv/*
 //
+// @exclude         http://api.twitch.tv/*
+// @exclude         http://*.twitch.tv/*/profile*
+//
 // @version         0.3.4
 // ==/UserScript==
 
