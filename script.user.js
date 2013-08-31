@@ -411,14 +411,6 @@
 		function sortByNormal(a, b){
 			a = a.text;
 			b = b.text;
-			var aTest = /[\W]/.test(a),
-				bTest = /[\W]/.test(b);
-			if (aTest && !bTest) {
-				return -1;
-			}
-			if (bTest && !aTest) {
-				return 1;
-			}
 			if (a.toLowerCase() < b.toLowerCase()) {
 				return -1;
 			}
@@ -439,10 +431,10 @@
 		 */
 		function sortBySet(a, b){
 			if (a.image && !b.image) {
-				return 1;
+				return -1;
 			}
 			if (b.image && !a.image) {
-				return -1;
+				return 1;
 			}
 			if (a.image && b.image) {
 				// Override for turbo emotes.
@@ -474,7 +466,10 @@
 					return 1;
 				}
 			}
-			return 0;
+			// Get it back to a stable sort.
+			var sortSet = [a, b];
+			sortSet.sort(sortByNormal);
+			return (a === sortSet[0]) ? -1 : 1;
 		}
 	}
 
