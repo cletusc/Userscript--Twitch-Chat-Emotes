@@ -13,7 +13,7 @@
 // @exclude         http://api.twitch.tv/*
 // @exclude         http://*.twitch.tv/*/profile*
 //
-// @version         0.3.4
+// @version         0.4.0
 // ==/UserScript==
 
 // Start wrapper.
