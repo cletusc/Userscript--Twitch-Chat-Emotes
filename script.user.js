@@ -222,12 +222,13 @@
 			'<div class="scroll emotes-popular">',
 			'	<div class="tse-content emotes-container"></div>',
 			'</div>',
-			'<h4>All Emotes</h4>',
+			'<h4 class="draggable">All Emotes</h4>',
 			'<div class="scroll scroll-dark emotes-all">',
 			'	<div class="tse-content emotes-container"></div>',
 			'</div>',
 			'<p class="dropmenu_alt_section">',
 			'	<a class="left icon github" href="https://github.com/cletusc/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the Github homepage"></a>',
+			'	<a class="left icon popular-emotes-location" title="Change popular emotes location"></a>',
 			'	<a class="reset" title="Reset the popularity of the emotes back to default">Reset Popularity</a>',
 			'	<a class="right icon resize-handle"></a>',
 			'</p>'
@@ -298,6 +299,13 @@
 			populateEmotesMenu();
 		});
 
+		// Enable the popular emotes location changing button.
+		elemEmoteMenu.find('.dropmenu_alt_section a.popular-emotes-location').on('click', function () {
+			var current = +getSetting('emote-popular-on-top', 1);
+			setSetting('emote-popular-on-top', current ? 0 : 1);
+			fixPopularEmotesLocation(!current);
+		});
+
 		// Enable emote clicking (delegated).
 		elemEmoteMenu.on('click', '.userscript_emoticon', function () {
 			insertEmoteText($(this).attr('data-emote'));
@@ -347,6 +355,7 @@
 			height,
 			elemChatLines = $('#chat_lines');
 
+		fixPopularEmotesLocation(+getSetting('emote-popular-on-top', true));
 		refreshUsableEmotes();
 
 		if (emotes.length < 1) {
@@ -473,6 +482,27 @@
 			var sortSet = [a, b];
 			sortSet.sort(sortByNormal);
 			return (a === sortSet[0]) ? -1 : 1;
+		}
+	}
+
+	/**
+	 * Moves the popular emotes based on whether it should be on top.
+	 * @param  {boolean} onTop Should the popular emotes be on top? `true` = on top, `false` = on bottom.
+	 */
+	function fixPopularEmotesLocation(onTop) {
+		var body = elemEmoteMenu.find('.emotes-popular'),
+			header = elemEmoteMenu.find('.emotes-popular').prev(),
+			all = elemEmoteMenu.find('.emotes-all'),
+			icon = elemEmoteMenu.find('.popular-emotes-location');
+		if (onTop) {
+			header.insertBefore(all.prev());
+			body.insertBefore(all.prev());
+			icon.removeClass('popular-on-bottom');
+		}
+		else {
+			body.insertAfter(all);
+			header.insertAfter(all);
+			icon.addClass('popular-on-bottom');
 		}
 	}
 
@@ -631,6 +661,7 @@
 		var icons = {
 			dropmenuButton: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAQCAYAAADwMZRfAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAOtJREFUOE+NkLERgzAMRdkgS2QGpvAYqVNRpmMDimyRo2YiVqBz/ncknSTIAXfvwPL/L467WmtgGIYeTGA5gPM+d8ICgdc4jvUM5nzPC3oG5nk+RUR2IpNg43NU+AfzQYLnfvUUCvPsmaSU8lYJjlmxbm9fynPm2WsS/jduqoTfipfkuUja3VDy5EIluqlrJc91zX63bVs4yVVUwn67E3zYnVyFefbsYvHcMFx9IEvzjHn2TCKneaTQDr/HvHZNQrC5+vARIlx9L0hgLxIKv+zKDeZ8L0gIA6CdKMN5FpCw8IhsAou8d+UftfsCjtrm7yD1aJgAAAAASUVORK5CYII=',
 			resizeHandle: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=',
+			arrows: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAClSURBVEhL7ZRBDoAgEAN9uj9fKaFkl61EiN5sMgcLnYMHDjObcTbUWUWWDQyZW4ksC37MSEkqCmrMJEn4KMzGTJCsjpku2RkzVbI7Zk4KFGPUnSpQ4HAMunQ3FY1f8IIAYOBRd74TYDBGSlLR+AWLAhwoxqg7/T3YTX8PdiTYhH+wIqlj4AVPJX0M/JjMJGEMwodDSdIYpMLhJXIMZOnA8HZsZscFnEfNs2qCgdQAAAAASUVORK5CYII=',
 			// "The mark": inverted color to suit dark theme and resized to 16x16.
 			// @attribution Github, Inc. (https://github.com/logos)
 			github: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC'
@@ -716,6 +747,12 @@
 			'}',
 			'#chat_emote_dropmenu .dropmenu_alt_section a.github {',
 			'	background: url("' + icons.github + '") no-repeat 50%;',
+			'}',
+			'#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location {',
+			'	background: url("' + icons.arrows + '") no-repeat 50% top;',
+			'}',
+			'#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location.popular-on-bottom {',
+			'	background-position: bottom;',
 			'}',
 			'#chat_emote_dropmenu .dropmenu_alt_section a.resize-handle {',
 			'	background: url("' + icons.resizeHandle + '") no-repeat 50%;',
