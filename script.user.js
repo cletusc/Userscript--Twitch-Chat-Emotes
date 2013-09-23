@@ -1,19 +1,14 @@
 // ==UserScript==
-// @name            Twitch Chat Emotes
-// @namespace       #Cletus
-// @description     Adds a button to Twitch that allows you to "click-to-insert" an emote.
-// @copyright       2011+, Ryan Chatham (http://userscripts.org/users/cletus)
-// @license         Creative Commons; http://creativecommons.org/licenses/by-nc-sa/3.0/
-// @icon            http://www.gravatar.com/avatar.php?gravatar_id=6875e83aa6c563790cb2da914aaba8b3&r=PG&s=48&default=identicon
-//
-// @grant           none
-//
-// @include         http://*.twitch.tv/*
-//
-// @exclude         http://api.twitch.tv/*
-// @exclude         http://*.twitch.tv/*/profile*
-//
-// @version         0.4.0
+// @name Twitch Chat Emotes
+// @namespace #Cletus
+// @version 0.4.0
+// @description Adds a button to Twitch that allows you to "click-to-insert" an emote.
+// @copyright 2011+, Ryan Chatham (http://userscripts.org/users/cletus)
+// @icon http://www.gravatar.com/avatar.php?gravatar_id=6875e83aa6c563790cb2da914aaba8b3&r=PG&s=48&default=identicon
+// @license Creative Commons; http://creativecommons.org/licenses/by-nc-sa/3.0/
+// @include http://*.twitch.tv/*
+// @exclude http://api.twitch.tv/*
+// @exclude http://*.twitch.tv/*/profile*
 // ==/UserScript==
 
 // Start wrapper.

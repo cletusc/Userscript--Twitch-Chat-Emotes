@@ -33,19 +33,20 @@ A: Twitch API needs to fully load before your emotes will appear. Once your Turb
 
 # Compatibility
 
-Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest stable release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform. If you find a problem with the script, or want compatibility with a certain userscript engine, please post an issue and I will see what I can do.
+Although the script may work on other platforms, they have not been fully tested and there may be bugs. Unless listed otherwise, compatibility tests are done using the latest **stable** release of the various browsers/userscript engines and older versions may not be supported at all. It is *highly recommended* that you always use the latest version of each platform. If you find a problem with the script, or want compatibility with a certain userscript engine, please post an issue and I will see what I can do.
 
 ## Compatible (fully tested, confirmed working)
 
 - [![](http://i.imgur.com/IOKeLzP.png) Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) on [![](http://i.imgur.com/JuYGnoB.png) Mozilla Firefox Desktop](http://www.mozilla.org/en-US/firefox/fx/#desktop)
 - [![](http://i.imgur.com/MNYcKd0.png) Scriptish](https://addons.mozilla.org/en-US/firefox/addon/scriptish/) on [![](http://i.imgur.com/JuYGnoB.png) Mozilla Firefox Desktop](http://www.mozilla.org/en-US/firefox/fx/#desktop)
+- Natively on [![](http://i.imgur.com/HVYSfs3.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/)
 - [![](http://i.imgur.com/OHKOagu.png) Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) on [![](http://i.imgur.com/HVYSfs3.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/)
 - Natively on [![](http://i.imgur.com/ytNXBe7.png) Opera Desktop](http://www.opera.com/)
 - [![](http://i.imgur.com/6B00N1P.png) Violent monkey](https://addons.opera.com/en/extensions/details/violent-monkey/) on [![](http://i.imgur.com/ytNXBe7.png) Opera Desktop](http://www.opera.com/)
 
 ## Incompatible (confirmed not working)
 
-- Natively on [![](http://i.imgur.com/HVYSfs3.png) Google Chrome](https://www.google.com/intl/en/chrome/browser/) [see [issue #1](https://github.com/cletusc/Userscript--Twitch-Chat-Emotes/issues/1)]
+- None at the moment
 
 # Donate
 
