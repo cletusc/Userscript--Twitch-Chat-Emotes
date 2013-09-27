@@ -481,6 +481,10 @@
 	function refreshUsableEmotes() {
 		emotes.usable = [];
 		emotes.raw.forEach(function (emote) {
+			// Allow hiding of emotes from the menu.
+			if (emote.hidden) {
+				return;
+			}
 			// Adapted from http://userscripts.org/scripts/show/160183
 			if (!emote.text) {
 				emote.text = decodeURI(emote.regex.source)
