@@ -26,8 +26,12 @@
 
 	// Script-wide variables.
 	//-----------------------
-	var emotes = [],
-		emotesRaw = [],
+	var emotes = {
+			usable: [],
+			get raw() {
+				return window.CurrentChat.emoticons;
+			}
+		},
 		emotePopularity = false,
 		$,
 		jQuery,
@@ -48,7 +52,6 @@
 		MESSAGES = {
 			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
 			CHAT_NOT_LOADED: 'Chat hasn\'t loaded yet.',
-			EMOTES_NOT_LOADED: 'Emotes aren\'t loaded from the API yet.',
 			NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
 			NOT_LOGGED_IN: 'You are not logged in, please log in first.',
 			OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
@@ -75,6 +78,8 @@
 				window.PP !== undefined &&
 				window.Twitch !== undefined &&
 				window.CurrentChat !== undefined &&
+				window.CurrentChat.emoticons !== undefined &&
+				window.CurrentChat.emoticons.length &&
 				window.$j !== undefined
 			);
 
@@ -151,34 +156,9 @@
 			populateEmotesMenu();
 		})(0);
 
-		// Get current emotes from API.
-		window.Twitch.api.get('chat/emoticons').done(function (api) {
-			var count = 0;
-			api.emoticons.forEach(function (emote) {
-				// Taken from http://userscripts.org/scripts/show/160183
-				emote.text = decodeURI(emote.regex)
-					.replace('&gt\\;', '>') // right angle bracket
-					.replace('&lt\\;', '<') // left angle bracket
-					.replace(/\(\?![^)]*\)/g, '') // remove negative group
-					.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
-					.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
-					.replace(/[^\\]\?/g, '') // remove optional chars
-					.replace(/\\/g, ''); // unescape
-
-				emote.images.forEach(function (image) {
-					count++;
-					image.html = window.ich['chat-emoticon']({
-						id: count
-					}).prop('outerHTML');
-				});
-				emotesRaw.push(emote);
-			});
-			addSetStyle();
-			populateEmotesMenu();
-		});
-
 		createMenuElements();
 		addBaseStyle();
+		addSetStyle();
 		bindListeners();
 	}
 
@@ -353,27 +333,21 @@
 		fixPopularEmotesLocation(+getSetting('emote-popular-on-top', true));
 		refreshUsableEmotes();
 
-		if (emotes.length < 1) {
-			console.warn(MESSAGES.EMOTES_NOT_LOADED);
-			setTimeout(populateEmotesMenu, 50);
-			return;
-		}
-
 		// Add popular emotes.
 		container = elemEmoteMenu.find('.emotes-popular .emotes-container');
 		container.html('');
-		emotes.sort(sortByNormal);
-		emotes.sort(sortByPopularity);
-		emotes.forEach(function (emote) {
+		emotes.usable.sort(sortByNormal);
+		emotes.usable.sort(sortByPopularity);
+		emotes.usable.forEach(function (emote) {
 			createEmote(emote, container);
 		});
 
 		// Add all emotes.
 		container = elemEmoteMenu.find('.emotes-all .emotes-container');
 		container.html('');
-		emotes.sort(sortByNormal);
-		emotes.sort(sortBySet);
-		emotes.forEach(function (emote) {
+		emotes.usable.sort(sortByNormal);
+		emotes.usable.sort(sortBySet);
+		emotes.usable.forEach(function (emote) {
 			createEmote(emote, container);
 		});
 
@@ -505,8 +479,21 @@
 	 * Refreshes the usable emotes. An emote is deemed usable if it either has no set or the set is in your user info. For turbo sets, it will use the turbo if in your user info, otherwise fall back to default.
 	 */
 	function refreshUsableEmotes() {
-		emotes = [];
-		emotesRaw.forEach(function (emote) {
+		emotes.usable = [];
+		emotes.raw.forEach(function (emote) {
+			// Adapted from http://userscripts.org/scripts/show/160183
+			if (!emote.text) {
+				emote.text = decodeURI(emote.regex.source)
+					.replace('&gt\\;', '>') // right angle bracket
+					.replace('&lt\\;', '<') // left angle bracket
+					.replace(/\(\?![^)]*\)/g, '') // remove negative group
+					.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
+					.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
+					.replace(/[^\\]\?/g, '') // remove optional chars
+					.replace(/^\\b|\\b$/g, '') // remove boundaries
+					.replace(/\\/g, ''); // unescape
+			}
+
 			var defaultImage = false;
 			emote.images.forEach(function (image) {
 				if (image.emoticon_set === null) {
@@ -524,7 +511,7 @@
 					emote.image = defaultImage;
 				}
 			}
-			emotes.push(emote);
+			emotes.usable.push(emote);
 		});
 	}
 
@@ -772,7 +759,7 @@
 	function addSetStyle() {
 		var css = [],
 			sets = {};
-		emotesRaw.forEach(function (emote) {
+		emotes.raw.forEach(function (emote) {
 			emote.images.forEach(function (image) {
 				if (image.emoticon_set !== null && !sets[image.emoticon_set]) {
 					sets[image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"] { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
