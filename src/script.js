@@ -47,7 +47,7 @@
 	(function init(time) {
 		var	chatLoaded = (window.CurrentChat ? window.CurrentChat.last_sender !== false : false),
 			frequency = 50,
-			loggedIn = (window.PP ? window.PP.login !== '' : false),
+			loggedIn = window.Twitch && window.Twitch.user.isLoggedIn(),
 			objectsLoaded = (
 				window.PP !== undefined &&
 				window.Twitch !== undefined &&
