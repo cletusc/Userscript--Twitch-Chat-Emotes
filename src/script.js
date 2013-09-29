@@ -4,6 +4,10 @@
 			usable: [],
 			get raw() {
 				return window.CurrentChat.emoticons;
+			},
+			subscriptions: {
+				badges: {},
+				channels: {}
 			}
 		},
 		emotePopularity = false,
@@ -109,6 +113,24 @@
 			return;
 		}
 
+		// Get active subscriptions.
+		window.Twitch.api.get("/api/users/:login/tickets").done(function (api) {
+			api.tickets.forEach(function (ticket) {
+				// Get channel subscriptions with emotes.
+				if (ticket.product.ticket_type === 'chansub' && ticket.product.emoticons.length) {
+					var badge = ticket.product.features.badge,
+						channel = /\((.*?)\)/.exec(ticket.product.name)[1];
+					// Add channel badges.	
+          			emotes.subscriptions.badges[channel] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
+					// Add emotes channel.
+					ticket.product.emoticons.forEach(function (emote) {
+						emotes.subscriptions.channels[emote.regex] = channel;
+					});
+				}
+			});
+			console.log(emotes.subscriptions);
+		});
+
 		userInfo.displayName = window.PP.display_name;
 		userInfo.name = window.PP.login;
 		(function checkEmoteSets(time) {
@@ -132,7 +154,6 @@
 
 		createMenuElements();
 		addBaseStyle();
-		addSetStyle();
 		bindListeners();
 	}
 
@@ -322,7 +343,7 @@
 		emotes.usable.sort(sortByNormal);
 		emotes.usable.sort(sortBySet);
 		emotes.usable.forEach(function (emote) {
-			createEmote(emote, container);
+			createEmote(emote, container, true);
 		});
 
 		// Adjust dimensions if the menu hasn't been moved.
@@ -382,7 +403,7 @@
 		}
 
 		/**
-		 * Sort by emoticon set: basic smileys -> no set -> set 0-9...
+		 * Sort by emoticon set: basic smileys -> no set -> subscription emotes
 		 */
 		function sortBySet(a, b){
 			if (a.image && !b.image) {
@@ -413,12 +434,17 @@
 				if (basicEmotes.indexOf(b.text) >= 0 &&	basicEmotes.indexOf(a.text) < 0) {
 					return 1;
 				}
-				// Sort by set number.
-				if (a.image.emoticon_set < b.image.emoticon_set) {
+				// Sort by channel name.
+				if (a.channel && !b.channel) {
+					return 1;
+				}
+				if (b.channel && !a.channel) {
 					return -1;
 				}
-				if (a.image.emoticon_set > b.image.emoticon_set) {
-					return 1;
+				if (a.channel && b.channel) {
+					var sortSet = [{text: a.channel}, {text: b.channel}];
+					sortSet.sort(sortByNormal);
+					return (a === sortSet[0]) ? -1 : 1;
 				}
 			}
 			// Get it back to a stable sort.
@@ -470,6 +496,10 @@
 					.replace(/[^\\]\?/g, '') // remove optional chars
 					.replace(/^\\b|\\b$/g, '') // remove boundaries
 					.replace(/\\/g, ''); // unescape
+			}
+
+			if (emotes.subscriptions.channels[emote.text]) {
+				emote.channel = emotes.subscriptions.channels[emote.text];
 			}
 
 			var defaultImage = false;
@@ -593,13 +623,21 @@
 
 	/**
 	 * Creates the emote element and listens for a click event that will add the emote text to the chat.
-	 * @param {object}  emote     The emote that you want to add. This object should be one coming from `emotes`.
-	 * @param {element} container The HTML element that the emote should be appended to.
+	 * @param {object}  emote      The emote that you want to add. This object should be one coming from `emotes`.
+	 * @param {element} container  The HTML element that the emote should be appended to.
+	 * @param {boolean} showHeader Whether a header shouldbe created if found. Only creates the header once.
 	 */
-	function createEmote(emote, container) {
+	function createEmote(emote, container, showHeader) {
 		// Emote not usable or no container, can't add.
 		if (!emote || !emote.image || !container.length) {
 			return;
+		}
+		if (showHeader) {
+			if (emote.channel) {
+				if (!elemEmoteMenu.find('.userscript_emoticon_header[data-emote-channel="' + emote.channel + '"]').length) {
+					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + emotes.subscriptions.badges[emote.channel] + '" />&nbsp;' + emote.channel + '</div>'));
+				}
+			}
 		}
 
 		// Create element.
@@ -667,6 +705,13 @@
 			'	border-radius: 5px;',
 			'	cursor: move;',
 			'}',
+			'#chat_emote_dropmenu .userscript_emoticon_header {',
+			'	background-color: #303030;',
+			'	border-radius: 5px;',
+			'	margin: 1px;',
+			'	padding: 2px;',
+			'	text-align: center;',
+			'}',
 			'#chat_emote_dropmenu .userscript_emoticon {',
 			'	display: inline-block;',
 			'	padding: 2px;',
@@ -726,28 +771,6 @@
 		for (var emote in fixedEmotes) {
 			if (fixedEmotes.hasOwnProperty(emote)) {
 				css.push('#chat_emote_dropmenu .userscript_emoticon[data-emote="' + emote + '"] .emoticon { background-image: url("' + fixedEmotes[emote] + '") !important; }');
-			}
-		}
-		addStyle(css.join('\n'));
-	}
-
-	/**
-	 * Add style for set-unique background colors.
-	 */
-	function addSetStyle() {
-		var css = [],
-			sets = {};
-		emotes.raw.forEach(function (emote) {
-			emote.images.forEach(function (image) {
-				if (image.emoticon_set !== null && !sets[image.emoticon_set]) {
-					sets[image.emoticon_set] = '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"] { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.1) !important; }';
-					sets[image.emoticon_set] += '#chat_emote_dropmenu .userscript_emoticon[data-emote-set="' + image.emoticon_set + '"]:hover { background-color: hsla(' + (image.emoticon_set * 90) + ', 100%, 50%, 0.2) !important; }';
-				}
-			});
-		});
-		for (var set in sets) {
-			if (sets.hasOwnProperty(set)) {
-				css.push(sets[set]);
 			}
 		}
 		addStyle(css.join('\n'));
