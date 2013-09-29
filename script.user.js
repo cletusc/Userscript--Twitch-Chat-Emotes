@@ -147,7 +147,7 @@
 					var badge = ticket.product.features.badge,
 						channel = /\((.*?)\)/.exec(ticket.product.name)[1];
 					// Add channel badges.	
-          			emotes.subscriptions.badges[channel] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
+					emotes.subscriptions.badges[channel] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
 					// Add emotes channel.
 					ticket.product.emoticons.forEach(function (emote) {
 						emotes.subscriptions.channels[emote.regex] = channel;
@@ -470,7 +470,7 @@
 				if (a.channel && b.channel) {
 					var sortSet = [{text: a.channel}, {text: b.channel}];
 					sortSet.sort(sortByNormal);
-					return (a === sortSet[0]) ? -1 : 1;
+					return (a === sortSet[0]) ? 1 : -1;
 				}
 			}
 			// Get it back to a stable sort.
@@ -671,9 +671,6 @@
 		element.html(emote.image.html);
 
 		element.attr('data-emote', emote.text);
-		if (emote.image.emoticon_set) {
-			element.attr('data-emote-set', emote.image.emoticon_set);
-		}
 		element.attr('title', emote.text);
 		container.append(element);
 	}
