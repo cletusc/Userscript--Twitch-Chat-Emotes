@@ -112,6 +112,10 @@
 			console.warn(MESSAGES.NO_CHAT_ELEMENT);
 			return;
 		}
+		
+		createMenuElements();
+		addBaseStyle();
+		bindListeners();
 
 		// Get active subscriptions.
 		window.Twitch.api.get("/api/users/:login/tickets").done(function (api) {
@@ -150,10 +154,6 @@
 			userInfo.emoteSets = emoteSets;
 			populateEmotesMenu();
 		})(0);
-
-		createMenuElements();
-		addBaseStyle();
-		bindListeners();
 	}
 
 	/**
