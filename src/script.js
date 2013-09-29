@@ -128,7 +128,6 @@
 					});
 				}
 			});
-			console.log(emotes.subscriptions);
 		});
 
 		userInfo.displayName = window.PP.display_name;
@@ -188,11 +187,12 @@
 		// Create emote menu.
 		elemEmoteMenu = $('<div class="dropmenu" id="chat_emote_dropmenu"></div>');
 		elemEmoteMenu.html([
-			'<h4 class="draggable">Popular Emotes</h4>',
+			'<div class="draggable"></div>',
+			'<div class="userscript_emoticon_header">Popular Emotes</div>',
 			'<div class="scroll emotes-popular">',
 			'	<div class="tse-content emotes-container"></div>',
 			'</div>',
-			'<h4 class="draggable">All Emotes</h4>',
+			'<div class="userscript_emoticon_header">All Emotes</div>',
 			'<div class="scroll scroll-dark emotes-all">',
 			'	<div class="tse-content emotes-container"></div>',
 			'</div>',
@@ -231,7 +231,7 @@
 
 		// Make draggable.
 		elemEmoteMenu.draggable({
-			handle: 'h4.draggable',
+			handle: '.draggable',
 			start: function () {
 				$(this).addClass('has_moved');
 			}
@@ -635,7 +635,7 @@
 		if (showHeader) {
 			if (emote.channel) {
 				if (!elemEmoteMenu.find('.userscript_emoticon_header[data-emote-channel="' + emote.channel + '"]').length) {
-					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + emotes.subscriptions.badges[emote.channel] + '" />&nbsp;' + emote.channel + '</div>'));
+					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + emotes.subscriptions.badges[emote.channel] + '" />' + emote.channel + '</div>'));
 				}
 			}
 		}
@@ -645,9 +645,6 @@
 		element.html(emote.image.html);
 
 		element.attr('data-emote', emote.text);
-		if (emote.image.emoticon_set) {
-			element.attr('data-emote-set', emote.image.emoticon_set);
-		}
 		element.attr('title', emote.text);
 		container.append(element);
 	}
@@ -698,19 +695,26 @@
 			'	padding: 3px;',
 			'}',
 			'#chat_emote_dropmenu .emotes-popular {',
-			'	height: 38px;',
+			'	height: 45px;',
 			'}',
-			'#chat_emote_dropmenu h4.draggable:hover {',
-			'	background-color: rgba(255, 255, 255, 0.1);',
-			'	border-radius: 5px;',
+			'#chat_emote_dropmenu .draggable {',
+			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);',
 			'	cursor: move;',
+			'	height: 7px;',
+			'	margin-bottom: 3px;',
+			'}',
+			'#chat_emote_dropmenu .draggable:hover {',
+			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);',
 			'}',
 			'#chat_emote_dropmenu .userscript_emoticon_header {',
-			'	background-color: #303030;',
-			'	border-radius: 5px;',
-			'	margin: 1px;',
+			'	border-top: 1px solid black;',
+			'	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;',
+			'	background-image: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.5));',
 			'	padding: 2px;',
 			'	text-align: center;',
+			'}',
+			'#chat_emote_dropmenu .userscript_emoticon_header img {',
+			'	margin-right: 8px;',
 			'}',
 			'#chat_emote_dropmenu .userscript_emoticon {',
 			'	display: inline-block;',
