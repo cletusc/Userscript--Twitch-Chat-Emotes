@@ -112,7 +112,8 @@
 			console.warn(MESSAGES.NO_CHAT_ELEMENT);
 			return;
 		}
-		
+
+		loadPlugins();
 		createMenuElements();
 		addBaseStyle();
 		bindListeners();
@@ -218,7 +219,23 @@
 		// Toggle buttons.
 		elemEmoteButton.on('click', function () {
 			elemEmoteMenu.removeClass('has_moved');
-			$(this).toggleClass('toggled');
+			if (elemEmoteMenu.is(':visible')) {
+				$(this).addClass('toggled');
+				var diff = elemEmoteMenu.height() - elemEmoteMenu.find('.emotes-all').height(),
+					elemChatLines = $('#chat_lines');
+				// Adjust the size and position of the popup.
+				elemEmoteMenu.height(elemChatLines.height() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
+				elemEmoteMenu.width($('#speak').width() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
+				elemEmoteMenu.offset(elemChatLines.offset());
+				// Fix `.emotes-all` height.
+				elemEmoteMenu.find('.emotes-all').height(elemEmoteMenu.height() - diff);
+				elemEmoteMenu.find('.emotes-all').width(elemEmoteMenu.width());
+
+				elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator('recalculate');
+			}
+			else {
+				$(this).removeClass('toggled');
+			}
 			populateEmotesMenu();
 		});
 
@@ -234,33 +251,18 @@
 			handle: '.draggable',
 			start: function () {
 				$(this).addClass('has_moved');
-			}
+			},
+			containment: $(document.body)
 		});
 
-		// Make resizable.
-		var originalX,
-			originalY,
-			originalHeight,
-			originalWidth,
-			elemEmotesAll = elemEmoteMenu.find('.emotes-all');
-		function adjustSize(evt) {
-			var diffX = evt.pageX - originalX,
-				diffY = evt.pageY - originalY;
-			elemEmoteMenu.width(originalWidth + diffX);
-			elemEmotesAll.height(originalHeight + diffY);
-		}
-		elemEmoteMenu.find('.resize-handle').on('mousedown', function (evt) {
-			// Prevent text selection.
-			evt.preventDefault();
-			elemEmoteMenu.addClass('has_moved');
-			originalX = evt.pageX;
-			originalY = evt.pageY;
-			originalWidth = elemEmoteMenu.width();
-			originalHeight = elemEmotesAll.height();
-			$(document).on('mousemove', '*', adjustSize);
-		});
-		$(document).on('mouseup', function () {
-			$(document).off('mousemove', '*', adjustSize);
+		elemEmoteMenu.resizable({
+			resize: function () {
+				$(this).addClass('has_moved');
+				elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator('recalculate');
+			},
+			alsoResize: elemEmoteMenu.find('.emotes-all'),
+			minHeight: 180,
+			minWidth: 200
 		});
 
 		// Enable the popularity reset.
@@ -281,49 +283,17 @@
 			insertEmoteText($(this).attr('data-emote'));
 		});
 
-		// Create scroll function if needed.
-		if (!$().TrackpadScrollEmulator) {
-			/**
-			 * TrackpadScrollEmulator
-			 * Version: 1.0.2
-			 * Author: Jonathan Nicol @f6design
-			 * https://github.com/jnicol/trackpad-scroll-emulator
-			 *
-			 * The MIT License
-			 *
-			 * Copyright (c) 2012-2013 Jonathan Nicol
-			 *
-			 * Permission is hereby granted, free of charge, to any person obtaining a copy
-			 * of this software and associated documentation files (the "Software"), to deal
-			 * in the Software without restriction, including without limitation the rights
-			 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-			 * copies of the Software, and to permit persons to whom the Software is
-			 * furnished to do so, subject to the following conditions:
-			 *
-			 * The above copyright notice and this permission notice shall be included in
-			 * all copies or substantial portions of the Software.
-			 *
-			 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-			 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-			 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-			 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-			 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-			 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-			 * THE SOFTWARE.
-			 */(function(e){function n(n,r){function m(){if(s.hasClass("horizontal")){h="horiz";p="scrollLeft";d="width";v="left"}s.prepend('<div class="tse-scrollbar"><div class="drag-handle"></div></div>');a=s.find(".tse-scrollbar");f=s.find(".drag-handle");if(r.wrapContent){u.wrap('<div class="tse-scroll-content" />')}o=s.find(".tse-scroll-content");N();s.on("mouseenter",S);f.on("mousedown",g);o.on("scroll",w);E()}function g(t){t.preventDefault();var n=t.pageY;if(h==="horiz"){n=t.pageX}l=n-f.offset()[v];e(document).on("mousemove",y);e(document).on("mouseup",b)}function y(e){e.preventDefault();var t=e.pageY;if(h==="horiz"){t=e.pageX}var n=t-a.offset()[v]-l;var r=n/a[d]();var i=r*u[d]();o[p](i)}function b(){e(document).off("mousemove",y);e(document).off("mouseup",b)}function w(e){S()}function E(){var e=u[d]();var t=o[p]();var n=a[d]();var r=n/e;var i=Math.round(r*t)+2;var s=Math.floor(r*(n-2))-2;if(n<e){if(h==="vert"){f.css({top:i,height:s})}else{f.css({left:i,width:s})}a.show()}else{a.hide()}}function S(){E();x()}function x(){f.addClass("visible");if(typeof c==="number"){window.clearTimeout(c)}c=window.setTimeout(function(){T()},1e3)}function T(){f.removeClass("visible");if(typeof c==="number"){window.clearTimeout(c)}}function N(){if(h==="vert"){o.width(s.width()+C());o.height(s.height())}else{o.width(s.width());o.height(s.height()+C());u.height(s.height())}}function C(){var t=e('<div class="scrollbar-width-tester" style="width:50px;height:50px;overflow-y:scroll;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>');e("body").append(t);var n=e(t).innerWidth();var r=e("div",t).innerWidth();t.remove();return n-r}function k(){N();E()}function L(e,t){if(t){r[e]=t}else{return r[e]}}function A(){u.insertBefore(a);a.remove();o.remove();u.css({height:s.height()+"px","overflow-y":"scroll"});O("onDestroy");s.removeData("plugin_"+t)}function O(e){if(r[e]!==undefined){r[e].call(i)}}var i=n;var s=e(n);var o;var u=s.find(".tse-content");var a;var f;var l;var c;var h="vert";var p="scrollTop";var d="height";var v="top";r=e.extend({},e.fn[t].defaults,r);m();return{option:L,destroy:A,recalculate:k}}var t="TrackpadScrollEmulator";e.fn[t]=function(r){if(typeof arguments[0]==="string"){var i=arguments[0];var s=Array.prototype.slice.call(arguments,1);var o;this.each(function(){if(e.data(this,"plugin_"+t)&&typeof e.data(this,"plugin_"+t)[i]==="function"){o=e.data(this,"plugin_"+t)[i].apply(this,s)}else{throw new Error("Method "+i+" does not exist on jQuery."+t)}});if(o!==undefined){return o}else{return this}}else if(typeof r==="object"||!r){return this.each(function(){if(!e.data(this,"plugin_"+t)){e.data(this,"plugin_"+t,new n(this,r))}})}};e.fn[t].defaults={onInit:function(){},onDestroy:function(){},wrapContent:true}})(jQuery)
-		}
-
 		// Create custom scroll bar.
-		elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator();
+		elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator({
+			scrollbarHideStrategy: 'rightAndBottom'
+		});
 	}
 
 	/**
 	 * Populates the popup menu with current emote data.
 	 */
 	function populateEmotesMenu() {
-		var container,
-			height,
-			elemChatLines = $('#chat_lines');
+		var container;
 
 		fixPopularEmotesLocation(+getSetting('emote-popular-on-top', true));
 		refreshUsableEmotes();
@@ -345,18 +315,6 @@
 		emotes.usable.forEach(function (emote) {
 			createEmote(emote, container, true);
 		});
-
-		// Adjust dimensions if the menu hasn't been moved.
-		if (!elemEmoteMenu.hasClass('has_moved')) {
-			// Adjust the height of the popup, requires special handling due to scrolling element.
-			height = elemEmoteMenu.outerHeight() - elemEmoteMenu.find('.emotes-all').outerHeight();
-			height = elemChatLines.height() - height;
-			elemEmoteMenu.find('.emotes-all').height(height);
-
-			// Adjust the width and position of the popup.
-			elemEmoteMenu.width($('#speak').outerWidth() - 12);
-			elemEmoteMenu.offset(elemChatLines.offset());
-		}
 
 		/**
 		 * Sort by popularity: most used -> least used
@@ -687,9 +645,6 @@
 			'#chat_emote_dropmenu {',
 			'	background-color: #202020;',
 			'}',
-			'#chat_emote_dropmenu .tse-scroll-content {',
-			'	right: -17px;',
-			'}',
 			'#chat_emote_dropmenu h4 {',
 			'	text-align: center;',
 			'	padding: 3px;',
@@ -778,6 +733,157 @@
 			}
 		}
 		addStyle(css.join('\n'));
+	}
+
+	/**
+	 * Load jQuery plugins.
+	 */
+	function loadPlugins() {
+		(function ($) {
+			$.fn.resizable = function (options) {
+				var settings = $.extend({
+					alsoResize: null,
+					alsoResizeType: 'both', // `height`, `width`, `both`
+					create: null,
+					destroy: null,
+					handle: '.resize-handle',
+					maxHeight: 9999,
+					maxWidth: 9999,
+					minHeight: 0,
+					minWidth: 0,
+					resize: null,
+					resizeOnce: null,
+					snapSize: 1,
+					start: null,
+					stop: null
+				}, options);
+
+				settings.element = $(this);
+
+				function recalculateSize(evt) {
+					var data = evt.data,
+						resized = {};
+					data.diffX = Math.round((evt.pageX - data.pageX) / settings.snapSize) * settings.snapSize;
+					data.diffY = Math.round((evt.pageY - data.pageY) / settings.snapSize) * settings.snapSize;
+					if (Math.abs(data.diffX) > 0 || Math.abs(data.diffY) > 0) {
+						if (
+							settings.element.height() !== data.height + data.diffY &&
+							data.height + data.diffY >= settings.minHeight &&
+							data.height + data.diffY <= settings.maxHeight
+						) {
+							settings.element.height(data.height + data.diffY);
+							resized.height = true;
+						}
+						if (
+							settings.element.width() !== data.width + data.diffX &&
+							data.width + data.diffX >= settings.minWidth &&
+							data.width + data.diffX <= settings.maxHeight
+						) {
+							settings.element.width(data.width + data.diffX);
+							resized.width = true;
+						}
+						if (resized.height || resized.width) {
+							if (settings.resizeOnce) {
+								settings.resizeOnce.bind(settings.element)(evt.data);
+								settings.resizeOnce = null;
+							}
+							if (settings.resize) {
+								settings.resize.bind(settings.element)(evt.data);
+							}
+							if (settings.alsoResize) {
+								if (resized.height && (settings.alsoResizeType === 'height' || settings.alsoResizeType === 'both')) {
+									settings.alsoResize.height(data.alsoResizeHeight + data.diffY);
+								}
+								if (resized.width && (settings.alsoResizeType === 'width' || settings.alsoResizeType === 'both')) {
+									settings.alsoResize.width(data.alsoResizeWidth + data.diffX);
+								}
+							}
+						}
+					}
+				}
+
+				function start(evt) {
+					evt.preventDefault();
+					if (settings.start) {
+						settings.start.bind(settings.element)();
+					}
+					var data = {
+						alsoResizeHeight: settings.alsoResize ? settings.alsoResize.height() : 0,
+						alsoResizeWidth: settings.alsoResize ? settings.alsoResize.width() : 0,
+						height: settings.element.height(),
+						pageX: evt.pageX,
+						pageY: evt.pageY,
+						width: settings.element.width()
+					};
+					$(document).on('mousemove', '*', data, recalculateSize);
+					$(document).on('mouseup', '*', stop);
+				}
+
+				function stop() {
+					if (settings.stop) {
+						settings.stop.bind(settings.element)();
+					}
+					$(document).off('mousemove', '*', recalculateSize);
+					$(document).off('mouseup', '*', stop);
+				}
+
+				if (settings.handle) {
+					if (settings.alsoResize && ['both', 'height', 'width'].indexOf(settings.alsoResizeType) >= 0) {
+						settings.alsoResize = $(settings.alsoResize);
+
+					}
+					settings.handle = $(settings.handle);
+					settings.snapSize = settings.snapSize < 1 ? 1 : settings.snapSize;
+
+					if (options === 'destroy') {
+						settings.handle.off('mousedown', start);
+
+						if (settings.destroy) {
+							settings.destroy.bind(this)();
+						}
+						return this;
+					}
+
+					settings.handle.on('mousedown', start);
+
+					if (settings.create) {
+						settings.create.bind(this)();
+					}
+				}
+				return this;
+			};
+		})(jQuery);
+
+		if (!$.fn.TrackpadScrollEmulator) {
+			/**
+			 * TrackpadScrollEmulator
+			 * Version: 1.0.2
+			 * Author: Jonathan Nicol @f6design
+			 * https://github.com/jnicol/trackpad-scroll-emulator
+			 *
+			 * The MIT License
+			 *
+			 * Copyright (c) 2012-2013 Jonathan Nicol
+			 *
+			 * Permission is hereby granted, free of charge, to any person obtaining a copy
+			 * of this software and associated documentation files (the "Software"), to deal
+			 * in the Software without restriction, including without limitation the rights
+			 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+			 * copies of the Software, and to permit persons to whom the Software is
+			 * furnished to do so, subject to the following conditions:
+			 *
+			 * The above copyright notice and this permission notice shall be included in
+			 * all copies or substantial portions of the Software.
+			 *
+			 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+			 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+			 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+			 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+			 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+			 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+			 * THE SOFTWARE.
+			 */(function(e){function n(n,r){function m(){if(s.hasClass("horizontal")){h="horiz";p="scrollLeft";d="width";v="left"}s.prepend('<div class="tse-scrollbar"><div class="drag-handle"></div></div>');a=s.find(".tse-scrollbar");f=s.find(".drag-handle");if(r.wrapContent){u.wrap('<div class="tse-scroll-content" />')}o=s.find(".tse-scroll-content");N();s.on("mouseenter",S);f.on("mousedown",g);o.on("scroll",w);E()}function g(t){t.preventDefault();var n=t.pageY;if(h==="horiz"){n=t.pageX}l=n-f.offset()[v];e(document).on("mousemove",y);e(document).on("mouseup",b)}function y(e){e.preventDefault();var t=e.pageY;if(h==="horiz"){t=e.pageX}var n=t-a.offset()[v]-l;var r=n/a[d]();var i=r*u[d]();o[p](i)}function b(){e(document).off("mousemove",y);e(document).off("mouseup",b)}function w(e){S()}function E(){var e=u[d]();var t=o[p]();var n=a[d]();var r=n/e;var i=Math.round(r*t)+2;var s=Math.floor(r*(n-2))-2;if(n<e){if(h==="vert"){f.css({top:i,height:s})}else{f.css({left:i,width:s})}a.show()}else{a.hide()}}function S(){E();x()}function x(){f.addClass("visible");if(typeof c==="number"){window.clearTimeout(c)}c=window.setTimeout(function(){T()},1e3)}function T(){f.removeClass("visible");if(typeof c==="number"){window.clearTimeout(c)}}function N(){if(h==="vert"){o.width(s.width()+C());o.height(s.height())}else{o.width(s.width());o.height(s.height()+C());u.height(s.height())}}function C(){var t=e('<div class="scrollbar-width-tester" style="width:50px;height:50px;overflow-y:scroll;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>');e("body").append(t);var n=e(t).innerWidth();var r=e("div",t).innerWidth();t.remove();return n-r}function k(){N();E()}function L(e,t){if(t){r[e]=t}else{return r[e]}}function A(){u.insertBefore(a);a.remove();o.remove();u.css({height:s.height()+"px","overflow-y":"scroll"});O("onDestroy");s.removeData("plugin_"+t)}function O(e){if(r[e]!==undefined){r[e].call(i)}}var i=n;var s=e(n);var o;var u=s.find(".tse-content");var a;var f;var l;var c;var h="vert";var p="scrollTop";var d="height";var v="top";r=e.extend({},e.fn[t].defaults,r);m();return{option:L,destroy:A,recalculate:k}}var t="TrackpadScrollEmulator";e.fn[t]=function(r){if(typeof arguments[0]==="string"){var i=arguments[0];var s=Array.prototype.slice.call(arguments,1);var o;this.each(function(){if(e.data(this,"plugin_"+t)&&typeof e.data(this,"plugin_"+t)[i]==="function"){o=e.data(this,"plugin_"+t)[i].apply(this,s)}else{throw new Error("Method "+i+" does not exist on jQuery."+t)}});if(o!==undefined){return o}else{return this}}else if(typeof r==="object"||!r){return this.each(function(){if(!e.data(this,"plugin_"+t)){e.data(this,"plugin_"+t,new n(this,r))}})}};e.fn[t].defaults={onInit:function(){},onDestroy:function(){},wrapContent:true}})(jQuery)
+		}
 	}
 
 	// Generic functions.
