@@ -653,7 +653,7 @@
 			'	padding: 3px;',
 			'}',
 			'#chat_emote_dropmenu .emotes-popular {',
-			'	height: 45px;',
+			'	height: 38px;',
 			'}',
 			'#chat_emote_dropmenu .draggable {',
 			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);',
