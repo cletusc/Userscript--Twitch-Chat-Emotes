@@ -503,7 +503,10 @@
 					emote.image = defaultImage;
 				}
 			}
-			emotes.usable.push(emote);
+			// Only add the emote if there is a URL.
+			if (emote.image && emote.image.url !== null) {
+				emotes.usable.push(emote);
+			}
 		});
 	}
 
