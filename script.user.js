@@ -426,15 +426,16 @@
 					return -1;
 				}
 				if (a.channel && b.channel) {
-					var sortSet = [{text: a.channel}, {text: b.channel}];
-					sortSet.sort(sortByNormal);
-					return (a === sortSet[0]) ? 1 : -1;
+					var channelSort = sortByNormal({text: a.channel}, {text: b.channel}),
+						normalSort = sortByNormal(a, b);
+					if (channelSort === 0) {
+						return normalSort;
+					}
+					return channelSort;
 				}
 			}
 			// Get it back to a stable sort.
-			var sortSet = [a, b];
-			sortSet.sort(sortByNormal);
-			return (a === sortSet[0]) ? -1 : 1;
+			return sortByNormal(a, b);
 		}
 	}
 
