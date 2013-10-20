@@ -10,6 +10,7 @@
 		"copyright": "2011+, Ryan Chatham (http://userscripts.org/users/cletus)",
 		"icon": "http://www.gravatar.com/avatar.php?gravatar_id=6875e83aa6c563790cb2da914aaba8b3&r=PG&s=48&default=identicon",
 		"license": "Creative Commons; http://creativecommons.org/licenses/by-nc-sa/3.0/",
+		"grant": "none",
 		"include": "http://*.twitch.tv/*",
 		"exclude": [
 			"http://api.twitch.tv/*",
