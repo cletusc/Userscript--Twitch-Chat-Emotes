@@ -34,18 +34,12 @@
 			},
 			subscriptions: {
 				badges: {},
-				channels: {}
+				emotes: {}
 			}
 		},
 		emotePopularity = false,
 		$,
 		jQuery,
-
-		userInfo = {
-			displayName: '',
-			emoteSets: [],
-			name: ''
-		},
 
 		elemChatButton,
 		elemChatButtonsContainer,
@@ -150,40 +144,25 @@
 		window.Twitch.api.get("/api/users/:login/tickets").done(function (api) {
 			debug(api, 'Response from `/api/user/:login/tickets`.', true);
 			api.tickets.forEach(function (ticket) {
-				// Get channel subscriptions with emotes.
-				if (ticket.product.ticket_type === 'chansub' && ticket.product.emoticons.length) {
+				// Get subscriptions with emotes.
+				if (ticket.product.emoticons && ticket.product.emoticons.length) {
 					var badge = ticket.product.features.badge,
-						channel = /\((.*?)\)/.exec(ticket.product.name)[1];
-					// Add channel badges.	
-					emotes.subscriptions.badges[channel] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
+						channel = /\((.*?)\)/.exec(ticket.product.name);
+					channel = (channel ? channel[1] : ticket.product.name).trim();
+					// Add channel badges.
+					if (badge) {
+						emotes.subscriptions.badges[channel] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
+					}
 					// Add emotes channel.
 					ticket.product.emoticons.forEach(function (emote) {
-						emotes.subscriptions.channels[emote.regex] = channel;
+						emotes.subscriptions.emotes[getEmoteFromRegEx(new RegExp(emote.regex))] = {
+							channel: channel,
+							url: emote.url
+						};
 					});
 				}
 			});
 		});
-
-		userInfo.displayName = window.PP.display_name;
-		userInfo.name = window.PP.login;
-		(function checkEmoteSets(time) {
-			var	emoteSets = window.CurrentChat.user_to_emote_sets[userInfo.name],
-				frequency = 50;
-
-			if (!emoteSets) {
-				if (time >= 60000) {
-					console.warn(MESSAGES.TIMEOUT_EMOTE_SETS);
-					return;
-				}
-				if (time >= 10000) {
-					frequency = 1000;
-				}
-				setTimeout(checkEmoteSets, frequency, time + frequency);
-				return;
-			}
-			userInfo.emoteSets = emoteSets;
-			populateEmotesMenu();
-		})(0);
 	}
 
 	/**
@@ -330,7 +309,6 @@
 		// Add popular emotes.
 		container = elemEmoteMenu.find('.emotes-popular .emotes-container');
 		container.html('');
-		emotes.usable.sort(sortByNormal);
 		emotes.usable.sort(sortByPopularity);
 		emotes.usable.forEach(function (emote) {
 			createEmote(emote, container);
@@ -339,7 +317,6 @@
 		// Add all emotes.
 		container = elemEmoteMenu.find('.emotes-all .emotes-container');
 		container.html('');
-		emotes.usable.sort(sortByNormal);
 		emotes.usable.sort(sortBySet);
 		emotes.usable.forEach(function (emote) {
 			createEmote(emote, container, true);
@@ -365,7 +342,7 @@
 			if (aGet > bGet) {
 				return -1;
 			}
-			return 0;
+			return sortByNormal(a, b);
 		}
 
 		/**
@@ -393,49 +370,41 @@
 		 * Sort by emoticon set: basic smileys -> no set -> subscription emotes
 		 */
 		function sortBySet(a, b){
-			if (a.image && !b.image) {
+			// Override for turbo emotes.
+			if (
+				(a.channel && a.channel === 'Twitch Turbo') &&
+				(!b.channel || (b.channel && b.channel !== 'Twitch Turbo'))
+			) {
 				return -1;
 			}
-			if (b.image && !a.image) {
+			if (
+				(b.channel && b.channel === 'Twitch Turbo') &&
+				(!a.channel || (a.channel && a.channel !== 'Twitch Turbo'))
+			) {
 				return 1;
 			}
-			if (a.image && b.image) {
-				// Override for turbo emotes.
-				if (
-					(a.image.emoticon_set === 33 || a.image.emoticon_set === 42) &&
-					(b.image.emoticon_set !== 33 && b.image.emoticon_set !== 42)
-				) {
-					return -1;
+			// Override for basic emotes.
+			var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o'];
+			if (basicEmotes.indexOf(a.text) >= 0 &&	basicEmotes.indexOf(b.text) < 0) {
+				return -1;
+			}
+			if (basicEmotes.indexOf(b.text) >= 0 &&	basicEmotes.indexOf(a.text) < 0) {
+				return 1;
+			}
+			// Sort by channel name.
+			if (a.channel && !b.channel) {
+				return 1;
+			}
+			if (b.channel && !a.channel) {
+				return -1;
+			}
+			if (a.channel && b.channel) {
+				var channelSort = sortByNormal({text: a.channel}, {text: b.channel}),
+					normalSort = sortByNormal(a, b);
+				if (channelSort === 0) {
+					return normalSort;
 				}
-				if (
-					(b.image.emoticon_set === 33 || b.image.emoticon_set === 42) &&
-					(a.image.emoticon_set !== 33 && a.image.emoticon_set !== 42)
-				) {
-					return 1;
-				}
-				// Override for basic emotes.
-				var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o'];
-				if (basicEmotes.indexOf(a.text) >= 0 &&	basicEmotes.indexOf(b.text) < 0) {
-					return -1;
-				}
-				if (basicEmotes.indexOf(b.text) >= 0 &&	basicEmotes.indexOf(a.text) < 0) {
-					return 1;
-				}
-				// Sort by channel name.
-				if (a.channel && !b.channel) {
-					return 1;
-				}
-				if (b.channel && !a.channel) {
-					return -1;
-				}
-				if (a.channel && b.channel) {
-					var channelSort = sortByNormal({text: a.channel}, {text: b.channel}),
-						normalSort = sortByNormal(a, b);
-					if (channelSort === 0) {
-						return normalSort;
-					}
-					return channelSort;
-				}
+				return channelSort;
 			}
 			// Get it back to a stable sort.
 			return sortByNormal(a, b);
@@ -473,40 +442,24 @@
 			if (emote.hidden) {
 				return;
 			}
-			// Adapted from http://userscripts.org/scripts/show/160183
 			if (!emote.text) {
-				emote.text = decodeURI(emote.regex.source)
-					.replace('&gt\\;', '>') // right angle bracket
-					.replace('&lt\\;', '<') // left angle bracket
-					.replace(/\(\?![^)]*\)/g, '') // remove negative group
-					.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
-					.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
-					.replace(/[^\\]\?/g, '') // remove optional chars
-					.replace(/^\\b|\\b$/g, '') // remove boundaries
-					.replace(/\\/g, ''); // unescape
+				emote.text = getEmoteFromRegEx(emote.regex);
 			}
-
-			if (emotes.subscriptions.channels[emote.text]) {
-				emote.channel = emotes.subscriptions.channels[emote.text];
+			if (emotes.subscriptions.emotes[emote.text]) {
+				emote.channel = emotes.subscriptions.emotes[emote.text].channel;
 			}
-
-			var defaultImage = false;
-			emote.images.forEach(function (image) {
+			var defaultImage;
+			emote.images.some(function (image) {
 				if (image.emoticon_set === null) {
 					defaultImage = image;
 				}
-				if (userInfo.emoteSets.indexOf(image.emoticon_set) >= 0) {
+				if (emote.channel && image.url === emotes.subscriptions.emotes[emote.text].url) {
 					emote.image = image;
+					return true;
 				}
 			});
+			emote.image = emote.image || defaultImage;
 
-			// No emotes from sets.
-			if (!emote.image) {
-				// Use the non-set emote if available.
-				if (defaultImage) {
-					emote.image = defaultImage;
-				}
-			}
 			// Only add the emote if there is a URL.
 			if (emote.image && emote.image.url !== null) {
 				emotes.usable.push(emote);
@@ -624,7 +577,7 @@
 			return;
 		}
 		if (showHeader) {
-			if (emote.channel) {
+			if (emote.channel && emote.channel !== 'Twitch Turbo') {
 				if (!elemEmoteMenu.find('.userscript_emoticon_header[data-emote-channel="' + emote.channel + '"]').length) {
 					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + emotes.subscriptions.badges[emote.channel] + '" />' + emote.channel + '</div>'));
 				}
@@ -917,6 +870,22 @@
 			 * THE SOFTWARE.
 			 */(function(e){function n(n,r){function m(){if(s.hasClass("horizontal")){h="horiz";p="scrollLeft";d="width";v="left"}s.prepend('<div class="tse-scrollbar"><div class="drag-handle"></div></div>');a=s.find(".tse-scrollbar");f=s.find(".drag-handle");if(r.wrapContent){u.wrap('<div class="tse-scroll-content" />')}o=s.find(".tse-scroll-content");N();s.on("mouseenter",S);f.on("mousedown",g);o.on("scroll",w);E()}function g(t){t.preventDefault();var n=t.pageY;if(h==="horiz"){n=t.pageX}l=n-f.offset()[v];e(document).on("mousemove",y);e(document).on("mouseup",b)}function y(e){e.preventDefault();var t=e.pageY;if(h==="horiz"){t=e.pageX}var n=t-a.offset()[v]-l;var r=n/a[d]();var i=r*u[d]();o[p](i)}function b(){e(document).off("mousemove",y);e(document).off("mouseup",b)}function w(e){S()}function E(){var e=u[d]();var t=o[p]();var n=a[d]();var r=n/e;var i=Math.round(r*t)+2;var s=Math.floor(r*(n-2))-2;if(n<e){if(h==="vert"){f.css({top:i,height:s})}else{f.css({left:i,width:s})}a.show()}else{a.hide()}}function S(){E();x()}function x(){f.addClass("visible");if(typeof c==="number"){window.clearTimeout(c)}c=window.setTimeout(function(){T()},1e3)}function T(){f.removeClass("visible");if(typeof c==="number"){window.clearTimeout(c)}}function N(){if(h==="vert"){o.width(s.width()+C());o.height(s.height())}else{o.width(s.width());o.height(s.height()+C());u.height(s.height())}}function C(){var t=e('<div class="scrollbar-width-tester" style="width:50px;height:50px;overflow-y:scroll;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div>');e("body").append(t);var n=e(t).innerWidth();var r=e("div",t).innerWidth();t.remove();return n-r}function k(){N();E()}function L(e,t){if(t){r[e]=t}else{return r[e]}}function A(){u.insertBefore(a);a.remove();o.remove();u.css({height:s.height()+"px","overflow-y":"scroll"});O("onDestroy");s.removeData("plugin_"+t)}function O(e){if(r[e]!==undefined){r[e].call(i)}}var i=n;var s=e(n);var o;var u=s.find(".tse-content");var a;var f;var l;var c;var h="vert";var p="scrollTop";var d="height";var v="top";r=e.extend({},e.fn[t].defaults,r);m();return{option:L,destroy:A,recalculate:k}}var t="TrackpadScrollEmulator";e.fn[t]=function(r){if(typeof arguments[0]==="string"){var i=arguments[0];var s=Array.prototype.slice.call(arguments,1);var o;this.each(function(){if(e.data(this,"plugin_"+t)&&typeof e.data(this,"plugin_"+t)[i]==="function"){o=e.data(this,"plugin_"+t)[i].apply(this,s)}else{throw new Error("Method "+i+" does not exist on jQuery."+t)}});if(o!==undefined){return o}else{return this}}else if(typeof r==="object"||!r){return this.each(function(){if(!e.data(this,"plugin_"+t)){e.data(this,"plugin_"+t,new n(this,r))}})}};e.fn[t].defaults={onInit:function(){},onDestroy:function(){},wrapContent:true}})(jQuery)
 		}
+	}
+
+	/**
+	 * Gets the usable emote text from a regex.
+	 * @attribute http://userscripts.org/scripts/show/160183 (adaption)
+	 */
+	function getEmoteFromRegEx(regex) {
+		return decodeURI(regex.source)
+			.replace('&gt\\;', '>') // right angle bracket
+			.replace('&lt\\;', '<') // left angle bracket
+			.replace(/\(\?![^)]*\)/g, '') // remove negative group
+			.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
+			.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
+			.replace(/[^\\]\?/g, '') // remove optional chars
+			.replace(/^\\b|\\b$/g, '') // remove boundaries
+			.replace(/\\/g, ''); // unescape
 	}
 
 	// Generic functions.
