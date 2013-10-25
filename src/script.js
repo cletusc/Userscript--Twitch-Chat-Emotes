@@ -27,6 +27,7 @@
 		elemEmoteMenu,
 
 		SCRIPT_NAME = '<%= pkg.userscript.name %>',
+		DEBUG = location.hash === '#<%= pkg.name %>-debug',
 		MESSAGES = {
 			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
 			CHAT_NOT_LOADED: 'Chat hasn\'t loaded yet.',
@@ -120,6 +121,7 @@
 
 		// Get active subscriptions.
 		window.Twitch.api.get("/api/users/:login/tickets").done(function (api) {
+			debug(api, 'Response from `/api/user/:login/tickets`.', true);
 			api.tickets.forEach(function (ticket) {
 				// Get channel subscriptions with emotes.
 				if (ticket.product.ticket_type === 'chansub' && ticket.product.emoticons.length) {
@@ -930,4 +932,16 @@
 	 */
 	function deleteSetting(aKey) {
 		localStorage.removeItem(aKey);
+	}
+
+	/**
+	 * Logs a message only when global `DEBUG` is true.
+	 * @param {mixed}   obj                 The object to log.
+	 * @param {string}  [description = '']  The message describing the debug.
+	 * @param {boolean} [stringify = false] Whether `obj` should be passed through `JSON.stringify`.
+	 */
+	function debug(obj, description, stringify) {
+		if (DEBUG) {
+			console.log('[DEBUG][' + (SCRIPT_NAME || 'UNKNOWN SCRIPT') + ']: ' + (description || ''), (stringify ? JSON.stringify(obj) : obj));
+		}
 	}
