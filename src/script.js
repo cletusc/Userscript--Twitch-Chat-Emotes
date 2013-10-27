@@ -426,7 +426,7 @@
 				if (image.emoticon_set === null) {
 					defaultImage = image;
 				}
-				if (emote.channel && image.url === emotes.subscriptions.emotes[emote.text].url) {
+				if (emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) {
 					emote.image = image;
 					return true;
 				}
@@ -551,8 +551,9 @@
 		}
 		if (showHeader) {
 			if (emote.channel && emote.channel !== 'Twitch Turbo') {
+				var badge = emotes.subscriptions.badges[emote.channel] || emote.badge || 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
 				if (!elemEmoteMenu.find('.userscript_emoticon_header[data-emote-channel="' + emote.channel + '"]').length) {
-					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + emotes.subscriptions.badges[emote.channel] + '" />' + emote.channel + '</div>'));
+					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + badge + '" />' + emote.channel + '</div>'));
 				}
 			}
 		}
