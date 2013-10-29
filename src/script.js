@@ -24,11 +24,9 @@
 		DEBUG = location.hash === '#<%= pkg.name %>-debug',
 		MESSAGES = {
 			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
-			CHAT_NOT_LOADED: 'Chat hasn\'t loaded yet.',
 			NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
-			NOT_LOGGED_IN: 'You are not logged in, please log in first.',
+			NOT_LOGGED_IN: 'You are not logged in, please log in first before using the emote menu.',
 			OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
-			TIMEOUT_EMOTE_SETS: 'Took too long to find turbo/subscription emote sets, using default. Refresh to try again.',
 			TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
 		};
 
@@ -44,51 +42,44 @@
 	// Only enable script if we have the right variables.
 	//---------------------------------------------------
 	(function init(time) {
-		var	chatLoaded = (window.CurrentChat ? window.CurrentChat.last_sender !== false : false),
-			frequency = 50,
-			loggedIn = window.Twitch && window.Twitch.user.isLoggedIn(),
+		var	loggedIn = window.Twitch && window.Twitch.user.isLoggedIn(),
 			objectsLoaded = (
-				window.PP !== undefined &&
 				window.Twitch !== undefined &&
 				window.CurrentChat !== undefined &&
 				window.CurrentChat.emoticons !== undefined &&
 				window.CurrentChat.emoticons.length &&
 				window.$j !== undefined
 			);
-
 		if (document.querySelector('#chat_emote_dropmenu_button')) {
 			console.warn(MESSAGES.ALREADY_RUNNING);
 			return;
 		}
-
-		if (
-			!objectsLoaded ||
-			!loggedIn ||
-			!chatLoaded
-		) {
+		if (!objectsLoaded || !loggedIn) {
+			// Errors in approximately 102400ms.
 			if (time >= 60000) {
 				console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
+				if (window.CurrentChat) {
+					window.CurrentChat.admin_message(MESSAGES.NOT_LOGGED_IN);
+				}
 				return;
 			}
 			if (time >= 10000) {
-				frequency = 1000;
-
 				if (!loggedIn) {
 					console.error(MESSAGES.NOT_LOGGED_IN);
+					if (window.CurrentChat) {
+						window.CurrentChat.admin_message(MESSAGES.NOT_LOGGED_IN);
+					}
 					return;
 				}
 				if (!objectsLoaded) {
 					console.warn(MESSAGES.OBJECTS_NOT_LOADED);
 				}
-				if (!chatLoaded) {
-					console.warn(MESSAGES.CHAT_NOT_LOADED);
-				}
 			}
-			setTimeout(init, frequency, time + frequency);
+			setTimeout(init, time, time * 2);
 			return;
 		}
 		setup();
-	})(0);
+	})(50);
 
 	// Start of functions.
 	//--------------------
