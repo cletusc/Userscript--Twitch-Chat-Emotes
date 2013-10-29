@@ -260,6 +260,7 @@
 				elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator('recalculate');
 			},
 			alsoResize: elemEmoteMenu.find('.emotes-all'),
+			containment: $(document.body),
 			minHeight: 180,
 			minWidth: 200
 		});
@@ -722,6 +723,7 @@
 				var settings = $.extend({
 					alsoResize: null,
 					alsoResizeType: 'both', // `height`, `width`, `both`
+					containment: null,
 					create: null,
 					destroy: null,
 					handle: '.resize-handle',
@@ -747,7 +749,8 @@
 						if (
 							settings.element.height() !== data.height + data.diffY &&
 							data.height + data.diffY >= settings.minHeight &&
-							data.height + data.diffY <= settings.maxHeight
+							data.height + data.diffY <= settings.maxHeight &&
+							(settings.containment ? data.outerHeight + data.diffY + data.offset.top <= settings.containment.offset().top + settings.containment.outerHeight() : true)
 						) {
 							settings.element.height(data.height + data.diffY);
 							resized.height = true;
@@ -755,7 +758,8 @@
 						if (
 							settings.element.width() !== data.width + data.diffX &&
 							data.width + data.diffX >= settings.minWidth &&
-							data.width + data.diffX <= settings.maxHeight
+							data.width + data.diffX <= settings.maxWidth &&
+							(settings.containment ? data.outerWidth + data.diffX + data.offset.left <= settings.containment.offset().left + settings.containment.outerWidth() : true)
 						) {
 							settings.element.width(data.width + data.diffX);
 							resized.width = true;
@@ -789,6 +793,9 @@
 						alsoResizeHeight: settings.alsoResize ? settings.alsoResize.height() : 0,
 						alsoResizeWidth: settings.alsoResize ? settings.alsoResize.width() : 0,
 						height: settings.element.height(),
+						offset: settings.element.offset(),
+						outerHeight: settings.element.outerHeight(),
+						outerWidth: settings.element.outerWidth(),
 						pageX: evt.pageX,
 						pageY: evt.pageY,
 						width: settings.element.width()
@@ -808,7 +815,9 @@
 				if (settings.handle) {
 					if (settings.alsoResize && ['both', 'height', 'width'].indexOf(settings.alsoResizeType) >= 0) {
 						settings.alsoResize = $(settings.alsoResize);
-
+					}
+					if (settings.containment) {
+						settings.containment = $(settings.containment);
 					}
 					settings.handle = $(settings.handle);
 					settings.snapSize = settings.snapSize < 1 ? 1 : settings.snapSize;
