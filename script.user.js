@@ -130,6 +130,7 @@
 		createMenuElements();
 		addBaseStyle();
 		bindListeners();
+		showNews();
 
 		// Get active subscriptions.
 		window.Twitch.api.get("/api/users/:login/tickets").done(function (api) {
@@ -640,6 +641,13 @@
 			'#chat_emote_dropmenu .draggable:hover {',
 			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);',
 			'}',
+			'.twitch-chat-emotes-news {',
+			'	border: 1px solid rgba(100, 65, 165, 0.5);',
+			'	padding: 2px;',
+			'}',
+			'.twitch-chat-emotes-news a {',
+			'	color: #6441a5 !important;',
+			'}',
 			'#chat_emote_dropmenu .userscript_emoticon_header {',
 			'	border-top: 1px solid black;',
 			'	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;',
@@ -712,6 +720,47 @@
 			}
 		}
 		addStyle(css.join('\n'));
+	}
+
+	/**
+	 * Show latest news.
+	 */
+	function showNews() {
+		var dismissedNews = JSON.parse(getSetting('twitch-chat-emotes:dismissed-news', '[]')),
+			cachedNews = JSON.parse(getSetting('twitch-chat-emotes:cached-news', '{}'));
+		// Only poll news feed once per day.
+		if (Date.now() - getSetting('twitch-chat-emotes:news-date', 0) > 86400000) {
+			$.ajax('https://api.github.com/repos/cletusc/Userscript--Twitch-Chat-Emotes/contents/news.json', {
+				headers: {
+					'Accept': 'application/vnd.github.v3.raw+json',
+					'User-Agent': 'cletusc/Userscript--Twitch-Chat-Emotes'
+				}
+			}).done(function (data) {
+				cachedNews = data || cachedNews;
+				setSetting('twitch-chat-emotes:cached-news', JSON.stringify(cachedNews));
+			}).always(function () {
+				handleNewsFeed();
+				setSetting('twitch-chat-emotes:news-date', Date.now());
+			});
+		}
+		else {
+			handleNewsFeed();
+		}
+
+		// Handles displaying of news feed.
+		function handleNewsFeed() {
+			for (var newsId in cachedNews) {
+				if (cachedNews.hasOwnProperty(newsId) && dismissedNews.indexOf(newsId) === -1) {
+					window.CurrentChat.admin_message('<div class="twitch-chat-emotes-news">[' + SCRIPT_NAME + '] News: ' + cachedNews[newsId] + ' (<a href="#" data-command="twitch-chat-emotes:dismiss-news" data-news-id="' + newsId + '">Dismiss</a>)</div>');
+				}
+			}
+			$('#chat_lines').on('click', 'a[data-command="twitch-chat-emotes:dismiss-news"]', function (evt) {
+				evt.preventDefault();
+				dismissedNews.push($(this).data('news-id'));
+				setSetting('twitch-chat-emotes:dismissed-news', JSON.stringify(dismissedNews));
+				$(this).parent().parent().remove();
+			});
+		}
 	}
 
 	/**
