@@ -729,7 +729,7 @@
 		var dismissedNews = JSON.parse(getSetting('twitch-chat-emotes:dismissed-news', '[]')),
 			cachedNews = JSON.parse(getSetting('twitch-chat-emotes:cached-news', '{}'));
 		// Only poll news feed once per day.
-		if (Date.now() - getSetting('twitch-chat-emotes:news-date', 0) > 86400000) {
+		if (DEBUG || Date.now() - getSetting('twitch-chat-emotes:news-date', 0) > 86400000) {
 			$.ajax('https://api.github.com/repos/cletusc/Userscript--Twitch-Chat-Emotes/contents/news.json', {
 				dataType: 'json',
 				headers: {
