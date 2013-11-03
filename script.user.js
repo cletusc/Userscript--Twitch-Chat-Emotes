@@ -731,6 +731,7 @@
 		// Only poll news feed once per day.
 		if (Date.now() - getSetting('twitch-chat-emotes:news-date', 0) > 86400000) {
 			$.ajax('https://api.github.com/repos/cletusc/Userscript--Twitch-Chat-Emotes/contents/news.json', {
+				dataType: 'json',
 				headers: {
 					'Accept': 'application/vnd.github.v3.raw+json',
 					'User-Agent': 'cletusc/Userscript--Twitch-Chat-Emotes'
