@@ -67,14 +67,16 @@ Other scripts / addons may add their own emotes to this menu. This script pulls 
          */
         function addCustomEmotes(emotes, channel, badgeImage) {
             emotes.forEach(function (emoteData) {
+                var imageData = {
+                    emoticon_set: null,
+                    height: emoteData.height,
+                    html: '<span class="emoticon" style="background-image: url(' + emoteData.url + '); height: ' + emoteData.height + 'px; width: ' + emoteData.width + 'px;"></span>',
+                    url: emoteData.url,
+                    width: emoteData.width,
+                };
                 var emote = {
-                    images: [{
-                        emoticon_set: null,
-                        height: emoteData.height,
-                        html: '<span class="emoticon" style="background-image: url(' + emoteData.url + '); height: ' + emoteData.height + 'px; width: ' + emoteData.width + 'px;"></span>',
-                        url: emoteData.url,
-                        width: emoteData.width,
-                    }],
+                    images: [imageData],
+                    image: imageData,
                     regex: new RegExp('\\b' + emoteData.regex + '\\b', 'g'),
                     // Custom attributes to hook into Twitch Chat Emotes.
                     text: emoteData.text || null,
