@@ -112,8 +112,7 @@
 				// Get subscriptions with emotes.
 				if (ticket.product.emoticons && ticket.product.emoticons.length) {
 					var badge = ticket.product.features.badge,
-						channel = /\((.*?)\)/.exec(ticket.product.name);
-					channel = (channel ? channel[1] : ticket.product.name).trim();
+						channel = ticket.product.owner_name;
 					// Add channel badges.
 					if (badge) {
 						emotes.subscriptions.badges[channel] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
