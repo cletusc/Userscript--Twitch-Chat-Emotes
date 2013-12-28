@@ -707,17 +707,8 @@
 			'	background: url("' + icons.resizeHandle + '") no-repeat 50%;',
 			'	cursor: nwse-resize;',
 			'}'
-		],
-		fixedEmotes = {
-			'DansGame': 'http://i.imgur.com/qonn0aV.png'
-		};
-
-		// Fix white-background emotes.
-		for (var emote in fixedEmotes) {
-			if (fixedEmotes.hasOwnProperty(emote)) {
-				css.push('#chat_emote_dropmenu .userscript_emoticon[data-emote="' + emote + '"] .emoticon { background-image: url("' + fixedEmotes[emote] + '") !important; }');
-			}
-		}
+		];
+		
 		addStyle(css.join('\n'));
 	}
 
