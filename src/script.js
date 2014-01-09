@@ -364,6 +364,14 @@
 				return -1;
 			}
 			if (a.channel && b.channel) {
+				// Force addon emote groups below standard Twitch groups.
+				if (emotes.subscriptions.badges[a.channel] && !emotes.subscriptions.badges[b.channel]) {
+					return -1;
+				}
+				if (emotes.subscriptions.badges[b.channel] && !emotes.subscriptions.badges[a.channel]) {
+					return 1;
+				}
+
 				var channelSort = sortByNormal({text: a.channel}, {text: b.channel}),
 					normalSort = sortByNormal(a, b);
 				if (channelSort === 0) {
@@ -544,6 +552,10 @@
 		if (showHeader) {
 			if (emote.channel && emote.channel !== 'Twitch Turbo') {
 				var badge = emotes.subscriptions.badges[emote.channel] || emote.badge || 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
+				// Add notice about addon emotes.
+				if (!emotes.subscriptions.badges[emote.channel] && !elemEmoteMenu.find('.userscript_emoticon_header.addon-emotes-header').length) {
+					container.append($('<div class="userscript_emoticon_header addon-emotes-header" title="Below are emotes added by an addon. Only those who also have the same addon installed can see these emotes in chat.">Addon Emotes</div>'));
+				}
 				if (!elemEmoteMenu.find('.userscript_emoticon_header[data-emote-channel="' + emote.channel + '"]').length) {
 					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + badge + '" />' + emote.channel + '</div>'));
 				}
