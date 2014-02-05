@@ -2,6 +2,12 @@
 
 Click the install link above to install this userscript. Please make sure to check out the compatibility section to see if your userscript engine is compatible.
 
+# [Post a review!](https://docs.google.com/forms/d/16kkVF1IkZ6cAdZw_pOBjD22bSO9uZKfCBPWluVl1jY8/viewform)
+
+Want to rate this? [Go vote!](https://docs.google.com/forms/d/16kkVF1IkZ6cAdZw_pOBjD22bSO9uZKfCBPWluVl1jY8/viewform).
+
+Want to see what others think about this script? [Check out the results](https://docs.google.com/forms/d/16kkVF1IkZ6cAdZw_pOBjD22bSO9uZKfCBPWluVl1jY8/viewanalytics)
+
 # Description
 
 Adds a button to Twitch that allows you to "click-to-insert" an emote. Emotes are always up-to-date using Twitch's API and will only show the emotes that you can actually use.
