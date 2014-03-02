@@ -558,7 +558,7 @@
 	function insertEmoteText(text) {
 		emotePopularityAdd(text);
 		// Get input.
-		var element = document.querySelector('#chat_text_input');
+		var element = document.querySelector('#chat_text_input, .chat-interface textarea');
 
 		// Insert at cursor / replace selection.
 		// https://developer.mozilla.org/en-US/docs/Code_snippets/Miscellaneous
