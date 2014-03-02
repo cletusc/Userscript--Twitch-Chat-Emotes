@@ -263,24 +263,29 @@
 			elemEmoteMenu.removeClass('has_moved');
 			if (elemEmoteMenu.is(':visible')) {
 				$(this).addClass('toggled');
-				var diff = elemEmoteMenu.height() - elemEmoteMenu.find('.emotes-all').height();
-				var elemChatLines = null;
-				if (NEWLAYOUT) {
-					elemChatLines = $('.chat-messages');
+				if (elemEmoteMenu.hasClass('not_default_location')) {
+					elemEmoteMenu.offset(JSON.parse(elemEmoteMenu.attr('data-offset')));
 				}
 				else {
-					elemChatLines = $('#chat_lines');
-				}
-				// Adjust the size and position of the popup.
-				elemEmoteMenu.height(elemChatLines.height() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
-				// On NEWLAYOUT, change `$('#speak, .chat-messages')` to `elemChatLines`.
-				elemEmoteMenu.width($('#speak, .chat-messages').width() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
-				elemEmoteMenu.offset(elemChatLines.offset());
-				// Fix `.emotes-all` height.
-				elemEmoteMenu.find('.emotes-all').height(elemEmoteMenu.height() - diff);
-				elemEmoteMenu.find('.emotes-all').width(elemEmoteMenu.width());
+					var diff = elemEmoteMenu.height() - elemEmoteMenu.find('.emotes-all').height();
+					var elemChatLines = null;
+					if (NEWLAYOUT) {
+						elemChatLines = $('.chat-messages');
+					}
+					else {
+						elemChatLines = $('#chat_lines');
+					}
+					// Adjust the size and position of the popup.
+					elemEmoteMenu.height(elemChatLines.height() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
+					// On NEWLAYOUT, change `$('#speak, .chat-messages')` to `elemChatLines`.
+					elemEmoteMenu.width($('#speak, .chat-messages').width() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
+					elemEmoteMenu.offset(elemChatLines.offset());
+					// Fix `.emotes-all` height.
+					elemEmoteMenu.find('.emotes-all').height(elemEmoteMenu.height() - diff);
+					elemEmoteMenu.find('.emotes-all').width(elemEmoteMenu.width());
 
-				elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator('recalculate');
+					elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator('recalculate');
+				}
 			}
 			else {
 				$(this).removeClass('toggled');
@@ -300,6 +305,10 @@
 			handle: '.draggable',
 			start: function () {
 				$(this).addClass('has_moved');
+				$(this).addClass('not_default_location');
+			},
+			stop: function () {
+				elemEmoteMenu.attr('data-offset', JSON.stringify(elemEmoteMenu.offset()));
 			},
 			containment: $(document.body)
 		});
@@ -307,6 +316,7 @@
 		elemEmoteMenu.resizable({
 			resize: function () {
 				$(this).addClass('has_moved');
+				$(this).addClass('not_default_location');
 				elemEmoteMenu.find('.scroll.emotes-all').TrackpadScrollEmulator('recalculate');
 			},
 			alsoResize: elemEmoteMenu.find('.emotes-all'),
@@ -585,7 +595,7 @@
 	function insertEmoteText(text) {
 		emotePopularityAdd(text);
 		// Get input.
-		var element = document.querySelector('#chat_text_input');
+		var element = document.querySelector('#chat_text_input, .chat-interface textarea');
 
 		// Insert at cursor / replace selection.
 		// https://developer.mozilla.org/en-US/docs/Code_snippets/Miscellaneous
