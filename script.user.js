@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name Twitch Chat Emotes
 // @namespace #Cletus
-// @version 0.5.9
+// @version 0.5.10
 // @description Adds a button to Twitch that allows you to "click-to-insert" an emote.
 // @copyright 2011+, Ryan Chatham (http://userscripts.org/users/cletus)
 // @icon http://www.gravatar.com/avatar.php?gravatar_id=6875e83aa6c563790cb2da914aaba8b3&r=PG&s=48&default=identicon
