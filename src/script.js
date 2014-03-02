@@ -3,7 +3,13 @@
 	var emotes = {
 			usable: [],
 			get raw() {
-				return window.CurrentChat.emoticons;
+				if (window.CurrentChat) {
+					return window.CurrentChat.emoticons
+				}
+				else if (window.App) {
+					return window.App.__container__.lookup('controller:emoticons').emoticons;
+				}
+				return [];
 			},
 			subscriptions: {
 				badges: {},
@@ -22,6 +28,7 @@
 
 		SCRIPT_NAME = '<%= pkg.userscript.name %>',
 		DEBUG = location.hash === '#<%= pkg.name %>-debug',
+		NEWLAYOUT = false,
 		MESSAGES = {
 			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
 			NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
@@ -45,9 +52,21 @@
 		var	loggedIn = window.Twitch && window.Twitch.user.isLoggedIn(),
 			objectsLoaded = (
 				window.Twitch !== undefined &&
-				window.CurrentChat !== undefined &&
-				window.CurrentChat.emoticons !== undefined &&
-				window.CurrentChat.emoticons.length &&
+				(
+					// OLDLAYOUT
+					(
+						window.CurrentChat !== undefined &&
+						window.CurrentChat.emoticons !== undefined &&
+						window.CurrentChat.emoticons.length
+					) ||
+					// NEWLAYOUT
+					(
+						window.App !== undefined &&
+						window.App.__container__ !== undefined &&
+						window.App.__container__.lookup('controller:emoticons').emoticons !== undefined &&
+						window.App.__container__.lookup('controller:emoticons').emoticons.length
+					)
+				) &&
 				window.$j !== undefined
 			);
 		if (document.querySelector('#chat_emote_dropmenu_button')) {
@@ -87,11 +106,19 @@
 	 * Runs initial setup of DOM and variables.
 	 */
 	function setup() {
+		NEWLAYOUT = typeof window.CurrentChat === 'undefined';
 		$ = jQuery = window.$j;
 
-		elemChatButton = $('#chat_speak');
-		elemChatButtonsContainer = $('#control_buttons');
-		elemChatInput = $('#control_input');
+		if (NEWLAYOUT) {
+			elemChatButton = $('.send-chat-button');
+			elemChatButtonsContainer = $('.chat-buttons-container .chat-option-buttons');
+			elemChatInput = $('.chat-interface textarea');
+		}
+		else {
+			elemChatButton = $('#chat_speak');
+			elemChatButtonsContainer = $('#control_buttons');
+			elemChatInput = $('#control_input');
+		}
 
 		// No chat, just exit.
 		if (!elemChatButton.length) {
@@ -133,11 +160,17 @@
 	 * Creates the initial menu elements
 	 */
 	function createMenuElements() {
-		// Create emote button.
-		elemEmoteButton = $('<a class="dropdown_glyph" id="chat_emote_dropmenu_button"><span>emotes</span></a>');
-		elemEmoteButton.insertBefore(elemChatButton);
+		if (NEWLAYOUT) {
+			elemEmoteButton = $('<button class="newlayout viewers button-simple light tooltip" title="Emote Menu" id="chat_emote_dropmenu_button"></button>');
+			elemEmoteButton.appendTo(elemChatButtonsContainer);
+		}
+		else {
+			elemEmoteButton = $('<a class="dropdown_glyph" id="chat_emote_dropmenu_button"><span>emotes</span></a>');
+			elemEmoteButton.insertBefore(elemChatButton);
+		}
 		elemEmoteButton.hide();
 		// Animate for non-channel pages (dashboard, popout, etc.).
+		// Works on dashboard only on new layout.
 		if (elemChatButton.hasClass('cap')) {
 			elemChatInput.animate({'margin-right': '175px'});
 			elemChatButtonsContainer.css('width', '175px');
@@ -149,12 +182,22 @@
 			});
 		}
 		// Animate for channel page.
+		// Works on popout for new layout as well.
 		else {
-			elemChatButton.css('float', 'right').animate({'width': '149px'}, {
-				complete: function () {
-					elemEmoteButton.fadeIn();
-				}
-			});
+			if (NEWLAYOUT) {
+				elemChatButton.animate({'left': '88px'}, {
+					complete: function () {
+						elemEmoteButton.fadeIn();
+					}
+				});
+			}
+			else {
+				elemChatButton.css('float', 'right').animate({'width': '149px'}, {
+					complete: function () {
+						elemEmoteButton.fadeIn();
+					}
+				});
+			}
 		}
 
 		// Create emote menu.
@@ -193,11 +236,18 @@
 			elemEmoteMenu.removeClass('has_moved');
 			if (elemEmoteMenu.is(':visible')) {
 				$(this).addClass('toggled');
-				var diff = elemEmoteMenu.height() - elemEmoteMenu.find('.emotes-all').height(),
+				var diff = elemEmoteMenu.height() - elemEmoteMenu.find('.emotes-all').height();
+				var elemChatLines = null;
+				if (NEWLAYOUT) {
+					elemChatLines = $('.chat-messages');
+				}
+				else {
 					elemChatLines = $('#chat_lines');
+				}
 				// Adjust the size and position of the popup.
 				elemEmoteMenu.height(elemChatLines.height() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
-				elemEmoteMenu.width($('#speak').width() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
+				// On NEWLAYOUT, change `$('#speak, .chat-messages')` to `elemChatLines`.
+				elemEmoteMenu.width($('#speak, .chat-messages').width() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
 				elemEmoteMenu.offset(elemChatLines.offset());
 				// Fix `.emotes-all` height.
 				elemEmoteMenu.find('.emotes-all').height(elemEmoteMenu.height() - diff);
@@ -432,6 +482,10 @@
 				}
 			});
 			emote.image = emote.image || defaultImage;
+			// Fix missing image.html on new layout.
+			if (emote.image && !emote.image.html) {
+				emote.image.html = '<img src="' + emote.image.url + '">';
+			}
 
 			// Only add the emote if there is a URL.
 			if (emote.image && emote.image.url !== null) {
@@ -585,11 +639,16 @@
 		},
 		// Base style.
 		css = [
-			'#chat_emote_dropmenu_button span {',
+			'#chat_emote_dropmenu_button:not(.newlayout) span {',
 			'	background: url("' + icons.dropmenuButton + '") no-repeat 50%;',
 			'	cursor: pointer;',
 			'}',
-			'#chat_emote_dropmenu_button.toggled {',
+			'#chat_emote_dropmenu_button.newlayout {',
+			'	background-image: url("' + icons.dropmenuButton + '");',
+			'	background-position: 50%;',
+			'	cursor: pointer;',
+			'}',
+			'#chat_emote_dropmenu_button.toggled:not(.newlayout) {',
 			'	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
 			'	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
 			'	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
@@ -602,6 +661,9 @@
 			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -o-linear-gradient(top, #ddd, #bbb);',
 			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, linear-gradient(top, #ddd, #bbb);',
 			'	background-color: #ccc;',
+			'}',
+			'#chat_emote_dropmenu_button.toggled.newlayout {',
+			'	background-color: rgba(0, 0, 0, 0.3);',
 			'}',
 			'#chat_emote_dropmenu {',
 			'	padding: 5px;',
@@ -903,6 +965,9 @@
 	 * @attribute http://userscripts.org/scripts/show/160183 (adaption)
 	 */
 	function getEmoteFromRegEx(regex) {
+		if (typeof regex === 'string') {
+			regex = new RegExp(regex);
+		}
 		return decodeURI(regex.source)
 			.replace('&gt\\;', '>') // right angle bracket
 			.replace('&lt\\;', '<') // left angle bracket
