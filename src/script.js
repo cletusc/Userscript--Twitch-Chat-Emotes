@@ -161,7 +161,7 @@
 	 */
 	function createMenuElements() {
 		if (NEWLAYOUT) {
-			elemEmoteButton = $('<button class="newlayout viewers button-simple light tooltip" title="Emote Menu" id="chat_emote_dropmenu_button"></button>');
+			elemEmoteButton = $('<button class="newlayout emotemenu button-simple light tooltip" title="Emote Menu" id="chat_emote_dropmenu_button"></button>');
 			elemEmoteButton.appendTo(elemChatButtonsContainer);
 		}
 		else {
@@ -185,11 +185,17 @@
 		// Works on popout for new layout as well.
 		else {
 			if (NEWLAYOUT) {
-				elemChatButton.animate({'left': '88px'}, {
-					complete: function () {
-						elemEmoteButton.fadeIn();
-					}
-				});
+				// Only correct styling for non-BetterTTV.
+				if (window.BetterTTV) {
+					elemEmoteButton.fadeIn();
+				}
+				else {
+					elemChatButton.animate({'left': '88px'}, {
+						complete: function () {
+							elemEmoteButton.fadeIn();
+						}
+					});
+				}
 			}
 			else {
 				elemChatButton.css('float', 'right').animate({'width': '149px'}, {
@@ -654,7 +660,7 @@
 			'	cursor: pointer;',
 			'}',
 			'#chat_emote_dropmenu_button.newlayout {',
-			'	background-image: url("' + icons.dropmenuButton + '");',
+			'	background-image: url("' + icons.dropmenuButton + '") !important;',
 			'	background-position: 50%;',
 			'	cursor: pointer;',
 			'}',
