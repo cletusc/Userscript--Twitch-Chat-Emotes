@@ -1,0 +1,648 @@
+/*
+ * Author: Carlos Alvarez
+ * URL: http://alvarez.is
+ *
+ * Project Name: MARCO - One Page Bootstrap 3 Theme
+ * Version: 1.0
+ * URL: http://blacktie.co
+ */
+ 
+/* FONTS */
+@import url(http://fonts.googleapis.com/css?family=Ruda:400,900,700);
+
+/* OVERALL ASPECT */
+
+body {
+    background-color: #f2f2f2;
+    font-family: 'Ruda', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    color: #555;
+
+    -webkit-font-smoothing: antialiased;
+    -webkit-overflow-scrolling: touch;
+    
+}
+
+/* Titles */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Ruda', sans-serif;
+    font-weight: 900;
+    color: #333;
+}
+
+
+/* Paragraph & Typographic */
+p {
+    line-height: 28px;
+    margin-bottom: 25px;
+}
+
+.centered {
+    text-align: center;
+}
+
+.goleft {
+	text-align: left;
+}
+
+/* Links */
+a {
+    word-wrap: break-word;
+
+    -webkit-transition: color 0.1s ease-in, background 0.1s ease-in;
+    -moz-transition: color 0.1s ease-in, background 0.1s ease-in;
+    -ms-transition: color 0.1s ease-in, background 0.1s ease-in;
+    -o-transition: color 0.1s ease-in, background 0.1s ease-in;
+    transition: color 0.1s ease-in, background 0.1s ease-in;
+}
+
+a:hover,
+a:focus {
+    color: #7b7b7b;
+    text-decoration: none;
+    outline: 0;
+}
+
+a:before,
+a:after {
+    -webkit-transition: color 0.1s ease-in, background 0.1s ease-in;
+    -moz-transition: color 0.1s ease-in, background 0.1s ease-in;
+    -ms-transition: color 0.1s ease-in, background 0.1s ease-in;
+    -o-transition: color 0.1s ease-in, background 0.1s ease-in;
+    transition: color 0.1s ease-in, background 0.1s ease-in;
+}
+
+ hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 1em 0;
+    padding: 0;
+}
+
+.navbar {
+	font-size: 14px;
+	background: #ffffff;
+}
+
+.navbar-fixed-top {
+border-width: 0 0 0px;
+border-bottom-width: 0px;
+}
+/* ================== BASIC CONFIGURATION ================== */
+
+.spacing i {
+	padding-left: 8px;
+	padding-right: 8px
+}
+/* margin top & Bottom */
+.mt {
+	margin-top: 50px;
+	margin-bottom: 50px;
+}
+
+/* Special Margin for Wrap sections */
+.mts {
+	margin-top: -20px;
+}
+
+
+/* service icons */
+.si {
+	visibility: hidden;
+}
+
+.si:hover {
+	background-color: #ffffff;
+}
+
+.si i {
+	font-size: 40px;
+	padding: 20px;
+}
+
+/* Padding top & bottom */
+.pt {
+	padding-top: 15px;
+	padding-bottom: 15px; 
+}
+
+/* Description Styling / Used in portfolio & Blog images footnotes */
+.desc p {
+	font-family: 'Ruda', sans-serif;
+	font-size: 16px;
+	font-weight: 700;
+	margin-top: 15px;
+}
+
+.desc p > i {
+	font-size: 16px;
+	color: #979797;
+}
+
+.desc p > i:hover {
+	font-size: 16px;
+	color: #e74c3c;
+	cursor: pointer;
+}
+
+.desc p.lead {
+    font-family: 'Ruda', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    margin-top: -15px;
+}
+
+.desc p.time {
+    font-family: 'Ruda', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    margin-top: 0px;
+	color: #979797;
+	text-align: right;
+}
+
+.desc p.time > i {
+	font-size: 12px;
+}
+
+
+/* Dashed Separator */
+
+hr-d {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px dashed #ccc;
+    margin: 1em 0;
+    padding: 0;
+}
+
+
+p.capitalize {
+	display:block;
+	text-align: left;
+}
+
+p.capitalize:first-letter {
+	text-transform:capitalize; 
+	font-size: 30px;
+	font-family: 'Ruda', sans-serif;
+	font-weight: 400;
+	color:white; 
+	padding-left:10px; 
+	padding-right:10px; 
+	margin-right:5px;
+}
+
+
+/* Button Call To Action */
+.btn-cta {
+  color: #ffffff;
+  background-color: transparent;
+  border-color: #ffffff;
+  font-family: 'Ruda', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-bottom: 25px;
+}
+
+.btn-cta:hover,
+.btn-cta:focus,
+.btn-cta:active,
+.btn-cta.active,
+.open .dropdown-toggle.btn-cta {
+  color: #2f2f2f;
+  background-color: #ffffff;
+  border-color: #2f2f2f;
+}
+
+/* Button Theme */
+.btn-theme {
+  color: #ffffff;
+  background-color: transparent;
+  border-color: #ffffff;
+  font-family: 'Ruda', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-bottom: 25px;
+}
+
+.btn-theme:hover,
+.btn-theme:focus,
+.btn-theme:active,
+.btn-theme.active,
+.open .dropdown-toggle.btn-theme {
+  color: #2f2f2f;
+  background-color: #ffffff;
+  border-color: #2f2f2f;
+}
+
+/* Button Yellow */
+.btn-yellow {
+  color: #2f2f2f;
+  background-color: #ffd56c;
+  border-color: #ffffff;
+  font-family: 'Ruda', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-bottom: 25px;
+}
+
+.btn-yellow:hover,
+.btn-yellow:focus,
+.btn-yellow:active,
+.btn-yellow.active,
+.open .dropdown-toggle.btn-yellow {
+  color: #2f2f2f;
+  background-color: #fdc741;
+  border-color: #ffffff;
+}
+
+
+
+/***** Testimonials Styling *****/
+.testi-container {
+	width:100%;
+	margin-bottom:14px;
+	padding: 5px 6px 3px 0px; 
+	background-color:#fafafa;
+	border: solid 1px #ddd;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	position:relative;
+	float:left;
+	z-index:998;
+}
+
+.testi-container:before {
+	width: 25px;
+	height: 17px;
+	background:#fafafa;
+	content: '';
+	position: absolute;
+	z-index:999;
+	left:42px;
+	bottom: 0px;
+	margin-left: -7px;	
+}
+@media \0screen {.testi-container:before {background:none;}}
+
+.testi-container:after {
+	width: 17px;
+	height: 17px;
+	background:#fafafa;
+	border:1px solid #ddd;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	content: '';
+	position: absolute;
+	z-index:888;
+	left:45px;
+	bottom: -5px;
+	margin-left: -7px;
+	transform:rotate(45deg);
+	-ms-transform:rotate(45deg);
+	-webkit-transform:rotate(45deg);
+}
+@media \0screen {.testi-container:after {background:none; border:none;}}
+
+.testi-text {
+	width:100%;
+	float:left;
+	margin:0px;
+	padding:10px 14px 0px 14px;
+	font-weight: 400;
+}
+
+/* ================== MAIN WRAP SECTIONS ================== */
+
+#headerwrap {
+	background: url(../img/header-background.jpg) no-repeat center top;
+	margin-top: 0px;
+	padding-top: 50px;
+	background-attachment: relative;
+	background-position: center center;
+	min-height: 450px;
+	width: 100%;
+	
+    -webkit-background-size: 100%;
+    -moz-background-size: 100%;
+    -o-background-size: 100%;
+    background-size: 100%;
+
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+#headerwrap h1 {
+	margin-top: 60px;
+	color: white;
+	font-size: 50px;
+	font-weight: 900;
+	letter-spacing: 1px;
+	visibility: hidden;
+}
+
+#headerwrap h2 {
+	color: white;
+	visibility: hidden;
+
+}
+
+#headerwrap .img-responsive {
+	margin: 0 auto;
+}
+
+
+
+
+/* Footer Wrap */
+
+#f {
+	background-color: #1b1b1b;
+	padding-top: 40px;
+	padding-bottom: 40px;
+}
+
+#f p {
+	color: white;
+}
+
+#f h4 {
+	color: white;
+}
+
+/* Color Wraps */
+#white {
+	margin-top: 0px;
+	background-color: #ffffff;
+	min-height: 300px;
+	width: 100%;
+}
+
+#grey {
+	margin-top: 0px;
+	background-color: #f7f7f7;
+	min-height: 300px;
+	width: 100%;	
+}
+
+#black {
+	margin-top: 0px;
+	background-color: #2f2f2f;
+	min-height: 300px;
+	width: 100%;	
+}
+
+#black h3 {
+	color: white;
+}
+
+#black h4 {
+	color: white;
+	text-transform: uppercase
+}
+
+#black p {
+	color: white;
+	font-size: 16px;
+	font-weight: 400;
+}
+
+#black i {
+	font-size: 35px;
+}
+
+#black h1 {
+	color: white;
+	font-size: 70px;
+}
+
+/* Map Wrap*/
+
+#map {
+	width: 100%;
+	height: 400px;
+}
+
+#map-contact {
+	width: 100%;
+	height: 650px;
+}
+
+/* ================== CALL TO ACTION WRAP SECTIONS & HELPERS ================== */
+#cta01 {
+	background: url(../img/cta/cta01.jpg) no-repeat center top;
+	margin-top: 0px;
+	padding-top:100px;
+	text-align:center;
+	background-attachment: relative;
+	background-position: center center;
+	min-height: 350px;
+	width: 100%;
+	
+    -webkit-background-size: 100%;
+    -moz-background-size: 100%;
+    -o-background-size: 100%;
+    background-size: 100%;
+
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+#cta01 h1 {
+	color: white;
+	font-weight: 700;
+	margin-bottom: 25px;
+	font-size: 60px;
+}
+
+#cta01 h2 {
+	color: white;
+	font-weight: 700;
+	margin-bottom: 25px;
+}
+
+#cta01 i {
+	color: white;
+	font-size: 45px;
+}
+
+
+#cta02 {
+	background: url(../img/cta/cta02.jpg) no-repeat center top;
+	margin-top: 0px;
+	padding-top:100px;
+	text-align:center;
+	background-attachment: relative;
+	background-position: center center;
+	min-height: 350px;
+	width: 100%;
+	
+    -webkit-background-size: 100%;
+    -moz-background-size: 100%;
+    -o-background-size: 100%;
+    background-size: 100%;
+
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+#cta02 h2 {
+	color: white;
+	font-weight: 700;
+	margin-bottom: 25px;
+}
+
+
+#cta03 {
+	background: url(../img/cta/cta01.jpg) no-repeat center top;
+	margin-top: 0px;
+	padding-top:50px;
+	text-align:center;
+	background-attachment: relative;
+	background-position: center center;
+	min-height: 450px;
+	width: 100%;
+	
+    -webkit-background-size: 100%;
+    -moz-background-size: 100%;
+    -o-background-size: 100%;
+    background-size: 100%;
+
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+
+#cta03 h2 {
+	color: white;
+	font-weight: 700;
+	margin-bottom: 50px;
+}
+
+#cta03 i {
+	color: white;
+	font-size: 45px;
+}
+
+#cta03 p {
+	color: white;
+	font-size: 16px;
+}
+
+#cta-bar {
+	background: #2f2f2f;
+	color: white;
+	padding-top: 40px;
+	padding-bottom: 40px;
+	
+    -webkit-transition: color 0.3s ease-in, background 0.3s ease-in;
+    -moz-transition: color 0.3s ease-in, background 0.3s ease-in;
+    -ms-transition: color 0.3s ease-in, background 0.3s ease-in;
+    -o-transition: color 0.3s ease-in, background 0.3s ease-in;
+    transition: color 0.3s ease-in, background 0.3s ease-in;
+}
+
+#cta-bar:before,
+#cta-bar:after {
+    -webkit-transition: color 0.2s ease-in, background 0.2s ease-in;
+    -moz-transition: color 0.2s ease-in, background 0.2s ease-in;
+    -ms-transition: color 0.2s ease-in, background 0.2s ease-in;
+    -o-transition: color 0.2s ease-in, background 0.2s ease-in;
+    transition: color 0.2s ease-in, background 0.2s ease-in;
+    
+    cursor: pointer;
+}
+
+#cta-bar h4 {
+	color: white;
+	font-weight: 400;
+}
+
+
+/* ================== TEAM MEMBERS INFORMATION OVER iMAGE ================== */
+.members {
+  width: 302px;
+  position: relative;
+  float: left;
+  margin: 0 20px 0 0;
+  > img {
+    display: block;
+    position: relative;
+  }
+}
+
+.team-info {
+  position: absolute;
+  bottom: 20px;
+  right: 0px;
+  width: 170px;
+  padding: 10px 10px 30px 10px;
+}
+.subhead {
+  color: #f2f2f2;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.team-name {
+  color: white;
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.team-description {
+	color: white;
+	padding-top: 20px;
+}
+
+.team-description i {
+	margin: 8px;
+}
+
+/* Team Member Stats Icons Conf */
+.team-stat i {
+	font-size: 28px;
+}
+
+/* ================== TWITTER FEED CONFIGURATION ================== */
+
+@media (max-width: 600px) { 
+
+#headerwrap h1 {
+	font-size: 35px;
+}
+
+#cta03 {
+	background: #2d2d2d;
+	}	
+	
+#wv {
+	height: 350px;
+}
+	
+}
+
+@media (max-width: 900px) { 
+
+
+#cta03 {
+	background: #2d2d2d;
+	}	
+}
+
+
