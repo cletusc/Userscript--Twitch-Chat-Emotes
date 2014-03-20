@@ -14,7 +14,7 @@
 
 body {
     background-color: #f2f2f2;
-    font-family: 'Ruda', sans-serif;
+    font-family: Helvetica, sans-serif;
     font-weight: 400;
     font-size: 14px;
     color: #555;
@@ -26,7 +26,7 @@ body {
 
 /* Titles */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Ruda', sans-serif;
+    font-family: Helvetica, sans-serif;
     font-weight: 900;
     color: #333;
 }
@@ -131,7 +131,7 @@ border-bottom-width: 0px;
 
 /* Description Styling / Used in portfolio & Blog images footnotes */
 .desc p {
-	font-family: 'Ruda', sans-serif;
+	font-family: Helvetica, sans-serif;
 	font-size: 16px;
 	font-weight: 700;
 	margin-top: 15px;
@@ -149,14 +149,14 @@ border-bottom-width: 0px;
 }
 
 .desc p.lead {
-    font-family: 'Ruda', sans-serif;
+    font-family: Helvetica, sans-serif;
     font-weight: 400;
     font-size: 14px;
     margin-top: -15px;
 }
 
 .desc p.time {
-    font-family: 'Ruda', sans-serif;
+    font-family: Helvetica, sans-serif;
     font-weight: 400;
     font-size: 12px;
     margin-top: 0px;
@@ -189,7 +189,7 @@ p.capitalize {
 p.capitalize:first-letter {
 	text-transform:capitalize; 
 	font-size: 30px;
-	font-family: 'Ruda', sans-serif;
+	font-family: Helvetica, sans-serif;
 	font-weight: 400;
 	color:white; 
 	padding-left:10px; 
@@ -203,7 +203,7 @@ p.capitalize:first-letter {
   color: #ffffff;
   background-color: transparent;
   border-color: #ffffff;
-  font-family: 'Ruda', sans-serif;
+  font-family: Helvetica, sans-serif;
   font-size: 13px;
   letter-spacing: 2px;
   margin-bottom: 25px;
@@ -224,7 +224,7 @@ p.capitalize:first-letter {
   color: #ffffff;
   background-color: transparent;
   border-color: #ffffff;
-  font-family: 'Ruda', sans-serif;
+  font-family: Helvetica, sans-serif;
   font-size: 13px;
   letter-spacing: 2px;
   margin-bottom: 25px;
@@ -245,7 +245,7 @@ p.capitalize:first-letter {
   color: #2f2f2f;
   background-color: #ffd56c;
   border-color: #ffffff;
-  font-family: 'Ruda', sans-serif;
+  font-family: Helvetica, sans-serif;
   font-size: 13px;
   letter-spacing: 2px;
   margin-bottom: 25px;
