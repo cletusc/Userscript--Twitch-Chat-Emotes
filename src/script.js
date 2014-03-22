@@ -590,9 +590,14 @@
 			text = ' ' + text;
 		}
 		// Always put space at end.
-		text += ' ';
+		text = beforeText + text + ' ' + afterText;
 		// Set the text.
-		element.value = beforeText + text + afterText;
+		if (NEWLAYOUT) {
+			window.App.__container__.lookup('controller:chat').get('currentRoom').set('messageToSend', text);
+		}
+		else {
+			element.value = text;
+		}
 		element.focus();
 		// Put cursor at end.
 		selectionEnd = element.selectionStart + text.length;
