@@ -7,7 +7,7 @@
 					return window.CurrentChat.emoticons
 				}
 				else if (window.App) {
-					return window.App.__container__.lookup('controller:emoticons').emoticons;
+					return window.App.__container__.lookup('controller:emoticons').get('emoticons');
 				}
 				return [];
 			},
@@ -63,8 +63,8 @@
 					(
 						window.App !== undefined &&
 						window.App.__container__ !== undefined &&
-						window.App.__container__.lookup('controller:emoticons').emoticons !== undefined &&
-						window.App.__container__.lookup('controller:emoticons').emoticons.length
+						window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
+						window.App.__container__.lookup('controller:emoticons').get('emoticons').length
 					)
 				) &&
 				window.$j !== undefined
