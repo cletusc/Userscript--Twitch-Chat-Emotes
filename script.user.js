@@ -236,7 +236,7 @@
 		// Create emote menu.
 		elemEmoteMenu = $('<div class="dropmenu" id="chat_emote_dropmenu"></div>');
 		elemEmoteMenu.html([
-			'<div class="emote-menu-draggable"></div>',
+			'<div class="draggable"></div>',
 			'<div class="userscript_emoticon_header">Popular Emotes</div>',
 			'<div class="scroll emotes-popular">',
 			'	<div class="tse-content emotes-container"></div>',
@@ -308,7 +308,7 @@
 
 		// Make draggable.
 		elemEmoteMenu.draggable({
-			handle: '.emote-menu-draggable',
+			handle: '.draggable',
 			start: function () {
 				$(this).addClass('has_moved');
 				$(this).addClass('not_default_location');
@@ -726,13 +726,13 @@
 			'#chat_emote_dropmenu .emotes-popular {',
 			'	height: 38px;',
 			'}',
-			'#chat_emote_dropmenu .emote-menu-draggable {',
+			'#chat_emote_dropmenu .draggable {',
 			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);',
 			'	cursor: move;',
 			'	height: 7px;',
 			'	margin-bottom: 3px;',
 			'}',
-			'#chat_emote_dropmenu .emote-menu-draggable:hover {',
+			'#chat_emote_dropmenu .draggable:hover {',
 			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);',
 			'}',
 			'.twitch-chat-emotes-news {',
