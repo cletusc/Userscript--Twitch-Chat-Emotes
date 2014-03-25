@@ -104,17 +104,13 @@
 			// Errors in approximately 102400ms.
 			if (time >= 60000) {
 				console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
-				if (window.CurrentChat) {
-					window.CurrentChat.admin_message(MESSAGES.NOT_LOGGED_IN);
-				}
+				adminMessage(MESSAGES.NOT_LOGGED_IN);
 				return;
 			}
 			if (time >= 10000) {
 				if (!loggedIn) {
 					console.error(MESSAGES.NOT_LOGGED_IN);
-					if (window.CurrentChat) {
-						window.CurrentChat.admin_message(MESSAGES.NOT_LOGGED_IN);
-					}
+					adminMessage(MESSAGES.NOT_LOGGED_IN);
 					return;
 				}
 				if (!objectsLoaded) {
@@ -837,10 +833,10 @@
 		function handleNewsFeed() {
 			for (var newsId in cachedNews) {
 				if (cachedNews.hasOwnProperty(newsId) && dismissedNews.indexOf(newsId) === -1) {
-					window.CurrentChat.admin_message('<div class="twitch-chat-emotes-news">[' + SCRIPT_NAME + '] News: ' + cachedNews[newsId] + ' (<a href="#" data-command="twitch-chat-emotes:dismiss-news" data-news-id="' + newsId + '">Dismiss</a>)</div>');
+					adminMessage('<div class="twitch-chat-emotes-news">[' + SCRIPT_NAME + '] News: ' + cachedNews[newsId] + ' (<a href="#" data-command="twitch-chat-emotes:dismiss-news" data-news-id="' + newsId + '">Dismiss</a>)</div>', true);
 				}
 			}
-			$('#chat_lines').on('click', 'a[data-command="twitch-chat-emotes:dismiss-news"]', function (evt) {
+			$('#chat_lines, .chat-messages').on('click', 'a[data-command="twitch-chat-emotes:dismiss-news"]', function (evt) {
 				evt.preventDefault();
 				dismissedNews.push($(this).data('news-id'));
 				setSetting('twitch-chat-emotes:dismissed-news', JSON.stringify(dismissedNews));
@@ -1025,6 +1021,30 @@
 			.replace(/[^\\]\?/g, '') // remove optional chars
 			.replace(/^\\b|\\b$/g, '') // remove boundaries
 			.replace(/\\/g, ''); // unescape
+	}
+
+	/**
+	 * Message hook into Twitch "admin" message.
+	 */
+	function adminMessage(message, isHTML) {
+		if (typeof window.CurrentChat !== 'undefined') {
+			return window.CurrentChat.admin_message(message);
+		}
+		else if (NEWLAYOUT) {
+			var controller = App.__container__.lookup("controller:chat");
+			if (isHTML) {
+				var id = location.href + '#admin-message-workaround-' + Math.random();
+				controller.currentRoom.addTmiMessage(id);
+				setTimeout(function () {
+					$('a[href="' + id + '"]').get(0).outerHTML = message;
+				}, 0);
+				return true;
+			}
+			return controller.currentRoom.addTmiMessage(message);
+		}
+		else {
+			return console.log(message);
+		}
 	}
 
 	// Generic functions.
