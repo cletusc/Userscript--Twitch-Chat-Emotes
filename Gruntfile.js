@@ -23,13 +23,30 @@ module.exports = function(grunt) {
 				options: {
 					banner: '/*! <%= pkg.userscript.name %> v<%= pkg.version %>, <%= grunt.template.today("yyyy-mm-dd") %>, <%= pkg.homepage %>  */\n'
 				}
+			},
+			thirdParty: {
+				files: {
+					'build/script-third-party.min.js': [
+						'node_modules/grunt-hogan/node_modules/hogan.js/lib/template.js'
+					]
+				},
+				options: {
+					banner: '/* Third-party scripts minified. */\n'
+				}
 			}
 		},
 		concat: {
 			build: {
 				options: {},
 				files: {
-					'build/script-concat.js': ['src/userscript-header.js', 'src/header.js', 'src/script.js', 'src/footer.js']
+					'build/script-concat.js': [
+						'src/userscript-header.js',
+						'src/header.js',
+						'src/script.js',
+						'build/script-third-party.min.js',
+						'build/templates.js',
+						'src/footer.js'
+					]
 				}
 			}
 		},
@@ -46,6 +63,26 @@ module.exports = function(grunt) {
 		watch: {
 			files: ['src/*', 'package.json'],
 			tasks: ['default'],
+		},
+		hogan: {
+			build: {
+				templates: [
+					'src/templates/*.html',
+					'src/styles/*.css'
+				],
+				output: 'build/templates.js',
+				binderName: 'hulk'
+			}
+		},
+		cssmin: {
+			build: {
+				options: {
+					banner: '/* CSS minified. */'
+				},
+				files: {
+					'build/styles.css': ['src/style.css']
+				}
+			}
 		}
 	});
 
@@ -53,14 +90,18 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-contrib-cssmin');
+	grunt.loadNpmTasks('grunt-hogan');
 	grunt.loadNpmTasks('grunt-json-generator');
 	grunt.loadNpmTasks('grunt-template');
 
 	// Tasks.
 	grunt.registerTask('default', [
+		'uglify:thirdParty',
+		'hogan',
 		'concat',
 		'template',
-		'uglify',
+		'uglify:build',
 		'copy'
 	]);
 

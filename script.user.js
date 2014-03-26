@@ -151,7 +151,7 @@
 
 		loadPlugins();
 		createMenuElements();
-		addBaseStyle();
+		addStyle(templates.style.render());
 		bindListeners();
 		showNews();
 
@@ -230,24 +230,7 @@
 		}
 
 		// Create emote menu.
-		elemEmoteMenu = $('<div class="dropmenu" id="chat_emote_dropmenu"></div>');
-		elemEmoteMenu.html([
-			'<div class="draggable"></div>',
-			'<div class="userscript_emoticon_header">Popular Emotes</div>',
-			'<div class="scroll emotes-popular">',
-			'	<div class="tse-content emotes-container"></div>',
-			'</div>',
-			'<div class="userscript_emoticon_header">All Emotes</div>',
-			'<div class="scroll scroll-dark emotes-all">',
-			'	<div class="tse-content emotes-container"></div>',
-			'</div>',
-			'<p class="dropmenu_alt_section">',
-			'	<a class="left icon github" href="https://github.com/cletusc/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the project page on Github"></a>',
-			'	<a class="left icon popular-emotes-location" title="Change popular emotes location"></a>',
-			'	<a class="reset" title="Reset the popularity of the emotes back to default">Reset Popularity</a>',
-			'	<a class="right icon resize-handle"></a>',
-			'</p>'
-		].join('\n'));
+		elemEmoteMenu = $(templates.menu.render());
 		elemEmoteMenu.appendTo(document.body);
 	}
 
@@ -670,140 +653,6 @@
 	}
 
 	/**
-	 * Adds the base style.
-	 */
-	function addBaseStyle() {
-		var icons = {
-			dropmenuButton: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKUSURBVDhPfZTNi1JRGMZvMIsWUZts5SIXFYK0CME/IGghxVC7WUoU1NBixI+mRSD4MQzmxziKO3XUBhRmUGZKdBG40XEGU6d0GFGZcT4qxW1hi7fzvNwZqKwDD5z7vs/vueeee+6VMJxO5wUhhdvtfuHz+T4tLS2NhegfGsMDLxiwHIIhLi57PJ75VCr1Y39/n4bDIY1Go4lCDx54wYCVYzjoVjQa/dxutyfCkwSvYJpgOSQf708tuBa1yWRy/L+V/Cl4wYBFhhTxfLhum/esiiJ1u12KRCJksVhofX2dTk5OzkHMUUMPHnjB2F55VpEhPde/Lbx8FqBEIkHpdJoMBgNptVrS6XRUqVTOg7a3t2lmZob0ej2p1Wr2ggGLDOnJ3QSZH4coHo/TysoKhygUCtJoNFQsFmkwGLAwR7hSqSSVSsVeMGCRIT29F6fXJi8Xy+Uymc1mmp6eJofDQfV6nU5PT1mY2+127uHxSqUSh4FFhhQLvrvtcrm+YpkHBwdUrVZpa2uLarUadTodOjw8ZGGOGnrwwAsGLDLw1i4uLrzRYeOOj49pb2+Pdnd3qdVq8StGAIQ5ao1Ggz3wggGLDD4C4izcEcWfR0dHbMrlcrSxscGbjVAIK8lms7S5ucmB/X6fXz9YDsEQFzdjsVit2Wzyqc1kMrwfVquVjEYjzc3NkclkIpvNRmtra+yBVzAfBXtDjuGgS8FgcFbc8QvuhjNSKBQoFAqR6LFEn/L5PPfggXd5eXkWrBzDQdC1QCBgFoeut7Ozw/tyBp2FQzhPwtOFFwzY34Yo4A9wRXzdD8LhcE48wncE9no9Fuaoid574bkPLxgZ/3uI5pTQVfFlP/L7/Wmhb7JSXq/3IXrwyHZ5SNIvGCnqyh+J7+gAAAAASUVORK5CYII=',
-			resizeHandle: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=',
-			arrows: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAClSURBVEhL7ZRBDoAgEAN9uj9fKaFkl61EiN5sMgcLnYMHDjObcTbUWUWWDQyZW4ksC37MSEkqCmrMJEn4KMzGTJCsjpku2RkzVbI7Zk4KFGPUnSpQ4HAMunQ3FY1f8IIAYOBRd74TYDBGSlLR+AWLAhwoxqg7/T3YTX8PdiTYhH+wIqlj4AVPJX0M/JjMJGEMwodDSdIYpMLhJXIMZOnA8HZsZscFnEfNs2qCgdQAAAAASUVORK5CYII=',
-			// "The mark": inverted color to suit dark theme and resized to 16x16.
-			// @attribution Github, Inc. (https://github.com/logos)
-			github: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC'
-		},
-		// Base style.
-		css = [
-			'#chat_emote_dropmenu_button:not(.newlayout) span {',
-			'	background: url("' + icons.dropmenuButton + '") no-repeat 50%;',
-			'	cursor: pointer;',
-			'}',
-			'#chat_emote_dropmenu_button.newlayout {',
-			'	background-image: url("' + icons.dropmenuButton + '") !important;',
-			'	background-position: 50%;',
-			'	cursor: pointer;',
-			'}',
-			'#chat_emote_dropmenu_button.toggled:not(.newlayout) {',
-			'	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
-			'	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
-			'	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
-			'	border-top: 1px solid rgba(0, 0, 0, 0.35);',
-			'	border-left: 1px solid rgba(0, 0, 0, 0.3);',
-			'	border-right: 1px solid rgba(0, 0, 0, 0.3);',
-			'	border-bottom: 1px solid rgba(0, 0, 0, 0.3);',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#bbb));',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -moz-linear-gradient(top, #ddd, #bbb);',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -o-linear-gradient(top, #ddd, #bbb);',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, linear-gradient(top, #ddd, #bbb);',
-			'	background-color: #ccc;',
-			'}',
-			'#chat_emote_dropmenu_button.toggled.newlayout {',
-			'	background-color: rgba(0, 0, 0, 0.3);',
-			'}',
-			'#chat_emote_dropmenu {',
-			'	padding: 5px;',
-			'}',
-			'#chat_emote_dropmenu {',
-			'	background-color: #202020;',
-			'}',
-			'#chat_emote_dropmenu h4 {',
-			'	text-align: center;',
-			'	padding: 3px;',
-			'}',
-			'#chat_emote_dropmenu .emotes-popular {',
-			'	height: 38px;',
-			'}',
-			'#chat_emote_dropmenu .draggable {',
-			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);',
-			'	cursor: move;',
-			'	height: 7px;',
-			'	margin-bottom: 3px;',
-			'}',
-			'#chat_emote_dropmenu .draggable:hover {',
-			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);',
-			'}',
-			'.twitch-chat-emotes-news {',
-			'	border: 1px solid rgba(100, 65, 165, 0.5);',
-			'	padding: 2px;',
-			'}',
-			'.twitch-chat-emotes-news a {',
-			'	color: #6441a5 !important;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon_header {',
-			'	border-top: 1px solid black;',
-			'	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;',
-			'	background-image: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.5));',
-			'	padding: 2px;',
-			'	text-align: center;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon_header img {',
-			'	margin-right: 8px;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon {',
-			'	display: inline-block;',
-			'	padding: 2px;',
-			'	margin: 1px;',
-			'	cursor: pointer;',
-			'	border-radius: 5px;',
-			'	text-align: center;',
-			'	width: 32px;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon .emoticon {',
-			'	max-width: 32px;',
-			'	margin: 0 !important;',
-			'	height: 32px;',
-			'	background-size: contain;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon:hover {',
-			'	background-color: rgba(255, 255, 255, 0.1);',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a {',
-			'	cursor: pointer;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section .left {',
-			'	float: left;',
-			'	margin-right: 5px;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section .right {',
-			'	float: right;',
-			'	margin-left: 5px;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.icon {',
-			'	height: 16px;',
-			'	width: 16px;',
-			'	opacity: 0.5;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.icon:hover {',
-			'	opacity: 1.0;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.github {',
-			'	background: url("' + icons.github + '") no-repeat 50%;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location {',
-			'	background: url("' + icons.arrows + '") no-repeat 50% top;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location.popular-on-bottom {',
-			'	background-position: bottom;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.resize-handle {',
-			'	background: url("' + icons.resizeHandle + '") no-repeat 50%;',
-			'	cursor: nwse-resize;',
-			'}'
-		];
-
-		addStyle(css.join('\n'));
-	}
-
-	/**
 	 * Show latest news.
 	 */
 	function showNews() {
@@ -1100,6 +949,12 @@
 			console.log('[DEBUG][' + (SCRIPT_NAME || 'UNKNOWN SCRIPT') + ']: ' + (description || ''), (stringify ? JSON.stringify(obj) : obj));
 		}
 	}
+
+/* Third-party scripts minified. */
+var Hogan={};!function(a,b){function c(a){return String(null===a||void 0===a?"":a)}function d(a){return a=c(a),j.test(a)?a.replace(e,"&amp;").replace(f,"&lt;").replace(g,"&gt;").replace(h,"&#39;").replace(i,"&quot;"):a}a.Template=function(a,c,d,e){this.r=a||this.r,this.c=d,this.options=e,this.text=c||"",this.buf=b?[]:""},a.Template.prototype={r:function(){return""},v:d,t:c,render:function(a,b,c){return this.ri([a],b||{},c)},ri:function(a,b,c){return this.r(a,b,c)},rp:function(a,b,c,d){var e=c[a];return e?(this.c&&"string"==typeof e&&(e=this.c.compile(e,this.options)),e.ri(b,c,d)):""},rs:function(a,b,c){var d=a[a.length-1];if(!k(d))return void c(a,b,this);for(var e=0;e<d.length;e++)a.push(d[e]),c(a,b,this),a.pop()},s:function(a,b,c,d,e,f,g){var h;return k(a)&&0===a.length?!1:("function"==typeof a&&(a=this.ls(a,b,c,d,e,f,g)),h=""===a||!!a,!d&&h&&b&&b.push("object"==typeof a?a:b[b.length-1]),h)},d:function(a,b,c,d){var e=a.split("."),f=this.f(e[0],b,c,d),g=null;if("."===a&&k(b[b.length-2]))return b[b.length-1];for(var h=1;h<e.length;h++)f&&"object"==typeof f&&e[h]in f?(g=f,f=f[e[h]]):f="";return d&&!f?!1:(d||"function"!=typeof f||(b.push(g),f=this.lv(f,b,c),b.pop()),f)},f:function(a,b,c,d){for(var e=!1,f=null,g=!1,h=b.length-1;h>=0;h--)if(f=b[h],f&&"object"==typeof f&&a in f){e=f[a],g=!0;break}return g?(d||"function"!=typeof e||(e=this.lv(e,b,c)),e):d?!1:""},ho:function(a,b,c,d,e){var f=this.c,g=this.options;g.delimiters=e;var d=a.call(b,d);return d=null==d?String(d):d.toString(),this.b(f.compile(d,g).render(b,c)),!1},b:b?function(a){this.buf.push(a)}:function(a){this.buf+=a},fl:b?function(){var a=this.buf.join("");return this.buf=[],a}:function(){var a=this.buf;return this.buf="",a},ls:function(a,b,c,d,e,f,g){var h=b[b.length-1],i=null;if(!d&&this.c&&a.length>0)return this.ho(a,h,c,this.text.substring(e,f),g);if(i=a.call(h),"function"==typeof i){if(d)return!0;if(this.c)return this.ho(i,h,c,this.text.substring(e,f),g)}return i},lv:function(a,b,d){var e=b[b.length-1],f=a.call(e);return"function"==typeof f&&(f=c(f.call(e)),this.c&&~f.indexOf("{{"))?this.c.compile(f,this.options).render(e,d):c(f)}};var e=/&/g,f=/</g,g=/>/g,h=/\'/g,i=/\"/g,j=/[&<>\"\']/,k=Array.isArray||function(a){return"[object Array]"===Object.prototype.toString.call(a)}}("undefined"!=typeof exports?exports:Hogan);
+var templates = {};
+templates['menu'] = new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("<div class=\"dropmenu\" id=\"chat_emote_dropmenu\">\r");_.b("\n" + i);_.b("	<div class=\"draggable\"></div>\r");_.b("\n" + i);_.b("	<div class=\"userscript_emoticon_header\">Popular Emotes</div>\r");_.b("\n" + i);_.b("	<div class=\"scroll emotes-popular\">\r");_.b("\n" + i);_.b("		<div class=\"tse-content emotes-container\"></div>\r");_.b("\n" + i);_.b("	</div>\r");_.b("\n" + i);_.b("	<div class=\"userscript_emoticon_header\">All Emotes</div>\r");_.b("\n" + i);_.b("	<div class=\"scroll scroll-dark emotes-all\">\r");_.b("\n" + i);_.b("		<div class=\"tse-content emotes-container\"></div>\r");_.b("\n" + i);_.b("	</div>\r");_.b("\n" + i);_.b("	<p class=\"dropmenu_alt_section\">\r");_.b("\n" + i);_.b("		<a class=\"left icon github\" href=\"https://github.com/cletusc/Userscript--Twitch-Chat-Emotes\" target=\"_blank\" title=\"Visit the project page on Github\"></a>\r");_.b("\n" + i);_.b("		<a class=\"left icon popular-emotes-location\" title=\"Change popular emotes location\"></a>\r");_.b("\n" + i);_.b("		<a class=\"reset\" title=\"Reset the popularity of the emotes back to default\">Reset Popularity</a>\r");_.b("\n" + i);_.b("		<a class=\"right icon resize-handle\"></a>\r");_.b("\n" + i);_.b("	</p>\r");_.b("\n" + i);_.b("</div>\r");_.b("\n");return _.fl();;});
+templates['style'] = new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("#chat_emote_dropmenu_button:not(.newlayout) span {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKUSURBVDhPfZTNi1JRGMZvMIsWUZts5SIXFYK0CME/IGghxVC7WUoU1NBixI+mRSD4MQzmxziKO3XUBhRmUGZKdBG40XEGU6d0GFGZcT4qxW1hi7fzvNwZqKwDD5z7vs/vueeee+6VMJxO5wUhhdvtfuHz+T4tLS2NhegfGsMDLxiwHIIhLi57PJ75VCr1Y39/n4bDIY1Go4lCDx54wYCVYzjoVjQa/dxutyfCkwSvYJpgOSQf708tuBa1yWRy/L+V/Cl4wYBFhhTxfLhum/esiiJ1u12KRCJksVhofX2dTk5OzkHMUUMPHnjB2F55VpEhPde/Lbx8FqBEIkHpdJoMBgNptVrS6XRUqVTOg7a3t2lmZob0ej2p1Wr2ggGLDOnJ3QSZH4coHo/TysoKhygUCtJoNFQsFmkwGLAwR7hSqSSVSsVeMGCRIT29F6fXJi8Xy+Uymc1mmp6eJofDQfV6nU5PT1mY2+127uHxSqUSh4FFhhQLvrvtcrm+YpkHBwdUrVZpa2uLarUadTodOjw8ZGGOGnrwwAsGLDLw1i4uLrzRYeOOj49pb2+Pdnd3qdVq8StGAIQ5ao1Ggz3wggGLDD4C4izcEcWfR0dHbMrlcrSxscGbjVAIK8lms7S5ucmB/X6fXz9YDsEQFzdjsVit2Wzyqc1kMrwfVquVjEYjzc3NkclkIpvNRmtra+yBVzAfBXtDjuGgS8FgcFbc8QvuhjNSKBQoFAqR6LFEn/L5PPfggXd5eXkWrBzDQdC1QCBgFoeut7Ozw/tyBp2FQzhPwtOFFwzY34Yo4A9wRXzdD8LhcE48wncE9no9Fuaoid574bkPLxgZ/3uI5pTQVfFlP/L7/Wmhb7JSXq/3IXrwyHZ5SNIvGCnqyh+J7+gAAAAASUVORK5CYII=\") no-repeat 50%;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu_button.newlayout {\r");_.b("\n" + i);_.b("	background-image: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKUSURBVDhPfZTNi1JRGMZvMIsWUZts5SIXFYK0CME/IGghxVC7WUoU1NBixI+mRSD4MQzmxziKO3XUBhRmUGZKdBG40XEGU6d0GFGZcT4qxW1hi7fzvNwZqKwDD5z7vs/vueeee+6VMJxO5wUhhdvtfuHz+T4tLS2NhegfGsMDLxiwHIIhLi57PJ75VCr1Y39/n4bDIY1Go4lCDx54wYCVYzjoVjQa/dxutyfCkwSvYJpgOSQf708tuBa1yWRy/L+V/Cl4wYBFhhTxfLhum/esiiJ1u12KRCJksVhofX2dTk5OzkHMUUMPHnjB2F55VpEhPde/Lbx8FqBEIkHpdJoMBgNptVrS6XRUqVTOg7a3t2lmZob0ej2p1Wr2ggGLDOnJ3QSZH4coHo/TysoKhygUCtJoNFQsFmkwGLAwR7hSqSSVSsVeMGCRIT29F6fXJi8Xy+Uymc1mmp6eJofDQfV6nU5PT1mY2+127uHxSqUSh4FFhhQLvrvtcrm+YpkHBwdUrVZpa2uLarUadTodOjw8ZGGOGnrwwAsGLDLw1i4uLrzRYeOOj49pb2+Pdnd3qdVq8StGAIQ5ao1Ggz3wggGLDD4C4izcEcWfR0dHbMrlcrSxscGbjVAIK8lms7S5ucmB/X6fXz9YDsEQFzdjsVit2Wzyqc1kMrwfVquVjEYjzc3NkclkIpvNRmtra+yBVzAfBXtDjuGgS8FgcFbc8QvuhjNSKBQoFAqR6LFEn/L5PPfggXd5eXkWrBzDQdC1QCBgFoeut7Ozw/tyBp2FQzhPwtOFFwzY34Yo4A9wRXzdD8LhcE48wncE9no9Fuaoid574bkPLxgZ/3uI5pTQVfFlP/L7/Wmhb7JSXq/3IXrwyHZ5SNIvGCnqyh+J7+gAAAAASUVORK5CYII=\") !important;\r");_.b("\n" + i);_.b("	background-position: 50%;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu_button.toggled:not(.newlayout) {\r");_.b("\n" + i);_.b("	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);\r");_.b("\n" + i);_.b("	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);\r");_.b("\n" + i);_.b("	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);\r");_.b("\n" + i);_.b("	border-top: 1px solid rgba(0, 0, 0, 0.35);\r");_.b("\n" + i);_.b("	border-left: 1px solid rgba(0, 0, 0, 0.3);\r");_.b("\n" + i);_.b("	border-right: 1px solid rgba(0, 0, 0, 0.3);\r");_.b("\n" + i);_.b("	border-bottom: 1px solid rgba(0, 0, 0, 0.3);\r");_.b("\n" + i);_.b("	background: url(\"../images/xarth/dropdown_arrow.png\") no-repeat right center, -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#bbb));\r");_.b("\n" + i);_.b("	background: url(\"../images/xarth/dropdown_arrow.png\") no-repeat right center, -moz-linear-gradient(top, #ddd, #bbb);\r");_.b("\n" + i);_.b("	background: url(\"../images/xarth/dropdown_arrow.png\") no-repeat right center, -o-linear-gradient(top, #ddd, #bbb);\r");_.b("\n" + i);_.b("	background: url(\"../images/xarth/dropdown_arrow.png\") no-repeat right center, linear-gradient(top, #ddd, #bbb);\r");_.b("\n" + i);_.b("	background-color: #ccc;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu_button.toggled.newlayout {\r");_.b("\n" + i);_.b("	background-color: rgba(0, 0, 0, 0.3);\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu {\r");_.b("\n" + i);_.b("	padding: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu {\r");_.b("\n" + i);_.b("	background-color: #202020;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu h4 {\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("	padding: 3px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .emotes-popular {\r");_.b("\n" + i);_.b("	height: 38px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .draggable {\r");_.b("\n" + i);_.b("	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);\r");_.b("\n" + i);_.b("	cursor: move;\r");_.b("\n" + i);_.b("	height: 7px;\r");_.b("\n" + i);_.b("	margin-bottom: 3px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .draggable:hover {\r");_.b("\n" + i);_.b("	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b(".twitch-chat-emotes-news {\r");_.b("\n" + i);_.b("	border: 1px solid rgba(100, 65, 165, 0.5);\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b(".twitch-chat-emotes-news a {\r");_.b("\n" + i);_.b("	color: #6441a5 !important;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon_header {\r");_.b("\n" + i);_.b("	border-top: 1px solid black;\r");_.b("\n" + i);_.b("	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;\r");_.b("\n" + i);_.b("	background-image: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.5));\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon_header img {\r");_.b("\n" + i);_.b("	margin-right: 8px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon {\r");_.b("\n" + i);_.b("	display: inline-block;\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("	margin: 1px;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("	border-radius: 5px;\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("	width: 32px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon .emoticon {\r");_.b("\n" + i);_.b("	max-width: 32px;\r");_.b("\n" + i);_.b("	margin: 0 !important;\r");_.b("\n" + i);_.b("	height: 32px;\r");_.b("\n" + i);_.b("	background-size: contain;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon:hover {\r");_.b("\n" + i);_.b("	background-color: rgba(255, 255, 255, 0.1);\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a {\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section .left {\r");_.b("\n" + i);_.b("	float: left;\r");_.b("\n" + i);_.b("	margin-right: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section .right {\r");_.b("\n" + i);_.b("	float: right;\r");_.b("\n" + i);_.b("	margin-left: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.icon {\r");_.b("\n" + i);_.b("	height: 16px;\r");_.b("\n" + i);_.b("	width: 16px;\r");_.b("\n" + i);_.b("	opacity: 0.5;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.icon:hover {\r");_.b("\n" + i);_.b("	opacity: 1.0;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.github {\r");_.b("\n" + i);_.b("	/**\r");_.b("\n" + i);_.b("	 * \"The mark\": inverted color to suit dark theme and resized to 16x16.\r");_.b("\n" + i);_.b("	 * @attribution Github, Inc. (https://github.com/logos)\r");_.b("\n" + i);_.b("	 */\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC\") no-repeat 50%;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAClSURBVEhL7ZRBDoAgEAN9uj9fKaFkl61EiN5sMgcLnYMHDjObcTbUWUWWDQyZW4ksC37MSEkqCmrMJEn4KMzGTJCsjpku2RkzVbI7Zk4KFGPUnSpQ4HAMunQ3FY1f8IIAYOBRd74TYDBGSlLR+AWLAhwoxqg7/T3YTX8PdiTYhH+wIqlj4AVPJX0M/JjMJGEMwodDSdIYpMLhJXIMZOnA8HZsZscFnEfNs2qCgdQAAAAASUVORK5CYII=\") no-repeat 50% top;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location.popular-on-bottom {\r");_.b("\n" + i);_.b("	background-position: bottom;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.resize-handle {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=\") no-repeat 50%;\r");_.b("\n" + i);_.b("	cursor: nwse-resize;\r");_.b("\n" + i);_.b("}\r");_.b("\n");return _.fl();;});
 
 // End wrapper.
 })(this.unsafeWindow || window, window.chrome ? true : false);

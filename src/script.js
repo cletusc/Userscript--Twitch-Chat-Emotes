@@ -124,7 +124,7 @@
 
 		loadPlugins();
 		createMenuElements();
-		addBaseStyle();
+		addStyle(templates.style.render());
 		bindListeners();
 		showNews();
 
@@ -203,24 +203,7 @@
 		}
 
 		// Create emote menu.
-		elemEmoteMenu = $('<div class="dropmenu" id="chat_emote_dropmenu"></div>');
-		elemEmoteMenu.html([
-			'<div class="draggable"></div>',
-			'<div class="userscript_emoticon_header">Popular Emotes</div>',
-			'<div class="scroll emotes-popular">',
-			'	<div class="tse-content emotes-container"></div>',
-			'</div>',
-			'<div class="userscript_emoticon_header">All Emotes</div>',
-			'<div class="scroll scroll-dark emotes-all">',
-			'	<div class="tse-content emotes-container"></div>',
-			'</div>',
-			'<p class="dropmenu_alt_section">',
-			'	<a class="left icon github" href="https://github.com/cletusc/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the project page on Github"></a>',
-			'	<a class="left icon popular-emotes-location" title="Change popular emotes location"></a>',
-			'	<a class="reset" title="Reset the popularity of the emotes back to default">Reset Popularity</a>',
-			'	<a class="right icon resize-handle"></a>',
-			'</p>'
-		].join('\n'));
+		elemEmoteMenu = $(templates.menu.render());
 		elemEmoteMenu.appendTo(document.body);
 	}
 
@@ -640,140 +623,6 @@
 		element.attr('data-emote', emote.text);
 		element.attr('title', emote.text);
 		container.append(element);
-	}
-
-	/**
-	 * Adds the base style.
-	 */
-	function addBaseStyle() {
-		var icons = {
-			dropmenuButton: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKUSURBVDhPfZTNi1JRGMZvMIsWUZts5SIXFYK0CME/IGghxVC7WUoU1NBixI+mRSD4MQzmxziKO3XUBhRmUGZKdBG40XEGU6d0GFGZcT4qxW1hi7fzvNwZqKwDD5z7vs/vueeee+6VMJxO5wUhhdvtfuHz+T4tLS2NhegfGsMDLxiwHIIhLi57PJ75VCr1Y39/n4bDIY1Go4lCDx54wYCVYzjoVjQa/dxutyfCkwSvYJpgOSQf708tuBa1yWRy/L+V/Cl4wYBFhhTxfLhum/esiiJ1u12KRCJksVhofX2dTk5OzkHMUUMPHnjB2F55VpEhPde/Lbx8FqBEIkHpdJoMBgNptVrS6XRUqVTOg7a3t2lmZob0ej2p1Wr2ggGLDOnJ3QSZH4coHo/TysoKhygUCtJoNFQsFmkwGLAwR7hSqSSVSsVeMGCRIT29F6fXJi8Xy+Uymc1mmp6eJofDQfV6nU5PT1mY2+127uHxSqUSh4FFhhQLvrvtcrm+YpkHBwdUrVZpa2uLarUadTodOjw8ZGGOGnrwwAsGLDLw1i4uLrzRYeOOj49pb2+Pdnd3qdVq8StGAIQ5ao1Ggz3wggGLDD4C4izcEcWfR0dHbMrlcrSxscGbjVAIK8lms7S5ucmB/X6fXz9YDsEQFzdjsVit2Wzyqc1kMrwfVquVjEYjzc3NkclkIpvNRmtra+yBVzAfBXtDjuGgS8FgcFbc8QvuhjNSKBQoFAqR6LFEn/L5PPfggXd5eXkWrBzDQdC1QCBgFoeut7Ozw/tyBp2FQzhPwtOFFwzY34Yo4A9wRXzdD8LhcE48wncE9no9Fuaoid574bkPLxgZ/3uI5pTQVfFlP/L7/Wmhb7JSXq/3IXrwyHZ5SNIvGCnqyh+J7+gAAAAASUVORK5CYII=',
-			resizeHandle: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=',
-			arrows: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAClSURBVEhL7ZRBDoAgEAN9uj9fKaFkl61EiN5sMgcLnYMHDjObcTbUWUWWDQyZW4ksC37MSEkqCmrMJEn4KMzGTJCsjpku2RkzVbI7Zk4KFGPUnSpQ4HAMunQ3FY1f8IIAYOBRd74TYDBGSlLR+AWLAhwoxqg7/T3YTX8PdiTYhH+wIqlj4AVPJX0M/JjMJGEMwodDSdIYpMLhJXIMZOnA8HZsZscFnEfNs2qCgdQAAAAASUVORK5CYII=',
-			// "The mark": inverted color to suit dark theme and resized to 16x16.
-			// @attribution Github, Inc. (https://github.com/logos)
-			github: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC'
-		},
-		// Base style.
-		css = [
-			'#chat_emote_dropmenu_button:not(.newlayout) span {',
-			'	background: url("' + icons.dropmenuButton + '") no-repeat 50%;',
-			'	cursor: pointer;',
-			'}',
-			'#chat_emote_dropmenu_button.newlayout {',
-			'	background-image: url("' + icons.dropmenuButton + '") !important;',
-			'	background-position: 50%;',
-			'	cursor: pointer;',
-			'}',
-			'#chat_emote_dropmenu_button.toggled:not(.newlayout) {',
-			'	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
-			'	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
-			'	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.65);',
-			'	border-top: 1px solid rgba(0, 0, 0, 0.35);',
-			'	border-left: 1px solid rgba(0, 0, 0, 0.3);',
-			'	border-right: 1px solid rgba(0, 0, 0, 0.3);',
-			'	border-bottom: 1px solid rgba(0, 0, 0, 0.3);',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#bbb));',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -moz-linear-gradient(top, #ddd, #bbb);',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, -o-linear-gradient(top, #ddd, #bbb);',
-			'	background: url("../images/xarth/dropdown_arrow.png") no-repeat right center, linear-gradient(top, #ddd, #bbb);',
-			'	background-color: #ccc;',
-			'}',
-			'#chat_emote_dropmenu_button.toggled.newlayout {',
-			'	background-color: rgba(0, 0, 0, 0.3);',
-			'}',
-			'#chat_emote_dropmenu {',
-			'	padding: 5px;',
-			'}',
-			'#chat_emote_dropmenu {',
-			'	background-color: #202020;',
-			'}',
-			'#chat_emote_dropmenu h4 {',
-			'	text-align: center;',
-			'	padding: 3px;',
-			'}',
-			'#chat_emote_dropmenu .emotes-popular {',
-			'	height: 38px;',
-			'}',
-			'#chat_emote_dropmenu .draggable {',
-			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);',
-			'	cursor: move;',
-			'	height: 7px;',
-			'	margin-bottom: 3px;',
-			'}',
-			'#chat_emote_dropmenu .draggable:hover {',
-			'	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);',
-			'}',
-			'.twitch-chat-emotes-news {',
-			'	border: 1px solid rgba(100, 65, 165, 0.5);',
-			'	padding: 2px;',
-			'}',
-			'.twitch-chat-emotes-news a {',
-			'	color: #6441a5 !important;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon_header {',
-			'	border-top: 1px solid black;',
-			'	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;',
-			'	background-image: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.5));',
-			'	padding: 2px;',
-			'	text-align: center;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon_header img {',
-			'	margin-right: 8px;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon {',
-			'	display: inline-block;',
-			'	padding: 2px;',
-			'	margin: 1px;',
-			'	cursor: pointer;',
-			'	border-radius: 5px;',
-			'	text-align: center;',
-			'	width: 32px;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon .emoticon {',
-			'	max-width: 32px;',
-			'	margin: 0 !important;',
-			'	height: 32px;',
-			'	background-size: contain;',
-			'}',
-			'#chat_emote_dropmenu .userscript_emoticon:hover {',
-			'	background-color: rgba(255, 255, 255, 0.1);',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a {',
-			'	cursor: pointer;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section .left {',
-			'	float: left;',
-			'	margin-right: 5px;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section .right {',
-			'	float: right;',
-			'	margin-left: 5px;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.icon {',
-			'	height: 16px;',
-			'	width: 16px;',
-			'	opacity: 0.5;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.icon:hover {',
-			'	opacity: 1.0;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.github {',
-			'	background: url("' + icons.github + '") no-repeat 50%;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location {',
-			'	background: url("' + icons.arrows + '") no-repeat 50% top;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location.popular-on-bottom {',
-			'	background-position: bottom;',
-			'}',
-			'#chat_emote_dropmenu .dropmenu_alt_section a.resize-handle {',
-			'	background: url("' + icons.resizeHandle + '") no-repeat 50%;',
-			'	cursor: nwse-resize;',
-			'}'
-		];
-
-		addStyle(css.join('\n'));
 	}
 
 	/**
