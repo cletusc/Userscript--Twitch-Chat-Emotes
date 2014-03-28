@@ -156,12 +156,11 @@
 	 * Creates the initial menu elements
 	 */
 	function createMenuElements() {
+		elemEmoteButton = $(templates.emoteButton.render({isEmber: NEWLAYOUT}));
 		if (NEWLAYOUT) {
-			elemEmoteButton = $('<button class="newlayout emotemenu button-simple light tooltip" title="Emote Menu" id="chat_emote_dropmenu_button"></button>');
 			elemEmoteButton.appendTo(elemChatButtonsContainer);
 		}
 		else {
-			elemEmoteButton = $('<a class="dropdown_glyph" id="chat_emote_dropmenu_button"><span>emotes</span></a>');
 			elemEmoteButton.insertBefore(elemChatButton);
 		}
 		elemEmoteButton.hide();
@@ -608,21 +607,29 @@
 				var badge = emotes.subscriptions.badges[emote.channel] || emote.badge || 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
 				// Add notice about addon emotes.
 				if (!emotes.subscriptions.badges[emote.channel] && !elemEmoteMenu.find('.userscript_emoticon_header.addon-emotes-header').length) {
-					container.append($('<div class="userscript_emoticon_header addon-emotes-header" title="Below are emotes added by an addon. Only those who also have the same addon installed can see these emotes in chat.">Addon Emotes</div>'));
+					container.append(
+						$(templates.emoteGroupHeader.render({
+							isAddonHeader: true
+						}))
+					);
 				}
 				if (!elemEmoteMenu.find('.userscript_emoticon_header[data-emote-channel="' + emote.channel + '"]').length) {
-					container.append($('<div class="userscript_emoticon_header" data-emote-channel="' + emote.channel + '"><img src="' + badge + '" />' + emote.channel + '</div>'));
+					container.append(
+						$(templates.emoteGroupHeader.render({
+							badge: badge,
+							channel: emote.channel
+						}))
+					);
 				}
 			}
 		}
 
-		// Create element.
-		var element = $('<div class="userscript_emoticon"></div>');
-		element.html(emote.image.html);
-
-		element.attr('data-emote', emote.text);
-		element.attr('title', emote.text);
-		container.append(element);
+		container.append(
+			$(templates.emote.render({
+				image: emote.image.html,
+				text: emote.text
+			}))
+		);
 	}
 
 	/**
@@ -655,7 +662,11 @@
 		function handleNewsFeed() {
 			for (var newsId in cachedNews) {
 				if (cachedNews.hasOwnProperty(newsId) && dismissedNews.indexOf(newsId) === -1) {
-					adminMessage('<div class="twitch-chat-emotes-news">[' + SCRIPT_NAME + '] News: ' + cachedNews[newsId] + ' (<a href="#" data-command="twitch-chat-emotes:dismiss-news" data-news-id="' + newsId + '">Dismiss</a>)</div>', true);
+					adminMessage(templates.newsMessage.render({
+						scriptName: SCRIPT_NAME,
+						message: cachedNews[newsId],
+						id: newsId
+					}), true);
 				}
 			}
 			$('#chat_lines, .chat-messages').on('click', 'a[data-command="twitch-chat-emotes:dismiss-news"]', function (evt) {

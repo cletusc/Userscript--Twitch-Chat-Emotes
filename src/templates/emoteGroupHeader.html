@@ -1,0 +1,9 @@
+{{#isAddonHeader}}
+	<div class="userscript_emoticon_header addon-emotes-header" title="Below are emotes added by an addon. Only those who also have the same addon installed can see these emotes in chat.">
+		Addon Emotes
+	</div>
+{{/isAddonHeader}}
+
+{{^isAddonHeader}}
+	<div class="userscript_emoticon_header" data-emote-channel="{{channel}}"><img src="{{badge}}" />{{channel}}</div>
+{{/isAddonHeader}}
