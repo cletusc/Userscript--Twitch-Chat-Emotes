@@ -46,6 +46,7 @@
 		emotePopularity = false,
 		$,
 		jQuery,
+		isInitiated = false,
 
 		elemChatButton,
 		elemChatButtonsContainer,
@@ -76,6 +77,18 @@
 	// Only enable script if we have the right variables.
 	//---------------------------------------------------
 	(function init(time) {
+		if (window.App === undefined) {
+			return init(time);
+		}
+		if (!isInitiated) {
+			window.App.ChannelRoute.reopen({
+				activate: function () {
+					this._super();
+					init(50);
+				}
+			});
+			isInitiated = true;
+		}
 		var	loggedIn = window.Twitch && window.Twitch.user.isLoggedIn(),
 			objectsLoaded = (
 				window.Twitch !== undefined &&
@@ -94,7 +107,9 @@
 						window.App.__container__.lookup('controller:emoticons').get('emoticons').length
 					)
 				) &&
-				window.$j !== undefined
+				window.$j !== undefined &&
+				// Chat button.
+				document.querySelector('#chat_speak, .send-chat-button')
 			);
 		if (document.querySelector('#chat_emote_dropmenu_button')) {
 			console.warn(MESSAGES.ALREADY_RUNNING);
