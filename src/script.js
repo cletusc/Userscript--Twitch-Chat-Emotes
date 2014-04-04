@@ -200,7 +200,7 @@
 					elemEmoteButton.fadeIn();
 				}
 				else {
-					elemChatButton.animate({'left': '88px'}, {
+					elemChatButton.animate({'left': '121px'}, {
 						complete: function () {
 							elemEmoteButton.fadeIn();
 						}
@@ -234,7 +234,7 @@
 		elemEmoteButton.on('click', function () {
 			elemEmoteMenu.removeClass('has_moved');
 			if (elemEmoteMenu.is(':visible')) {
-				$(this).addClass('toggled');
+				$(this).addClass('active');
 				if (elemEmoteMenu.hasClass('not_default_location')) {
 					elemEmoteMenu.offset(JSON.parse(elemEmoteMenu.attr('data-offset')));
 				}
@@ -248,9 +248,9 @@
 						elemChatLines = $('#chat_lines');
 					}
 					// Adjust the size and position of the popup.
-					elemEmoteMenu.height(elemChatLines.height() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
+					elemEmoteMenu.height(elemChatLines.outerHeight() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
 					// On NEWLAYOUT, change `$('#speak, .chat-messages')` to `elemChatLines`.
-					elemEmoteMenu.width($('#speak, .chat-messages').width() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
+					elemEmoteMenu.width($('#speak, .chat-messages').outerWidth() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
 					elemEmoteMenu.offset(elemChatLines.offset());
 					// Fix `.emotes-all` height.
 					elemEmoteMenu.find('.emotes-all').height(elemEmoteMenu.height() - diff);
@@ -260,7 +260,7 @@
 				}
 			}
 			else {
-				$(this).removeClass('toggled');
+				$(this).removeClass('active');
 			}
 			populateEmotesMenu();
 		});
