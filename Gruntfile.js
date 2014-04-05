@@ -42,9 +42,9 @@ module.exports = function(grunt) {
 					'build/script-concat.js': [
 						'src/userscript-header.js',
 						'src/header.js',
-						'src/script.js',
 						'build/script-third-party.min.js',
 						'build/templates.js',
+						'src/script.js',
 						'src/footer.js'
 					]
 				}
@@ -61,7 +61,7 @@ module.exports = function(grunt) {
 			}
 		},
 		watch: {
-			files: ['src/*', 'package.json'],
+			files: ['src/**/*', 'package.json'],
 			tasks: ['default'],
 		},
 		hogan: {
