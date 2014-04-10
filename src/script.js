@@ -305,7 +305,7 @@
 
 		// Enable the popular emotes location changing button.
 		elemEmoteMenu.find('.dropmenu_alt_section a.popular-emotes-location').on('click', function () {
-			var current = +getSetting('emote-popular-on-top', 1);
+			var current = +getSetting('emote-popular-on-top', 0);
 			setSetting('emote-popular-on-top', current ? 0 : 1);
 			fixPopularEmotesLocation(!current);
 		});
@@ -327,7 +327,7 @@
 	function populateEmotesMenu() {
 		var container;
 
-		fixPopularEmotesLocation(+getSetting('emote-popular-on-top', true));
+		fixPopularEmotesLocation(+getSetting('emote-popular-on-top', false));
 		refreshUsableEmotes();
 
 		// Add popular emotes.
