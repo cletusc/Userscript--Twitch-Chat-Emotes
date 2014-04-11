@@ -50,19 +50,8 @@
 	// Only enable script if we have the right variables.
 	//---------------------------------------------------
 	(function init(time) {
-		if (window.App === undefined) {
-			return init(time);
-		}
-		if (!isInitiated) {
-			window.App.ChannelRoute.reopen({
-				activate: function () {
-					this._super();
-					init(50);
-				}
-			});
-			isInitiated = true;
-		}
 		var	loggedIn = window.Twitch && window.Twitch.user.isLoggedIn(),
+			routes = window.App && (window.App.ChannelRoute || window.App.ChatRoute),
 			objectsLoaded = (
 				window.Twitch !== undefined &&
 				(
@@ -84,11 +73,28 @@
 				// Chat button.
 				document.querySelector('#chat_speak, .send-chat-button')
 			);
+		if (!isInitiated && routes) {
+			var activate = {
+				activate: function () {
+					this._super();
+					init(50);
+				}
+			};
+
+			if (window.App.ChannelRoute) {
+				window.App.ChannelRoute.reopen(activate);
+				isInitiated = true;
+			}
+			if (window.App.ChatRoute) {
+				window.App.ChatRoute.reopen(activate);
+				isInitiated = true;
+			}
+		}
 		if (document.querySelector('#chat_emote_dropmenu_button')) {
 			console.warn(MESSAGES.ALREADY_RUNNING);
 			return;
 		}
-		if (!objectsLoaded || !loggedIn) {
+		if (!objectsLoaded || !loggedIn || !routes) {
 			// Errors in approximately 102400ms.
 			if (time >= 60000) {
 				console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
