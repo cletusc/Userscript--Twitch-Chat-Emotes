@@ -145,7 +145,7 @@
 
 		loadPlugins();
 		createMenuElements();
-		addStyle(templates.style.render());
+		addStyle(templates.style());
 		bindListeners();
 		showNews();
 
@@ -177,7 +177,7 @@
 	 * Creates the initial menu elements
 	 */
 	function createMenuElements() {
-		elemEmoteButton = $(templates.emoteButton.render({isEmber: NEWLAYOUT}));
+		elemEmoteButton = $(templates.emoteButton({isEmber: NEWLAYOUT}));
 		if (NEWLAYOUT) {
 			elemEmoteButton.appendTo(elemChatButtonsContainer);
 		}
@@ -223,7 +223,7 @@
 		}
 
 		// Create emote menu.
-		elemEmoteMenu = $(templates.menu.render());
+		elemEmoteMenu = $(templates.menu());
 		elemEmoteMenu.appendTo(document.body);
 	}
 
@@ -629,14 +629,14 @@
 				// Add notice about addon emotes.
 				if (!emotes.subscriptions.badges[emote.channel] && !elemEmoteMenu.find('.userscript_emoticon_header.addon-emotes-header').length) {
 					container.append(
-						$(templates.emoteGroupHeader.render({
+						$(templates.emoteGroupHeader({
 							isAddonHeader: true
 						}))
 					);
 				}
 				if (!elemEmoteMenu.find('.userscript_emoticon_header[data-emote-channel="' + emote.channel + '"]').length) {
 					container.append(
-						$(templates.emoteGroupHeader.render({
+						$(templates.emoteGroupHeader({
 							badge: badge,
 							channel: emote.channel
 						}))
@@ -646,7 +646,7 @@
 		}
 
 		container.append(
-			$(templates.emote.render({
+			$(templates.emote({
 				image: emote.image.html,
 				text: emote.text
 			}))
@@ -683,7 +683,7 @@
 		function handleNewsFeed() {
 			for (var newsId in cachedNews) {
 				if (cachedNews.hasOwnProperty(newsId) && dismissedNews.indexOf(newsId) === -1) {
-					adminMessage(templates.newsMessage.render({
+					adminMessage(templates.newsMessage({
 						scriptName: SCRIPT_NAME,
 						message: cachedNews[newsId],
 						id: newsId

@@ -71,7 +71,8 @@ module.exports = function(grunt) {
 					'src/styles/*.css'
 				],
 				output: 'build/templates.js',
-				binderName: 'hulk'
+				binderName: 'revealing',
+				exportName: 'templates'
 			}
 		},
 		cssmin: {
