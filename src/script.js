@@ -159,8 +159,13 @@
 						channel = ticket.product.owner_name;
 					// Add channel badges.
 					if (badge) {
-						emotes.subscriptions.badges[channel] = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
+						badge = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
 					}
+					else {
+						badge = 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
+					}
+					emotes.subscriptions.badges[channel] = badge;
+					
 					// Add emotes channel.
 					ticket.product.emoticons.forEach(function (emote) {
 						emotes.subscriptions.emotes[getEmoteFromRegEx(new RegExp(emote.regex))] = {
@@ -625,7 +630,7 @@
 		}
 		if (showHeader) {
 			if (emote.channel && emote.channel !== 'Twitch Turbo') {
-				var badge = emotes.subscriptions.badges[emote.channel] || emote.badge || 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
+				var badge = emotes.subscriptions.badges[emote.channel] || emote.badge;
 				// Add notice about addon emotes.
 				if (!emotes.subscriptions.badges[emote.channel] && !elemEmoteMenu.find('.userscript_emoticon_header.addon-emotes-header').length) {
 					container.append(
