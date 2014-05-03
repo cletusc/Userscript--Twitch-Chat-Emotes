@@ -3,10 +3,7 @@
 	var emotes = {
 			usable: [],
 			get raw() {
-				if (window.CurrentChat) {
-					return window.CurrentChat.emoticons
-				}
-				else if (window.App) {
+				if (window.App) {
 					return window.App.__container__.lookup('controller:emoticons').get('emoticons');
 				}
 				return [];
@@ -29,7 +26,6 @@
 
 		SCRIPT_NAME = '<%= pkg.userscript.name %>',
 		DEBUG = location.hash === '#<%= pkg.name %>-debug',
-		NEWLAYOUT = false,
 		MESSAGES = {
 			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
 			NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
@@ -55,19 +51,10 @@
 			objectsLoaded = (
 				window.Twitch !== undefined &&
 				(
-					// OLDLAYOUT
-					(
-						window.CurrentChat !== undefined &&
-						window.CurrentChat.emoticons !== undefined &&
-						window.CurrentChat.emoticons.length
-					) ||
-					// NEWLAYOUT
-					(
-						window.App !== undefined &&
-						window.App.__container__ !== undefined &&
-						window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
-						window.App.__container__.lookup('controller:emoticons').get('emoticons').length
-					)
+					window.App !== undefined &&
+					window.App.__container__ !== undefined &&
+					window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
+					window.App.__container__.lookup('controller:emoticons').get('emoticons').length
 				) &&
 				window.$j !== undefined &&
 				// Chat button.
@@ -123,19 +110,11 @@
 	 * Runs initial setup of DOM and variables.
 	 */
 	function setup() {
-		NEWLAYOUT = typeof window.CurrentChat === 'undefined';
 		$ = jQuery = window.$j;
 
-		if (NEWLAYOUT) {
-			elemChatButton = $('.send-chat-button');
-			elemChatButtonsContainer = $('.chat-buttons-container .chat-option-buttons');
-			elemChatInput = $('.chat-interface textarea');
-		}
-		else {
-			elemChatButton = $('#chat_speak');
-			elemChatButtonsContainer = $('#control_buttons');
-			elemChatInput = $('#control_input');
-		}
+		elemChatButton = $('.send-chat-button');
+		elemChatButtonsContainer = $('.chat-buttons-container .chat-option-buttons');
+		elemChatInput = $('.chat-interface textarea');
 
 		// No chat, just exit.
 		if (!elemChatButton.length) {
@@ -182,49 +161,20 @@
 	 * Creates the initial menu elements
 	 */
 	function createMenuElements() {
-		elemEmoteButton = $(templates.emoteButton({isEmber: NEWLAYOUT}));
-		if (NEWLAYOUT) {
-			elemEmoteButton.appendTo(elemChatButtonsContainer);
-		}
-		else {
-			elemEmoteButton.insertBefore(elemChatButton);
-		}
+		elemEmoteButton = $(templates.emoteButton());
+		elemEmoteButton.appendTo(elemChatButtonsContainer);
 		elemEmoteButton.hide();
-		// Animate for non-channel pages (dashboard, popout, etc.).
-		// Works on dashboard only on new layout.
-		if (elemChatButton.hasClass('cap')) {
-			elemChatInput.animate({'margin-right': '175px'});
-			elemChatButtonsContainer.css('width', '175px');
-			elemChatButton.animate({'margin-right': '51px'}, {
-				complete: function () {
-					elemChatButton.css('margin-right', '5px');
-					elemEmoteButton.css('margin-right', '5px').fadeIn();
-				}
-			});
+
+		// Only correct styling for non-BetterTTV.
+		if (window.BetterTTV) {
+			elemEmoteButton.fadeIn();
 		}
-		// Animate for channel page.
-		// Works on popout for new layout as well.
 		else {
-			if (NEWLAYOUT) {
-				// Only correct styling for non-BetterTTV.
-				if (window.BetterTTV) {
+			elemChatButton.animate({'left': '121px'}, {
+				complete: function () {
 					elemEmoteButton.fadeIn();
 				}
-				else {
-					elemChatButton.animate({'left': '121px'}, {
-						complete: function () {
-							elemEmoteButton.fadeIn();
-						}
-					});
-				}
-			}
-			else {
-				elemChatButton.css('float', 'right').animate({'width': '149px'}, {
-					complete: function () {
-						elemEmoteButton.fadeIn();
-					}
-				});
-			}
+			});
 		}
 
 		// Create emote menu.
@@ -251,17 +201,11 @@
 				}
 				else {
 					var diff = elemEmoteMenu.height() - elemEmoteMenu.find('.emotes-all').height();
-					var elemChatLines = null;
-					if (NEWLAYOUT) {
-						elemChatLines = $('.chat-messages');
-					}
-					else {
-						elemChatLines = $('#chat_lines');
-					}
+					var elemChatLines = $('.chat-messages');
+
 					// Adjust the size and position of the popup.
 					elemEmoteMenu.height(elemChatLines.outerHeight() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
-					// On NEWLAYOUT, change `$('#speak, .chat-messages')` to `elemChatLines`.
-					elemEmoteMenu.width($('#speak, .chat-messages').outerWidth() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
+					elemEmoteMenu.width(elemChatLines.outerWidth() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
 					elemEmoteMenu.offset(elemChatLines.offset());
 					// Fix `.emotes-all` height.
 					elemEmoteMenu.find('.emotes-all').height(elemEmoteMenu.height() - diff);
@@ -596,12 +540,7 @@
 		// Always put space at end.
 		text = beforeText + text + ' ' + afterText;
 		// Set the text.
-		if (NEWLAYOUT) {
-			window.App.__container__.lookup('controller:chat').get('currentRoom').set('messageToSend', text);
-		}
-		else {
-			element.value = text;
-		}
+		window.App.__container__.lookup('controller:chat').get('currentRoom').set('messageToSend', text);
 		element.focus();
 		// Put cursor at end.
 		selectionEnd = element.selectionStart + text.length;
@@ -886,24 +825,16 @@
 	 * Message hook into Twitch "admin" message.
 	 */
 	function adminMessage(message, isHTML) {
-		if (typeof window.CurrentChat !== 'undefined') {
-			return window.CurrentChat.admin_message(message);
+		var controller = App.__container__.lookup("controller:chat");
+		if (isHTML) {
+			var id = location.href + '#admin-message-workaround-' + Math.random();
+			controller.currentRoom.addTmiMessage(id);
+			setTimeout(function () {
+				$('a[href="' + id + '"]').get(0).outerHTML = message;
+			}, 0);
+			return true;
 		}
-		else if (NEWLAYOUT) {
-			var controller = App.__container__.lookup("controller:chat");
-			if (isHTML) {
-				var id = location.href + '#admin-message-workaround-' + Math.random();
-				controller.currentRoom.addTmiMessage(id);
-				setTimeout(function () {
-					$('a[href="' + id + '"]').get(0).outerHTML = message;
-				}, 0);
-				return true;
-			}
-			return controller.currentRoom.addTmiMessage(message);
-		}
-		else {
-			return console.log(message);
-		}
+		return controller.currentRoom.addTmiMessage(message);
 	}
 
 	// Generic functions.

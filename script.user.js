@@ -31,11 +31,11 @@ var Hogan={};!function(a,b){function c(a){return String(null===a||void 0===a?"":
 var templates = function() {
 var t = {
   'emote' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("<div class=\"userscript_emoticon\" data-emote=\"");_.b(_.v(_.f("text",c,p,0)));_.b("\" title=\"");_.b(_.v(_.f("text",c,p,0)));_.b("\">\r");_.b("\n" + i);_.b("	");_.b(_.t(_.f("image",c,p,0)));_.b("\r");_.b("\n" + i);_.b("</div>\r");_.b("\n");return _.fl();;}),
-  'emoteButton' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");if(_.s(_.f("isEmber",c,p,1),c,p,0,12,134,"{{ }}")){_.rs(c,p,function(c,p,_){_.b("	<button class=\"newlayout emotemenu button normal_button\" title=\"Emote Menu\" id=\"chat_emote_dropmenu_button\"></button>\r");_.b("\n");});c.pop();}if(!_.s(_.f("isEmber",c,p,1),c,p,1,0,0,"")){_.b("	<a class=\"dropdown_glyph\" id=\"chat_emote_dropmenu_button\"><span>emotes</span></a>\r");_.b("\n");};return _.fl();;}),
+  'emoteButton' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("<button class=\"emotemenu button normal_button\" title=\"Emote Menu\" id=\"chat_emote_dropmenu_button\"></button>\r");_.b("\n");return _.fl();;}),
   'emoteGroupHeader' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");if(_.s(_.f("isAddonHeader",c,p,1),c,p,0,18,232,"{{ }}")){_.rs(c,p,function(c,p,_){_.b("	<div class=\"userscript_emoticon_header addon-emotes-header\" title=\"Below are emotes added by an addon. Only those who also have the same addon installed can see these emotes in chat.\">\r");_.b("\n" + i);_.b("		Addon Emotes\r");_.b("\n" + i);_.b("	</div>\r");_.b("\n");});c.pop();}_.b("\r");_.b("\n" + i);if(!_.s(_.f("isAddonHeader",c,p,1),c,p,1,0,0,"")){_.b("	<div class=\"userscript_emoticon_header\" data-emote-channel=\"");_.b(_.v(_.f("channel",c,p,0)));_.b("\"><img src=\"");_.b(_.v(_.f("badge",c,p,0)));_.b("\" />");_.b(_.v(_.f("channel",c,p,0)));_.b("</div>\r");_.b("\n");};return _.fl();;}),
   'menu' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("<div class=\"dropmenu\" id=\"chat_emote_dropmenu\">\r");_.b("\n" + i);_.b("	<div class=\"draggable\"></div>\r");_.b("\n" + i);_.b("	<div class=\"userscript_emoticon_header\">All Emotes</div>\r");_.b("\n" + i);_.b("	<div class=\"scroll scroll-dark emotes-all\">\r");_.b("\n" + i);_.b("		<div class=\"tse-content emotes-container\"></div>\r");_.b("\n" + i);_.b("	</div>\r");_.b("\n" + i);_.b("	<div class=\"userscript_emoticon_header\">Popular Emotes</div>\r");_.b("\n" + i);_.b("	<div class=\"scroll emotes-popular\">\r");_.b("\n" + i);_.b("		<div class=\"tse-content emotes-container\"></div>\r");_.b("\n" + i);_.b("	</div>\r");_.b("\n" + i);_.b("	<p class=\"dropmenu_alt_section\">\r");_.b("\n" + i);_.b("		<a class=\"left icon github\" href=\"https://github.com/cletusc/Userscript--Twitch-Chat-Emotes\" target=\"_blank\" title=\"Visit the project page on Github\"></a>\r");_.b("\n" + i);_.b("		<a class=\"left icon popular-emotes-location\" title=\"Change popular emotes location\"></a>\r");_.b("\n" + i);_.b("		<a class=\"reset\" title=\"Reset the popularity of the emotes back to default\">Reset Popularity</a>\r");_.b("\n" + i);_.b("		<a class=\"right icon resize-handle\"></a>\r");_.b("\n" + i);_.b("	</p>\r");_.b("\n" + i);_.b("</div>\r");_.b("\n");return _.fl();;}),
   'newsMessage' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("\r");_.b("\n" + i);_.b("<div class=\"twitch-chat-emotes-news\">\r");_.b("\n" + i);_.b("	[");_.b(_.v(_.f("scriptName",c,p,0)));_.b("] News: ");_.b(_.t(_.f("message",c,p,0)));_.b(" (<a href=\"#\" data-command=\"twitch-chat-emotes:dismiss-news\" data-news-id=\"");_.b(_.v(_.f("id",c,p,0)));_.b("\">Dismiss</a>)\r");_.b("\n" + i);_.b("</div>\r");_.b("\n");return _.fl();;}),
-  'style' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("#chat_emote_dropmenu_button:not(.newlayout) span {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKUSURBVDhPfZTNi1JRGMZvMIsWUZts5SIXFYK0CME/IGghxVC7WUoU1NBixI+mRSD4MQzmxziKO3XUBhRmUGZKdBG40XEGU6d0GFGZcT4qxW1hi7fzvNwZqKwDD5z7vs/vueeee+6VMJxO5wUhhdvtfuHz+T4tLS2NhegfGsMDLxiwHIIhLi57PJ75VCr1Y39/n4bDIY1Go4lCDx54wYCVYzjoVjQa/dxutyfCkwSvYJpgOSQf708tuBa1yWRy/L+V/Cl4wYBFhhTxfLhum/esiiJ1u12KRCJksVhofX2dTk5OzkHMUUMPHnjB2F55VpEhPde/Lbx8FqBEIkHpdJoMBgNptVrS6XRUqVTOg7a3t2lmZob0ej2p1Wr2ggGLDOnJ3QSZH4coHo/TysoKhygUCtJoNFQsFmkwGLAwR7hSqSSVSsVeMGCRIT29F6fXJi8Xy+Uymc1mmp6eJofDQfV6nU5PT1mY2+127uHxSqUSh4FFhhQLvrvtcrm+YpkHBwdUrVZpa2uLarUadTodOjw8ZGGOGnrwwAsGLDLw1i4uLrzRYeOOj49pb2+Pdnd3qdVq8StGAIQ5ao1Ggz3wggGLDD4C4izcEcWfR0dHbMrlcrSxscGbjVAIK8lms7S5ucmB/X6fXz9YDsEQFzdjsVit2Wzyqc1kMrwfVquVjEYjzc3NkclkIpvNRmtra+yBVzAfBXtDjuGgS8FgcFbc8QvuhjNSKBQoFAqR6LFEn/L5PPfggXd5eXkWrBzDQdC1QCBgFoeut7Ozw/tyBp2FQzhPwtOFFwzY34Yo4A9wRXzdD8LhcE48wncE9no9Fuaoid574bkPLxgZ/3uI5pTQVfFlP/L7/Wmhb7JSXq/3IXrwyHZ5SNIvGCnqyh+J7+gAAAAASUVORK5CYII=\") no-repeat 50%;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu_button.newlayout {\r");_.b("\n" + i);_.b("	background-image: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKUSURBVDhPfZTNi1JRGMZvMIsWUZts5SIXFYK0CME/IGghxVC7WUoU1NBixI+mRSD4MQzmxziKO3XUBhRmUGZKdBG40XEGU6d0GFGZcT4qxW1hi7fzvNwZqKwDD5z7vs/vueeee+6VMJxO5wUhhdvtfuHz+T4tLS2NhegfGsMDLxiwHIIhLi57PJ75VCr1Y39/n4bDIY1Go4lCDx54wYCVYzjoVjQa/dxutyfCkwSvYJpgOSQf708tuBa1yWRy/L+V/Cl4wYBFhhTxfLhum/esiiJ1u12KRCJksVhofX2dTk5OzkHMUUMPHnjB2F55VpEhPde/Lbx8FqBEIkHpdJoMBgNptVrS6XRUqVTOg7a3t2lmZob0ej2p1Wr2ggGLDOnJ3QSZH4coHo/TysoKhygUCtJoNFQsFmkwGLAwR7hSqSSVSsVeMGCRIT29F6fXJi8Xy+Uymc1mmp6eJofDQfV6nU5PT1mY2+127uHxSqUSh4FFhhQLvrvtcrm+YpkHBwdUrVZpa2uLarUadTodOjw8ZGGOGnrwwAsGLDLw1i4uLrzRYeOOj49pb2+Pdnd3qdVq8StGAIQ5ao1Ggz3wggGLDD4C4izcEcWfR0dHbMrlcrSxscGbjVAIK8lms7S5ucmB/X6fXz9YDsEQFzdjsVit2Wzyqc1kMrwfVquVjEYjzc3NkclkIpvNRmtra+yBVzAfBXtDjuGgS8FgcFbc8QvuhjNSKBQoFAqR6LFEn/L5PPfggXd5eXkWrBzDQdC1QCBgFoeut7Ozw/tyBp2FQzhPwtOFFwzY34Yo4A9wRXzdD8LhcE48wncE9no9Fuaoid574bkPLxgZ/3uI5pTQVfFlP/L7/Wmhb7JSXq/3IXrwyHZ5SNIvGCnqyh+J7+gAAAAASUVORK5CYII=\") !important;\r");_.b("\n" + i);_.b("	background-position: 50%;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("	margin-left: 7px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu {\r");_.b("\n" + i);_.b("	padding: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu {\r");_.b("\n" + i);_.b("	background-color: #202020;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu h4 {\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("	padding: 3px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .emotes-popular {\r");_.b("\n" + i);_.b("	height: 38px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .draggable {\r");_.b("\n" + i);_.b("	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);\r");_.b("\n" + i);_.b("	cursor: move;\r");_.b("\n" + i);_.b("	height: 7px;\r");_.b("\n" + i);_.b("	margin-bottom: 3px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .draggable:hover {\r");_.b("\n" + i);_.b("	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b(".twitch-chat-emotes-news {\r");_.b("\n" + i);_.b("	border: 1px solid rgba(100, 65, 165, 0.5);\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b(".twitch-chat-emotes-news a {\r");_.b("\n" + i);_.b("	color: #6441a5 !important;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon_header {\r");_.b("\n" + i);_.b("	border-top: 1px solid black;\r");_.b("\n" + i);_.b("	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;\r");_.b("\n" + i);_.b("	background-image: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.5));\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon_header img {\r");_.b("\n" + i);_.b("	margin-right: 8px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon {\r");_.b("\n" + i);_.b("	display: inline-block;\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("	margin: 1px;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("	border-radius: 5px;\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("	width: 32px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon .emoticon {\r");_.b("\n" + i);_.b("	max-width: 32px;\r");_.b("\n" + i);_.b("	margin: 0 !important;\r");_.b("\n" + i);_.b("	height: 32px;\r");_.b("\n" + i);_.b("	background-size: contain;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon:hover {\r");_.b("\n" + i);_.b("	background-color: rgba(255, 255, 255, 0.1);\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a {\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section .left {\r");_.b("\n" + i);_.b("	float: left;\r");_.b("\n" + i);_.b("	margin-right: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section .right {\r");_.b("\n" + i);_.b("	float: right;\r");_.b("\n" + i);_.b("	margin-left: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.icon {\r");_.b("\n" + i);_.b("	height: 16px;\r");_.b("\n" + i);_.b("	width: 16px;\r");_.b("\n" + i);_.b("	opacity: 0.5;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.icon:hover {\r");_.b("\n" + i);_.b("	opacity: 1.0;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.github {\r");_.b("\n" + i);_.b("	/**\r");_.b("\n" + i);_.b("	 * \"The mark\": inverted color to suit dark theme and resized to 16x16.\r");_.b("\n" + i);_.b("	 * @attribution Github, Inc. (https://github.com/logos)\r");_.b("\n" + i);_.b("	 */\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC\") no-repeat 50%;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAClSURBVEhL7ZRBDoAgEAN9uj9fKaFkl61EiN5sMgcLnYMHDjObcTbUWUWWDQyZW4ksC37MSEkqCmrMJEn4KMzGTJCsjpku2RkzVbI7Zk4KFGPUnSpQ4HAMunQ3FY1f8IIAYOBRd74TYDBGSlLR+AWLAhwoxqg7/T3YTX8PdiTYhH+wIqlj4AVPJX0M/JjMJGEMwodDSdIYpMLhJXIMZOnA8HZsZscFnEfNs2qCgdQAAAAASUVORK5CYII=\") no-repeat 50% top;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location.popular-on-bottom {\r");_.b("\n" + i);_.b("	background-position: bottom;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.resize-handle {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=\") no-repeat 50%;\r");_.b("\n" + i);_.b("	cursor: nwse-resize;\r");_.b("\n" + i);_.b("}\r");_.b("\n");return _.fl();;})
+  'style' : new Hogan.Template(function(c,p,i){var _=this;_.b(i=i||"");_.b("#chat_emote_dropmenu_button {\r");_.b("\n" + i);_.b("	background-image: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAQCAYAAAAbBi9cAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKUSURBVDhPfZTNi1JRGMZvMIsWUZts5SIXFYK0CME/IGghxVC7WUoU1NBixI+mRSD4MQzmxziKO3XUBhRmUGZKdBG40XEGU6d0GFGZcT4qxW1hi7fzvNwZqKwDD5z7vs/vueeee+6VMJxO5wUhhdvtfuHz+T4tLS2NhegfGsMDLxiwHIIhLi57PJ75VCr1Y39/n4bDIY1Go4lCDx54wYCVYzjoVjQa/dxutyfCkwSvYJpgOSQf708tuBa1yWRy/L+V/Cl4wYBFhhTxfLhum/esiiJ1u12KRCJksVhofX2dTk5OzkHMUUMPHnjB2F55VpEhPde/Lbx8FqBEIkHpdJoMBgNptVrS6XRUqVTOg7a3t2lmZob0ej2p1Wr2ggGLDOnJ3QSZH4coHo/TysoKhygUCtJoNFQsFmkwGLAwR7hSqSSVSsVeMGCRIT29F6fXJi8Xy+Uymc1mmp6eJofDQfV6nU5PT1mY2+127uHxSqUSh4FFhhQLvrvtcrm+YpkHBwdUrVZpa2uLarUadTodOjw8ZGGOGnrwwAsGLDLw1i4uLrzRYeOOj49pb2+Pdnd3qdVq8StGAIQ5ao1Ggz3wggGLDD4C4izcEcWfR0dHbMrlcrSxscGbjVAIK8lms7S5ucmB/X6fXz9YDsEQFzdjsVit2Wzyqc1kMrwfVquVjEYjzc3NkclkIpvNRmtra+yBVzAfBXtDjuGgS8FgcFbc8QvuhjNSKBQoFAqR6LFEn/L5PPfggXd5eXkWrBzDQdC1QCBgFoeut7Ozw/tyBp2FQzhPwtOFFwzY34Yo4A9wRXzdD8LhcE48wncE9no9Fuaoid574bkPLxgZ/3uI5pTQVfFlP/L7/Wmhb7JSXq/3IXrwyHZ5SNIvGCnqyh+J7+gAAAAASUVORK5CYII=\") !important;\r");_.b("\n" + i);_.b("	background-position: 50%;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("	margin-left: 7px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu {\r");_.b("\n" + i);_.b("	padding: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu {\r");_.b("\n" + i);_.b("	background-color: #202020;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu h4 {\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("	padding: 3px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .emotes-popular {\r");_.b("\n" + i);_.b("	height: 38px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .draggable {\r");_.b("\n" + i);_.b("	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);\r");_.b("\n" + i);_.b("	cursor: move;\r");_.b("\n" + i);_.b("	height: 7px;\r");_.b("\n" + i);_.b("	margin-bottom: 3px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .draggable:hover {\r");_.b("\n" + i);_.b("	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b(".twitch-chat-emotes-news {\r");_.b("\n" + i);_.b("	border: 1px solid rgba(100, 65, 165, 0.5);\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b(".twitch-chat-emotes-news a {\r");_.b("\n" + i);_.b("	color: #6441a5 !important;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon_header {\r");_.b("\n" + i);_.b("	border-top: 1px solid black;\r");_.b("\n" + i);_.b("	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;\r");_.b("\n" + i);_.b("	background-image: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.5));\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon_header img {\r");_.b("\n" + i);_.b("	margin-right: 8px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon {\r");_.b("\n" + i);_.b("	display: inline-block;\r");_.b("\n" + i);_.b("	padding: 2px;\r");_.b("\n" + i);_.b("	margin: 1px;\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("	border-radius: 5px;\r");_.b("\n" + i);_.b("	text-align: center;\r");_.b("\n" + i);_.b("	width: 32px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon .emoticon {\r");_.b("\n" + i);_.b("	max-width: 32px;\r");_.b("\n" + i);_.b("	margin: 0 !important;\r");_.b("\n" + i);_.b("	height: 32px;\r");_.b("\n" + i);_.b("	background-size: contain;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .userscript_emoticon:hover {\r");_.b("\n" + i);_.b("	background-color: rgba(255, 255, 255, 0.1);\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a {\r");_.b("\n" + i);_.b("	cursor: pointer;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section .left {\r");_.b("\n" + i);_.b("	float: left;\r");_.b("\n" + i);_.b("	margin-right: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section .right {\r");_.b("\n" + i);_.b("	float: right;\r");_.b("\n" + i);_.b("	margin-left: 5px;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.icon {\r");_.b("\n" + i);_.b("	height: 16px;\r");_.b("\n" + i);_.b("	width: 16px;\r");_.b("\n" + i);_.b("	opacity: 0.5;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.icon:hover {\r");_.b("\n" + i);_.b("	opacity: 1.0;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.github {\r");_.b("\n" + i);_.b("	/**\r");_.b("\n" + i);_.b("	 * \"The mark\": inverted color to suit dark theme and resized to 16x16.\r");_.b("\n" + i);_.b("	 * @attribution Github, Inc. (https://github.com/logos)\r");_.b("\n" + i);_.b("	 */\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAALiIAAC4iAari3ZIAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAWpJREFUOE+F0ssrRGEYx/EZBhs2ssHCrCasFf4DFiKyERuytRMZESl3WxsbK0s2FlKKxkIJOyRpEgtyv19yfH/H87qm86tPvee9POd5z0zodzzPK8I4NnFuNjCKmG37GxbTMYEXrKMb9aYHKviMYaTZsY8wocPzOEENbOUrzIWhYmeYQ8SW/MUxnKICekMhNJ+FTBvraiOohK414A7HoNbqUAvlCcd4NRprj1KFBmhPVAWGsAXXYlCqkYJt9KnAGvrhxkFJWOe66ooGaq8REdwgKBdQBy1IqsARmqArqFhQktC5VhxosIpBa2sKQZm0vfrPLGmg++uD5KAYKvhflpGNVOwjrgIFeEAbZhFFGXbhkkAJwvZ2tX+HPD1rohdXtnAI/axvcPE/nO0thT52p39Y4UEtzeAS7SjHI1zUYQaacY1p+AU/w4SKxHEPfRP9A1003sEt9IKfh7+HxXx0YRF7ZgEdyLVtllDoHUPsDkVplXakAAAAAElFTkSuQmCC\") no-repeat 50%;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAClSURBVEhL7ZRBDoAgEAN9uj9fKaFkl61EiN5sMgcLnYMHDjObcTbUWUWWDQyZW4ksC37MSEkqCmrMJEn4KMzGTJCsjpku2RkzVbI7Zk4KFGPUnSpQ4HAMunQ3FY1f8IIAYOBRd74TYDBGSlLR+AWLAhwoxqg7/T3YTX8PdiTYhH+wIqlj4AVPJX0M/JjMJGEMwodDSdIYpMLhJXIMZOnA8HZsZscFnEfNs2qCgdQAAAAASUVORK5CYII=\") no-repeat 50% top;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.popular-emotes-location.popular-on-bottom {\r");_.b("\n" + i);_.b("	background-position: bottom;\r");_.b("\n" + i);_.b("}\r");_.b("\n" + i);_.b("#chat_emote_dropmenu .dropmenu_alt_section a.resize-handle {\r");_.b("\n" + i);_.b("	background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAAX0lEQVQ4T6WPUQ7AIAhDPfpuzuyHxpGK7SR5IVYeCS0irqChAw0daOhAQwcaijyAfShARv1aMOWOfcJHBnmgIsvo8glMRkkLtnLneEIpg3U4c5LRtycoMqpcMIaLd7QXl2chH51cR7QAAAAASUVORK5CYII=\") no-repeat 50%;\r");_.b("\n" + i);_.b("	cursor: nwse-resize;\r");_.b("\n" + i);_.b("}\r");_.b("\n");return _.fl();;})
 },
 r = function(n) {
   var tn = t[n];
@@ -58,10 +58,7 @@ return {
 	var emotes = {
 			usable: [],
 			get raw() {
-				if (window.CurrentChat) {
-					return window.CurrentChat.emoticons
-				}
-				else if (window.App) {
+				if (window.App) {
 					return window.App.__container__.lookup('controller:emoticons').get('emoticons');
 				}
 				return [];
@@ -84,7 +81,6 @@ return {
 
 		SCRIPT_NAME = 'Twitch Chat Emotes',
 		DEBUG = location.hash === '#twitch-chat-emotes-debug',
-		NEWLAYOUT = false,
 		MESSAGES = {
 			ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
 			NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
@@ -110,19 +106,10 @@ return {
 			objectsLoaded = (
 				window.Twitch !== undefined &&
 				(
-					// OLDLAYOUT
-					(
-						window.CurrentChat !== undefined &&
-						window.CurrentChat.emoticons !== undefined &&
-						window.CurrentChat.emoticons.length
-					) ||
-					// NEWLAYOUT
-					(
-						window.App !== undefined &&
-						window.App.__container__ !== undefined &&
-						window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
-						window.App.__container__.lookup('controller:emoticons').get('emoticons').length
-					)
+					window.App !== undefined &&
+					window.App.__container__ !== undefined &&
+					window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
+					window.App.__container__.lookup('controller:emoticons').get('emoticons').length
 				) &&
 				window.$j !== undefined &&
 				// Chat button.
@@ -178,19 +165,11 @@ return {
 	 * Runs initial setup of DOM and variables.
 	 */
 	function setup() {
-		NEWLAYOUT = typeof window.CurrentChat === 'undefined';
 		$ = jQuery = window.$j;
 
-		if (NEWLAYOUT) {
-			elemChatButton = $('.send-chat-button');
-			elemChatButtonsContainer = $('.chat-buttons-container .chat-option-buttons');
-			elemChatInput = $('.chat-interface textarea');
-		}
-		else {
-			elemChatButton = $('#chat_speak');
-			elemChatButtonsContainer = $('#control_buttons');
-			elemChatInput = $('#control_input');
-		}
+		elemChatButton = $('.send-chat-button');
+		elemChatButtonsContainer = $('.chat-buttons-container .chat-option-buttons');
+		elemChatInput = $('.chat-interface textarea');
 
 		// No chat, just exit.
 		if (!elemChatButton.length) {
@@ -237,49 +216,20 @@ return {
 	 * Creates the initial menu elements
 	 */
 	function createMenuElements() {
-		elemEmoteButton = $(templates.emoteButton({isEmber: NEWLAYOUT}));
-		if (NEWLAYOUT) {
-			elemEmoteButton.appendTo(elemChatButtonsContainer);
-		}
-		else {
-			elemEmoteButton.insertBefore(elemChatButton);
-		}
+		elemEmoteButton = $(templates.emoteButton());
+		elemEmoteButton.appendTo(elemChatButtonsContainer);
 		elemEmoteButton.hide();
-		// Animate for non-channel pages (dashboard, popout, etc.).
-		// Works on dashboard only on new layout.
-		if (elemChatButton.hasClass('cap')) {
-			elemChatInput.animate({'margin-right': '175px'});
-			elemChatButtonsContainer.css('width', '175px');
-			elemChatButton.animate({'margin-right': '51px'}, {
-				complete: function () {
-					elemChatButton.css('margin-right', '5px');
-					elemEmoteButton.css('margin-right', '5px').fadeIn();
-				}
-			});
+
+		// Only correct styling for non-BetterTTV.
+		if (window.BetterTTV) {
+			elemEmoteButton.fadeIn();
 		}
-		// Animate for channel page.
-		// Works on popout for new layout as well.
 		else {
-			if (NEWLAYOUT) {
-				// Only correct styling for non-BetterTTV.
-				if (window.BetterTTV) {
+			elemChatButton.animate({'left': '121px'}, {
+				complete: function () {
 					elemEmoteButton.fadeIn();
 				}
-				else {
-					elemChatButton.animate({'left': '121px'}, {
-						complete: function () {
-							elemEmoteButton.fadeIn();
-						}
-					});
-				}
-			}
-			else {
-				elemChatButton.css('float', 'right').animate({'width': '149px'}, {
-					complete: function () {
-						elemEmoteButton.fadeIn();
-					}
-				});
-			}
+			});
 		}
 
 		// Create emote menu.
@@ -306,17 +256,11 @@ return {
 				}
 				else {
 					var diff = elemEmoteMenu.height() - elemEmoteMenu.find('.emotes-all').height();
-					var elemChatLines = null;
-					if (NEWLAYOUT) {
-						elemChatLines = $('.chat-messages');
-					}
-					else {
-						elemChatLines = $('#chat_lines');
-					}
+					var elemChatLines = $('.chat-messages');
+
 					// Adjust the size and position of the popup.
 					elemEmoteMenu.height(elemChatLines.outerHeight() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
-					// On NEWLAYOUT, change `$('#speak, .chat-messages')` to `elemChatLines`.
-					elemEmoteMenu.width($('#speak, .chat-messages').outerWidth() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
+					elemEmoteMenu.width(elemChatLines.outerWidth() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
 					elemEmoteMenu.offset(elemChatLines.offset());
 					// Fix `.emotes-all` height.
 					elemEmoteMenu.find('.emotes-all').height(elemEmoteMenu.height() - diff);
@@ -651,12 +595,7 @@ return {
 		// Always put space at end.
 		text = beforeText + text + ' ' + afterText;
 		// Set the text.
-		if (NEWLAYOUT) {
-			window.App.__container__.lookup('controller:chat').get('currentRoom').set('messageToSend', text);
-		}
-		else {
-			element.value = text;
-		}
+		window.App.__container__.lookup('controller:chat').get('currentRoom').set('messageToSend', text);
 		element.focus();
 		// Put cursor at end.
 		selectionEnd = element.selectionStart + text.length;
@@ -941,24 +880,16 @@ return {
 	 * Message hook into Twitch "admin" message.
 	 */
 	function adminMessage(message, isHTML) {
-		if (typeof window.CurrentChat !== 'undefined') {
-			return window.CurrentChat.admin_message(message);
+		var controller = App.__container__.lookup("controller:chat");
+		if (isHTML) {
+			var id = location.href + '#admin-message-workaround-' + Math.random();
+			controller.currentRoom.addTmiMessage(id);
+			setTimeout(function () {
+				$('a[href="' + id + '"]').get(0).outerHTML = message;
+			}, 0);
+			return true;
 		}
-		else if (NEWLAYOUT) {
-			var controller = App.__container__.lookup("controller:chat");
-			if (isHTML) {
-				var id = location.href + '#admin-message-workaround-' + Math.random();
-				controller.currentRoom.addTmiMessage(id);
-				setTimeout(function () {
-					$('a[href="' + id + '"]').get(0).outerHTML = message;
-				}, 0);
-				return true;
-			}
-			return controller.currentRoom.addTmiMessage(message);
-		}
-		else {
-			return console.log(message);
-		}
+		return controller.currentRoom.addTmiMessage(message);
 	}
 
 	// Generic functions.
