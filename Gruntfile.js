@@ -68,7 +68,7 @@ module.exports = function(grunt) {
 			build: {
 				templates: [
 					'src/templates/*.html',
-					'src/styles/*.css'
+					'build/styles.css'
 				],
 				output: 'build/templates.js',
 				binderName: 'revealing',
@@ -81,7 +81,10 @@ module.exports = function(grunt) {
 					banner: '/* CSS minified. */'
 				},
 				files: {
-					'build/styles.css': ['src/style.css']
+					'build/styles.css': [
+						'src/styles/jquery.custom-scrollbar.css',
+						'src/styles/style.css'
+					]
 				}
 			}
 		}
@@ -99,6 +102,7 @@ module.exports = function(grunt) {
 	// Tasks.
 	grunt.registerTask('default', [
 		'uglify:thirdParty',
+		'cssmin',
 		'hogan',
 		'concat',
 		'template',

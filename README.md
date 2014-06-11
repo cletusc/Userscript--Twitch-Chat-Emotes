@@ -18,7 +18,7 @@ In order to speed up building and testing, this project uses [npm](https://www.n
 
 - Userscript metadata: All userscript metadata is found in `package.json` within the `userscript` property and must be valid JSON.
 - Templates: All templates are found in `src/templates` and are compiled using [hogan](https://www.npmjs.org/package/grunt-hogan). Templates are accessible within `src/script.js` by referencing `templates.filename();`. For a filename of `foo.html`, you can reference it by `templates.foo();`. You may pass in data to the template like so: `templates.foo({bar: 'baz'});`
-- Styles: All CSS styles are found in `src/styles`. When adding a new file, you must also [add the style to the script source](https://github.com/search?q=addStyle%28templates.style%28%29%29%3B+path%3A%2Fsrc%2Fscript.js&type=Code&ref=advsearch&l=).
+- Styles: All CSS styles are found in `src/styles`. When adding a new file, you must also [add the filename to the Gruntfile](https://github.com/search?q=%22build%2Fstyles.css%22+path%3A%2FGruntfile.js+repo%3Acletusc%2FUserscript--Twitch-Chat-Emotes&type=Code&ref=searchresults) in the correct order.
 - News updates: All news updates should be put in `news.json` and must be valid JSON. The key must be a timestamp in the form of `YYYY-MM-DDTHH:MM`, e.g. `2014-02-05T15:07` and the value will be your message. All links must have `target="_blank"`.
 
 ### Compiled files
