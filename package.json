@@ -1,6 +1,6 @@
 {
 	"name": "twitch-chat-emotes",
-	"version": "0.5.16",
+	"version": "0.5.17",
 	"homepage": "http://cletusc.github.io/Userscript--Twitch-Chat-Emotes/",
 	"userscript": {
 		"name": "Twitch Chat Emotes",
