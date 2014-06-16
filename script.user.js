@@ -141,13 +141,11 @@ return {
 			// Errors in approximately 102400ms.
 			if (time >= 60000) {
 				console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
-				adminMessage(MESSAGES.NOT_LOGGED_IN);
 				return;
 			}
 			if (time >= 10000) {
 				if (!loggedIn) {
 					console.error(MESSAGES.NOT_LOGGED_IN);
-					adminMessage(MESSAGES.NOT_LOGGED_IN);
 					return;
 				}
 				if (!objectsLoaded) {
@@ -692,11 +690,7 @@ return {
 		function handleNewsFeed() {
 			for (var newsId in cachedNews) {
 				if (cachedNews.hasOwnProperty(newsId) && dismissedNews.indexOf(newsId) === -1) {
-					adminMessage(templates.newsMessage({
-						scriptName: SCRIPT_NAME,
-						message: cachedNews[newsId],
-						id: newsId
-					}), true);
+					// TODO #43
 				}
 			}
 			$('#chat_lines, .chat-messages').on('click', 'a[data-command="twitch-chat-emotes:dismiss-news"]', function (evt) {
@@ -865,22 +859,6 @@ return {
 			.replace(/[^\\]\?/g, '') // remove optional chars
 			.replace(/^\\b|\\b$/g, '') // remove boundaries
 			.replace(/\\/g, ''); // unescape
-	}
-
-	/**
-	 * Message hook into Twitch "admin" message.
-	 */
-	function adminMessage(message, isHTML) {
-		var controller = App.__container__.lookup("controller:chat");
-		if (isHTML) {
-			var id = location.href + '#admin-message-workaround-' + Math.random();
-			controller.currentRoom.addTmiMessage(id);
-			setTimeout(function () {
-				$('a[href="' + id + '"]').get(0).outerHTML = message;
-			}, 0);
-			return true;
-		}
-		return controller.currentRoom.addTmiMessage(message);
 	}
 
 	// Generic functions.
