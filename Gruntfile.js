@@ -83,8 +83,19 @@ module.exports = function(grunt) {
 				files: {
 					'build/styles.css': [
 						'src/styles/jquery.custom-scrollbar.css',
-						'src/styles/style.css'
+						'build/processed-style.css'
 					]
+				}
+			}
+		},
+		imageEmbed: {
+			build: {
+				src: [
+					'src/styles/style.css'
+				],
+				dest: 'build/processed-style.css',
+				options: {
+					deleteAfterEncoding : false
 				}
 			}
 		}
@@ -98,10 +109,12 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-hogan');
 	grunt.loadNpmTasks('grunt-json-generator');
 	grunt.loadNpmTasks('grunt-template');
+	grunt.loadNpmTasks('grunt-image-embed');
 
 	// Tasks.
 	grunt.registerTask('default', [
 		'uglify:thirdParty',
+		'imageEmbed',
 		'cssmin',
 		'hogan',
 		'concat',
