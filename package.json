@@ -27,6 +27,9 @@
 			"http://*.twitch.tv/*/profile*"
 		]
 	},
+	"scripts": {
+		"install": "napa"
+	},
 	"devDependencies": {
 		"grunt": "~0.4.1",
 		"grunt-contrib-uglify": "~0.2.2",
@@ -36,6 +39,10 @@
 		"grunt-contrib-watch": "~0.5.3",
 		"grunt-hogan": "~0.2.2-2",
 		"grunt-contrib-cssmin": "~0.8.0",
-		"grunt-image-embed": "~0.3.1"
+		"grunt-image-embed": "~0.3.1",
+		"napa": "~0.4.1"
+	},
+	"napa": {
+		"jquery-custom-scrollbar": "mzubala/jquery-custom-scrollbar#0.5.5"
 	}
 }

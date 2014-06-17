@@ -82,7 +82,7 @@ module.exports = function(grunt) {
 				},
 				files: {
 					'build/styles.css': [
-						'src/styles/jquery.custom-scrollbar.css',
+						'node_modules/jquery-custom-scrollbar/jquery.custom-scrollbar.css',
 						'build/processed-style.css'
 					]
 				}
