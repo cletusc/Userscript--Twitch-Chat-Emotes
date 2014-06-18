@@ -115,7 +115,7 @@ return {
 					window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
 					window.App.__container__.lookup('controller:emoticons').get('emoticons').length
 				) &&
-				window.$j !== undefined &&
+				window.jQuery !== undefined &&
 				// Chat button.
 				document.querySelector('#chat_speak, .send-chat-button')
 			);
@@ -140,6 +140,7 @@ return {
 			console.warn(MESSAGES.ALREADY_RUNNING);
 			return;
 		}
+		console.log('objectsLoaded: ' + objectsLoaded);
 		if (!objectsLoaded || !loggedIn || !routes) {
 			// Errors in approximately 102400ms.
 			if (time >= 60000) {
@@ -167,7 +168,7 @@ return {
 	 * Runs initial setup of DOM and variables.
 	 */
 	function setup() {
-		$ = jQuery = window.$j;
+		$ = jQuery = window.jQuery;
 
 		elemChatButton = $('.send-chat-button');
 		elemChatButtonsContainer = $('.chat-buttons-container .chat-option-buttons');
