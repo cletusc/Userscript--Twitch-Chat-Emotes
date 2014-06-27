@@ -4,7 +4,7 @@ This is the build guide and source for the [Emote Menu for Twitch](http://cletus
 
 # Building
 
-In order to speed up building and testing, this project uses [npm](https://www.npmjs.org/) and [grunt](http://gruntjs.com/) to build the script.
+In order to speed up building and testing, this project uses [npm](https://www.npmjs.org/) and [gulp](http://gulpjs.com/) to build the script.
 
 ### Basics
 
