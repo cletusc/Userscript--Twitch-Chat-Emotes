@@ -83,36 +83,45 @@ var Hogan={};!function(t){function i(t,i,s){var e;return i&&"object"==typeof i&&
 // Script-wide variables.
 //-----------------------
 var emotes = {
-		usable: [],
-		get raw() {
-			if (window.App) {
-				return window.App.__container__.lookup('controller:emoticons').get('emoticons');
-			}
-			return [];
-		},
-		subscriptions: {
-			badges: {},
-			emotes: {}
+	usable: [],
+	get raw() {
+		if (window.App) {
+			return window.App.__container__.lookup('controller:emoticons').get('emoticons');
 		}
+		return [];
 	},
-	emotePopularity = false,
-	isInitiated = false,
+	subscriptions: {
+		badges: {},
+		emotes: {}
+	}
+};
+var emotePopularity = false;
+var isInitiated = false;
 
-	elemChatButton,
-	elemChatButtonsContainer,
-	elemChatInput,
-	elemEmoteButton,
-	elemEmoteMenu,
+// DOM elements.
+var elements = {
+	// The button to send a chat message.
+	chatButton: null,
+	// The area where the menu button will be placed.
+	menuButtonContainer: null,
+	// The area where all chat messages are contained.
+	chatContainer: null,
+	// The input field for chat messages.
+	chatBox: null,
+	// The button used to show the menu.
+	menuButton: null,
+	// The menu that contains all emotes.
+	menu: null
+};
 
-	SCRIPT_NAME = pkg.userscript.name,
-	DEBUG = location.hash === '#' + pkg.name + '-debug',
-	MESSAGES = {
-		ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
-		NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
-		NOT_LOGGED_IN: 'You are not logged in, please log in first before using the emote menu.',
-		OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
-		TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
-	};
+var SCRIPT_NAME = pkg.userscript.name;
+var MESSAGES = {
+	ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
+	NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
+	NOT_LOGGED_IN: 'You are not logged in, please log in first before using the emote menu.',
+	OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
+	TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
+};
 
 // Quick manipulation of script-wide variables.
 //---------------------------------------------
@@ -126,20 +135,20 @@ for (var message in MESSAGES) {
 // Only enable script if we have the right variables.
 //---------------------------------------------------
 (function init(time) {
-	var	loggedIn = window.Twitch && window.Twitch.user.isLoggedIn(),
-		routes = window.App && (window.App.ChannelRoute || window.App.ChatRoute),
-		objectsLoaded = (
-			window.Twitch !== undefined &&
-			(
-				window.App !== undefined &&
-				window.App.__container__ !== undefined &&
-				window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
-				window.App.__container__.lookup('controller:emoticons').get('emoticons').length
-			) &&
-			window.jQuery !== undefined &&
-			// Chat button.
-			document.querySelector('#chat_speak, .send-chat-button')
-		);
+	var	loggedIn = window.Twitch && window.Twitch.user.isLoggedIn();
+	var routes = window.App && (window.App.ChannelRoute || window.App.ChatRoute);
+	var objectsLoaded = (
+		window.Twitch !== undefined &&
+		(
+			window.App !== undefined &&
+			window.App.__container__ !== undefined &&
+			window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
+			window.App.__container__.lookup('controller:emoticons').get('emoticons').length
+		) &&
+		window.jQuery !== undefined &&
+		// Chat button.
+		document.querySelector('#chat_speak, .send-chat-button')
+	);
 	if (!isInitiated && routes) {
 		var activate = {
 			activate: function () {
@@ -161,7 +170,6 @@ for (var message in MESSAGES) {
 		console.warn(MESSAGES.ALREADY_RUNNING);
 		return;
 	}
-	console.log('objectsLoaded: ' + objectsLoaded);
 	if (!objectsLoaded || !loggedIn || !routes) {
 		// Errors in approximately 102400ms.
 		if (time >= 60000) {
@@ -191,12 +199,13 @@ for (var message in MESSAGES) {
 function setup() {
 	loadjQueryPlugins();
 
-	elemChatButton = $('.send-chat-button');
-	elemChatButtonsContainer = $('.chat-buttons-container .chat-option-buttons');
-	elemChatInput = $('.chat-interface textarea');
+	elements.chatButton = $('.send-chat-button');
+	elements.menuButtonContainer = $('.chat-buttons-container .chat-option-buttons');
+	elements.chatBox = $('.chat-interface textarea');
+	elements.chatContainer = $('.chat-messages');
 
 	// No chat, just exit.
-	if (!elemChatButton.length) {
+	if (!elements.chatButton.length) {
 		console.warn(MESSAGES.NO_CHAT_ELEMENT);
 		return;
 	}
@@ -208,12 +217,11 @@ function setup() {
 
 	// Get active subscriptions.
 	window.Twitch.api.get("/api/users/:login/tickets").done(function (api) {
-		debug(api, 'Response from `/api/user/:login/tickets`.', true);
 		api.tickets.forEach(function (ticket) {
 			// Get subscriptions with emotes.
 			if (ticket.product.emoticons && ticket.product.emoticons.length) {
-				var badge = ticket.product.features.badge,
-					channel = ticket.product.owner_name;
+				var badge = ticket.product.features.badge;
+				var channel = ticket.product.owner_name;
 				// Add channel badges.
 				if (badge) {
 					badge = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
@@ -239,25 +247,25 @@ function setup() {
  * Creates the initial menu elements
  */
 function createMenuElements() {
-	elemEmoteButton = $(templates.emoteButton());
-	elemEmoteButton.appendTo(elemChatButtonsContainer);
-	elemEmoteButton.hide();
+	elements.menuButton = $(templates.emoteButton());
+	elements.menuButton.appendTo(elements.menuButtonContainer);
+	elements.menuButton.hide();
 
 	// Only correct styling for non-BetterTTV.
 	if (window.BetterTTV) {
-		elemEmoteButton.fadeIn();
+		elements.menuButton.fadeIn();
 	}
 	else {
-		elemChatButton.animate({'left': '121px'}, {
+		elements.chatButton.animate({'left': '121px'}, {
 			complete: function () {
-				elemEmoteButton.fadeIn();
+				elements.menuButton.fadeIn();
 			}
 		});
 	}
 
 	// Create emote menu.
-	elemEmoteMenu = $(templates.menu());
-	elemEmoteMenu.appendTo(document.body);
+	elements.menu = $(templates.menu());
+	elements.menu.appendTo(document.body);
 }
 
 /**
@@ -265,31 +273,31 @@ function createMenuElements() {
  */
 function bindListeners() {
 	// Handle popup.
-	elemEmoteButton.popup('click_to_close', elemEmoteMenu, {
+	elements.menuButton.popup('click_to_close', elements.menu, {
 		above: true
 	});
 
 	// Toggle buttons.
-	elemEmoteButton.on('click', function () {
-		elemEmoteMenu.removeClass('has_moved');
-		if (elemEmoteMenu.is(':visible')) {
+	elements.menuButton.on('click', function () {
+		elements.menu.removeClass('has_moved');
+		if (elements.menu.is(':visible')) {
 			$(this).addClass('active');
-			if (elemEmoteMenu.hasClass('not_default_location')) {
-				elemEmoteMenu.offset(JSON.parse(elemEmoteMenu.attr('data-offset')));
+			if (elements.menu.hasClass('not_default_location')) {
+				elements.menu.offset(JSON.parse(elements.menu.attr('data-offset')));
 			}
 			else {
-				var diff = elemEmoteMenu.height() - elemEmoteMenu.find('#all-emotes-group').height();
-				var elemChatLines = $('.chat-messages');
+				var diff = elements.menu.height() - elements.menu.find('#all-emotes-group').height();
+				
 
 				// Adjust the size and position of the popup.
-				elemEmoteMenu.height(elemChatLines.outerHeight() - (elemEmoteMenu.outerHeight() - elemEmoteMenu.height()));
-				elemEmoteMenu.width(elemChatLines.outerWidth() - (elemEmoteMenu.outerWidth() - elemEmoteMenu.width()));
-				elemEmoteMenu.offset(elemChatLines.offset());
+				elements.menu.height(elements.chatContainer.outerHeight() - (elements.menu.outerHeight() - elements.menu.height()));
+				elements.menu.width(elements.chatContainer.outerWidth() - (elements.menu.outerWidth() - elements.menu.width()));
+				elements.menu.offset(elements.chatContainer.offset());
 				// Fix `.emotes-all` height.
-				elemEmoteMenu.find('#all-emotes-group').height(elemEmoteMenu.height() - diff);
-				elemEmoteMenu.find('#all-emotes-group').width(elemEmoteMenu.width());
+				elements.menu.find('#all-emotes-group').height(elements.menu.height() - diff);
+				elements.menu.find('#all-emotes-group').width(elements.menu.width());
 				// Recalculate any scroll bars.
-				elemEmoteMenu.find('.scrollable').customScrollbar('resize');
+				elements.menu.find('.scrollable').customScrollbar('resize');
 			}
 		}
 		else {
@@ -299,58 +307,58 @@ function bindListeners() {
 	});
 
 	// Restore outside clicks to close popup, but only when it hasn't been moved.
-	elemEmoteMenu.on('clickoutside', function () {
+	elements.menu.on('clickoutside', function () {
 		if (!$(this).hasClass('has_moved') && $(this).is(':visible')) {
-			elemEmoteButton.click();
+			elements.menuButton.click();
 		}
 	});
 
 	// Make draggable.
-	elemEmoteMenu.draggable({
+	elements.menu.draggable({
 		handle: '.draggable',
 		start: function () {
 			$(this).addClass('has_moved');
 			$(this).addClass('not_default_location');
 		},
 		stop: function () {
-			elemEmoteMenu.attr('data-offset', JSON.stringify(elemEmoteMenu.offset()));
+			elements.menu.attr('data-offset', JSON.stringify(elements.menu.offset()));
 		},
 		containment: $(document.body)
 	});
 
-	elemEmoteMenu.resizable({
+	elements.menu.resizable({
 		handle: '[data-command="resize-handle"]',
 		resize: function () {
 			$(this).addClass('has_moved');
 			$(this).addClass('not_default_location');
 			// Recalculate any scroll bars.
-			elemEmoteMenu.find('.scrollable').customScrollbar('resize');
+			elements.menu.find('.scrollable').customScrollbar('resize');
 		},
-		alsoResize: elemEmoteMenu.find('.scrollable'),
+		alsoResize: elements.menu.find('.scrollable'),
 		containment: $(document.body),
 		minHeight: 180,
 		minWidth: 200
 	});
 
 	// Enable the popularity reset.
-	elemEmoteMenu.find('[data-command="reset-popularity"]').on('click', function () {
+	elements.menu.find('[data-command="reset-popularity"]').on('click', function () {
 		emotePopularityClear();
 		populateEmotesMenu();
 	});
 
 	// Enable the popular emotes location changing button.
-	elemEmoteMenu.find('[data-command="toggle-popular-emote-location"]').on('click', function () {
-		var current = +getSetting('emote-popular-on-top', 0);
+	elements.menu.find('[data-command="toggle-popular-emote-location"]').on('click', function () {
+		var current = Number(getSetting('emote-popular-on-top', 0));
 		setSetting('emote-popular-on-top', current ? 0 : 1);
 		fixPopularEmotesLocation(!current);
 	});
 
 	// Enable emote clicking (delegated).
-	elemEmoteMenu.on('click', '.emote', function () {
+	elements.menu.on('click', '.emote', function () {
 		insertEmoteText($(this).attr('data-emote'));
 	});
 
-	elemEmoteMenu.find('.scrollable').customScrollbar({
+	elements.menu.find('.scrollable').customScrollbar({
 		skin: 'default-skin',
 		hScroll: false,
 		preventDefaultScroll: true
@@ -363,11 +371,11 @@ function bindListeners() {
 function populateEmotesMenu() {
 	var container;
 
-	fixPopularEmotesLocation(+getSetting('emote-popular-on-top', false));
+	fixPopularEmotesLocation(Boolean(getSetting('emote-popular-on-top', false)));
 	refreshUsableEmotes();
 
 	// Add popular emotes.
-	container = elemEmoteMenu.find('#popular-emotes-group');
+	container = elements.menu.find('#popular-emotes-group');
 	container.html('');
 	emotes.usable.sort(sortByPopularity);
 	emotes.usable.forEach(function (emote) {
@@ -375,7 +383,7 @@ function populateEmotesMenu() {
 	});
 
 	// Add all emotes.
-	container = elemEmoteMenu.find('#all-emotes-group');
+	container = elements.menu.find('#all-emotes-group');
 	if (container.find('.overview').length) {
 		container = container.find('.overview');
 	}
@@ -386,16 +394,16 @@ function populateEmotesMenu() {
 	});
 
 	// Recalculate any scroll bars.
-	elemEmoteMenu.find('.scrollable').customScrollbar('resize');
+	elements.menu.find('.scrollable').customScrollbar('resize');
 
 	/**
 	 * Sort by popularity: most used -> least used
 	 */
 	function sortByPopularity(a, b) {
-		var aGet = emotePopularityGet(a.text),
-			bGet = emotePopularityGet(b.text),
-			aNumber = typeof aGet === 'number',
-			bNumber = typeof bGet === 'number';
+		var aGet = emotePopularityGet(a.text);
+		var bGet = emotePopularityGet(b.text);
+		var aNumber = typeof aGet === 'number';
+		var bNumber = typeof bGet === 'number';
 		if (aNumber && !bNumber) {
 			return -1;
 		}
@@ -473,8 +481,8 @@ function populateEmotesMenu() {
 				return 1;
 			}
 
-			var channelSort = sortByNormal({text: a.channel}, {text: b.channel}),
-				normalSort = sortByNormal(a, b);
+			var channelSort = sortByNormal({text: a.channel}, {text: b.channel});
+			var normalSort = sortByNormal(a, b);
 			if (channelSort === 0) {
 				return normalSort;
 			}
@@ -490,10 +498,10 @@ function populateEmotesMenu() {
  * @param  {boolean} onTop Should the popular emotes be on top? `true` = on top, `false` = on bottom.
  */
 function fixPopularEmotesLocation(onTop) {
-	var body = elemEmoteMenu.find('#popular-emotes-group'),
-		header = body.prev(),
-		all = elemEmoteMenu.find('#all-emotes-group'),
-		icon = elemEmoteMenu.find('.icon-popular-emotes-location');
+	var body = elements.menu.find('#popular-emotes-group');
+	var header = body.prev();
+	var all = elements.menu.find('#all-emotes-group');
+	var icon = elements.menu.find('.icon-popular-emotes-location');
 	if (onTop) {
 		header.insertBefore(all.prev());
 		body.insertBefore(all.prev());
@@ -634,8 +642,8 @@ function insertEmoteText(text) {
 	element.setSelectionRange(selectionEnd, selectionEnd);
 
 	// Close popup if it hasn't been moved by the user.
-	if (!elemEmoteMenu.hasClass('has_moved')) {
-		elemEmoteButton.click();
+	if (!elements.menu.hasClass('has_moved')) {
+		elements.menuButton.click();
 	}
 	// Re-populate as it is still open.
 	else {
@@ -658,14 +666,14 @@ function createEmote(emote, container, showHeader) {
 		if (emote.channel && emote.channel !== 'Twitch Turbo') {
 			var badge = emotes.subscriptions.badges[emote.channel] || emote.badge;
 			// Add notice about addon emotes.
-			if (!emotes.subscriptions.badges[emote.channel] && !elemEmoteMenu.find('.group-header.addon-emotes-header').length) {
+			if (!emotes.subscriptions.badges[emote.channel] && !elements.menu.find('.group-header.addon-emotes-header').length) {
 				container.append(
 					$(templates.emoteGroupHeader({
 						isAddonHeader: true
 					}))
 				);
 			}
-			if (!elemEmoteMenu.find('.group-header[data-emote-channel="' + emote.channel + '"]').length) {
+			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.channel + '"]').length) {
 				container.append(
 					$(templates.emoteGroupHeader({
 						badge: badge,
@@ -688,10 +696,10 @@ function createEmote(emote, container, showHeader) {
  * Show latest news.
  */
 function showNews() {
-	var dismissedNews = JSON.parse(getSetting('twitch-chat-emotes:dismissed-news', '[]')),
-		cachedNews = JSON.parse(getSetting('twitch-chat-emotes:cached-news', '{}'));
+	var dismissedNews = JSON.parse(getSetting('twitch-chat-emotes:dismissed-news', '[]'));
+	var cachedNews = JSON.parse(getSetting('twitch-chat-emotes:cached-news', '{}'));
 	// Only poll news feed once per day.
-	if (DEBUG || Date.now() - getSetting('twitch-chat-emotes:news-date', 0) > 86400000) {
+	if (Date.now() - getSetting('twitch-chat-emotes:news-date', 0) > 86400000) {
 		$.ajax('https://api.github.com/repos/cletusc/Userscript--Twitch-Chat-Emotes/contents/news.json', {
 			dataType: 'json',
 			headers: {
@@ -785,18 +793,6 @@ function setSetting(aKey, aVal) {
  */
 function deleteSetting(aKey) {
 	localStorage.removeItem(aKey);
-}
-
-/**
- * Logs a message only when global `DEBUG` is true.
- * @param {mixed}   obj                 The object to log.
- * @param {string}  [description = '']  The message describing the debug.
- * @param {boolean} [stringify = false] Whether `obj` should be passed through `JSON.stringify`.
- */
-function debug(obj, description, stringify) {
-	if (DEBUG) {
-		console.log('[DEBUG][' + (SCRIPT_NAME || 'UNKNOWN SCRIPT') + ']: ' + (description || ''), (stringify ? JSON.stringify(obj) : obj));
-	}
 }
 
 	// End script.
