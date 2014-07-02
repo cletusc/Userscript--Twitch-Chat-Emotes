@@ -12,6 +12,8 @@
 .emote-menu {
 	padding: 5px;
 	z-index: 1000;
+	/* Hidden on load, display is handled by JS. */
+	display: none;
 }
 .emote-menu {
 	background-color: #202020;

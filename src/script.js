@@ -190,23 +190,28 @@ function createMenuElements() {
  * Bind event listeners.
  */
 function bindListeners() {
-	// Handle popup.
-	elements.menuButton.popup('click_to_close', elements.menu, {
-		above: true
-	});
 
-	// Toggle buttons.
-	elements.menuButton.on('click', function () {
-		elements.menu.removeClass('has_moved');
+	function toggleMenu() {
+		// Menu shown, hide it.
 		if (elements.menu.is(':visible')) {
-			$(this).addClass('active');
+			elements.menu.hide();
+			elements.menuButton.removeClass('active');
+		}
+		// Menu hidden, show it.
+		else {
+			populateEmotesMenu();
+			elements.menu.show();
+			elements.menuButton.addClass('active');
+
+			$(document).on('mouseup', checkForClickOutside);
+
+			// Menu moved, move it back.
 			if (elements.menu.hasClass('not_default_location')) {
 				elements.menu.offset(JSON.parse(elements.menu.attr('data-offset')));
 			}
+			// Never moved, make it the same size as the chat window.
 			else {
 				var diff = elements.menu.height() - elements.menu.find('#all-emotes-group').height();
-				
-
 				// Adjust the size and position of the popup.
 				elements.menu.height(elements.chatContainer.outerHeight() - (elements.menu.outerHeight() - elements.menu.height()));
 				elements.menu.width(elements.chatContainer.outerWidth() - (elements.menu.outerWidth() - elements.menu.width()));
@@ -218,18 +223,28 @@ function bindListeners() {
 				elements.menu.find('.scrollable').customScrollbar('resize');
 			}
 		}
-		else {
-			$(this).removeClass('active');
-		}
-		populateEmotesMenu();
-	});
 
-	// Restore outside clicks to close popup, but only when it hasn't been moved.
-	elements.menu.on('clickoutside', function () {
-		if (!$(this).hasClass('has_moved') && $(this).is(':visible')) {
-			elements.menuButton.click();
+		function checkForClickOutside(e) {
+			// Not outside of the menu, ignore the click.
+			if ($(e.target).is('#emote-menu-for-twitch, #emote-menu-for-twitch *')) {
+				return;
+			}
+			// Clicked on the menu button, just remove the listener and let the normal listener handle it.
+			if ($(e.target).is('#emote-menu-button, #emote-menu-button *')) {
+				$(document).off('mouseup', checkForClickOutside);
+				return;
+			}
+			// Clicked outside, make sure the menu isn't pinned.
+			if (!elements.menu.hasClass('has_moved')) {
+				// Menu wasn't pinned, remove listener.
+				$(document).off('mouseup', checkForClickOutside);
+				toggleMenu();
+			}
 		}
-	});
+	}
+
+	// Toggle menu.
+	elements.menuButton.on('click', toggleMenu);
 
 	// Make draggable.
 	elements.menu.draggable({
