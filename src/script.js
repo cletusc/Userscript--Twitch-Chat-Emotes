@@ -36,9 +36,26 @@ var SCRIPT_NAME = pkg.userscript.name;
 var MESSAGES = {
 	ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
 	NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
-	NOT_LOGGED_IN: 'You are not logged in, please log in first before using the emote menu.',
 	OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
 	TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
+};
+
+var helpers = {
+	user: {
+		/**
+		 * Check if user is logged in, and prompts them to if they aren't.
+		 * @return {boolean} `true` if logged in, `false` if logged out.
+		 */
+		login: function () {
+			// Check if logged in already.
+			if (window.Twitch && window.Twitch.user.isLoggedIn()) {
+				return true;
+			}
+			// Not logged in, call Twitch's login method.
+			$.login();
+			return false;	
+		}
+	}
 };
 
 // Quick manipulation of script-wide variables.
@@ -53,7 +70,6 @@ for (var message in MESSAGES) {
 // Only enable script if we have the right variables.
 //---------------------------------------------------
 (function init(time) {
-	var	loggedIn = window.Twitch && window.Twitch.user.isLoggedIn();
 	var routes = window.App && (window.App.ChannelRoute || window.App.ChatRoute);
 	var objectsLoaded = (
 		window.Twitch !== undefined &&
@@ -88,17 +104,13 @@ for (var message in MESSAGES) {
 		console.warn(MESSAGES.ALREADY_RUNNING);
 		return;
 	}
-	if (!objectsLoaded || !loggedIn || !routes) {
+	if (!objectsLoaded || !routes) {
 		// Errors in approximately 102400ms.
 		if (time >= 60000) {
 			console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
 			return;
 		}
 		if (time >= 10000) {
-			if (!loggedIn) {
-				console.error(MESSAGES.NOT_LOGGED_IN);
-				return;
-			}
 			if (!objectsLoaded) {
 				console.warn(MESSAGES.OBJECTS_NOT_LOADED);
 			}
@@ -198,7 +210,7 @@ function bindListeners() {
 			elements.menuButton.removeClass('active');
 		}
 		// Menu hidden, show it.
-		else {
+		else if (helpers.user.login()) {
 			populateEmotesMenu();
 			elements.menu.show();
 			elements.menuButton.addClass('active');
