@@ -206,7 +206,7 @@ function bindListeners() {
 			$(document).on('mouseup', checkForClickOutside);
 
 			// Menu moved, move it back.
-			if (elements.menu.hasClass('not_default_location')) {
+			if (elements.menu.hasClass('moved')) {
 				elements.menu.offset(JSON.parse(elements.menu.attr('data-offset')));
 			}
 			// Never moved, make it the same size as the chat window.
@@ -235,7 +235,7 @@ function bindListeners() {
 				return;
 			}
 			// Clicked outside, make sure the menu isn't pinned.
-			if (!elements.menu.hasClass('has_moved')) {
+			if (!elements.menu.hasClass('pinned')) {
 				// Menu wasn't pinned, remove listener.
 				$(document).off('mouseup', checkForClickOutside);
 				toggleMenu();
@@ -250,8 +250,8 @@ function bindListeners() {
 	elements.menu.draggable({
 		handle: '.draggable',
 		start: function () {
-			$(this).addClass('has_moved');
-			$(this).addClass('not_default_location');
+			$(this).addClass('pinned');
+			$(this).addClass('moved');
 		},
 		stop: function () {
 			elements.menu.attr('data-offset', JSON.stringify(elements.menu.offset()));
@@ -262,8 +262,8 @@ function bindListeners() {
 	elements.menu.resizable({
 		handle: '[data-command="resize-handle"]',
 		resize: function () {
-			$(this).addClass('has_moved');
-			$(this).addClass('not_default_location');
+			$(this).addClass('pinned');
+			$(this).addClass('moved');
 			// Recalculate any scroll bars.
 			elements.menu.find('.scrollable').customScrollbar('resize');
 		},
@@ -575,7 +575,7 @@ function insertEmoteText(text) {
 	element.setSelectionRange(selectionEnd, selectionEnd);
 
 	// Close popup if it hasn't been moved by the user.
-	if (!elements.menu.hasClass('has_moved')) {
+	if (!elements.menu.hasClass('pinned')) {
 		elements.menuButton.click();
 	}
 	// Re-populate as it is still open.
