@@ -124,12 +124,6 @@
 	 */
 	background: url(../images/github-mark.png) no-repeat 50%;
 }
-.emote-menu .icon-popular-emotes-location {
-	background: url(../images/arrow-up-down-white.png) no-repeat 50% top;
-}
-.emote-menu .icon-popular-emotes-location.popular-on-bottom {
-	background-position: bottom;
-}
 .emote-menu .icon-resize-handle {
 	background: url(../images/resize-handle.png) no-repeat 50%;
 	cursor: nwse-resize !important;

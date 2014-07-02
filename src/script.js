@@ -291,13 +291,6 @@ function bindListeners() {
 		populateEmotesMenu();
 	});
 
-	// Enable the popular emotes location changing button.
-	elements.menu.find('[data-command="toggle-popular-emote-location"]').on('click', function () {
-		var current = Number(getSetting('emote-popular-on-top', 0));
-		setSetting('emote-popular-on-top', current ? 0 : 1);
-		fixPopularEmotesLocation(!current);
-	});
-
 	// Enable emote clicking (delegated).
 	elements.menu.on('click', '.emote', function () {
 		insertEmoteText($(this).attr('data-emote'));
@@ -316,7 +309,6 @@ function bindListeners() {
 function populateEmotesMenu() {
 	var container;
 
-	fixPopularEmotesLocation(Boolean(getSetting('emote-popular-on-top', false)));
 	refreshUsableEmotes();
 
 	// Add popular emotes.
@@ -435,27 +427,6 @@ function populateEmotesMenu() {
 		}
 		// Get it back to a stable sort.
 		return sortByNormal(a, b);
-	}
-}
-
-/**
- * Moves the popular emotes based on whether it should be on top.
- * @param  {boolean} onTop Should the popular emotes be on top? `true` = on top, `false` = on bottom.
- */
-function fixPopularEmotesLocation(onTop) {
-	var body = elements.menu.find('#popular-emotes-group');
-	var header = body.prev();
-	var all = elements.menu.find('#all-emotes-group');
-	var icon = elements.menu.find('.icon-popular-emotes-location');
-	if (onTop) {
-		header.insertBefore(all.prev());
-		body.insertBefore(all.prev());
-		icon.removeClass('popular-on-bottom');
-	}
-	else {
-		body.insertAfter(all);
-		header.insertAfter(all);
-		icon.addClass('popular-on-bottom');
 	}
 }
 
