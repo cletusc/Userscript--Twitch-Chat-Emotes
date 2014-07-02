@@ -129,6 +129,16 @@
 	cursor: nwse-resize !important;
 }
 
+.emote-menu .icon-pin {
+	background: url(../images/pin.svg) no-repeat 50%;
+	transition: all 0.25s ease;
+}
+.emote-menu.pinned .icon-pin,
+.emote-menu .icon-pin:hover {
+	transform: rotate(-45deg);
+	opacity: 1.0;
+}
+
 /* Override custom scroll bar defaults. */
 .emote-menu .scrollable.default-skin {
 	padding-right: 0;

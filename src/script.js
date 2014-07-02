@@ -207,6 +207,7 @@ function bindListeners() {
 		// Menu shown, hide it.
 		if (elements.menu.is(':visible')) {
 			elements.menu.hide();
+			elements.menu.removeClass('pinned');
 			elements.menuButton.removeClass('active');
 		}
 		// Menu hidden, show it.
@@ -289,6 +290,11 @@ function bindListeners() {
 	elements.menu.find('[data-command="reset-popularity"]').on('click', function () {
 		emotePopularityClear();
 		populateEmotesMenu();
+	});
+
+	// Enable menu pinning.
+	elements.menu.find('[data-command="toggle-pinned"]').on('click', function () {
+		elements.menu.toggleClass('pinned');
 	});
 
 	// Enable emote clicking (delegated).
