@@ -243,7 +243,7 @@ function bindListeners() {
 				return;
 			}
 			// Clicked on the menu button, just remove the listener and let the normal listener handle it.
-			if ($(e.target).is('#emote-menu-button, #emote-menu-button *')) {
+			if (!elements.menu.is(':visible') || $(e.target).is('#emote-menu-button, #emote-menu-button *')) {
 				$(document).off('mouseup', checkForClickOutside);
 				return;
 			}
