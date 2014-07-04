@@ -232,9 +232,9 @@ function bindListeners() {
 				// Fix `.emotes-all` height.
 				elements.menu.find('#all-emotes-group').height(elements.menu.height() - diff);
 				elements.menu.find('#all-emotes-group').width(elements.menu.width());
-				// Recalculate any scroll bars.
-				elements.menu.find('.scrollable').customScrollbar('resize');
 			}
+			// Recalculate any scroll bars.
+			elements.menu.find('.scrollable').customScrollbar('resize');
 		}
 
 		function checkForClickOutside(e) {
