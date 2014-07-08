@@ -228,7 +228,14 @@ function setup() {
 	showNews();
 
 	// Get active subscriptions.
-	window.Twitch.api.get("/api/users/:login/tickets").done(function (api) {
+	window.Twitch.api.get(
+		'/api/users/:login/tickets',
+		{
+			offset: 0,
+			limit: 100,
+			unended: true
+		}
+	).done(function (api) {
 		api.tickets.forEach(function (ticket) {
 			// Get subscriptions with emotes.
 			if (ticket.product.emoticons && ticket.product.emoticons.length) {
