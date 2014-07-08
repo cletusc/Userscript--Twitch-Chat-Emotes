@@ -24,6 +24,7 @@
 		"include": "http://*.twitch.tv/*",
 		"exclude": [
 			"http://api.twitch.tv/*",
+			"http://chatdepot.twitch.tv/*",
 			"http://*.twitch.tv/*/profile*"
 		]
 	},
