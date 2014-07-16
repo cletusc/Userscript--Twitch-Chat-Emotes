@@ -93,7 +93,22 @@ var emotes = {
 	},
 	subscriptions: {
 		badges: {},
-		emotes: {}
+		emotes: {},
+		_sets: null,
+		get sets() {
+			if (emotes.subscriptions._sets) {
+				return emotes.subscriptions._sets;
+			}
+			var user = window.App.__container__.lookup('controller:chat').get('currentRoom').tmiRoom.session._users._users[helpers.user.username];
+			if (user) {
+				emotes.subscriptions._sets = user.emotes;
+				setTimeout(function () {
+					emotes.subscriptions._sets = null;
+				}, 5000);
+				return user.emotes;
+			}
+			return [];
+		}
 	}
 };
 var emotePopularity = false;
@@ -137,6 +152,12 @@ var helpers = {
 			// Not logged in, call Twitch's login method.
 			$.login();
 			return false;	
+		},
+		/**
+		 * Get the username of the currently logged in user.
+		 */
+		get username() {
+			return Twitch.user.login();
 		}
 	}
 };
@@ -547,7 +568,10 @@ function refreshUsableEmotes() {
 			if (image.emoticon_set === null) {
 				defaultImage = image;
 			}
-			if (emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) {
+			if (
+				(emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) ||
+				(emotes.subscriptions.sets.indexOf(image.emoticon_set) >= 0)
+			) {
 				emote.image = image;
 				return true;
 			}
