@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name Twitch Chat Emotes
 // @namespace #Cletus
-// @version 0.6.0
+// @version 0.6.1
 // @description Adds a button to Twitch that allows you to "click-to-insert" an emote.
 // @copyright 2011+, Ryan Chatham <ryan.b.chatham@gmail.com> (https://github.com/cletusc)
 // @author Ryan Chatham <ryan.b.chatham@gmail.com> (https://github.com/cletusc)
@@ -76,7 +76,7 @@ var Hogan={};!function(t){function i(t,i,s){var e;return i&&"object"==typeof i&&
 	})();
 
 	// The package.json.
-	var pkg = {"name":"twitch-chat-emotes","version":"0.6.0","homepage":"http://cletusc.github.io/Userscript--Twitch-Chat-Emotes/","bugs":"https://github.com/cletusc/Userscript--Twitch-Chat-Emotes/issues","author":"Ryan Chatham <ryan.b.chatham@gmail.com> (https://github.com/cletusc)","repository":{"type":"git","url":"https://github.com/cletusc/Userscript--Twitch-Chat-Emotes.git"},"userscript":{"name":"Twitch Chat Emotes","namespace":"#Cletus","version":"{{{pkg.version}}}","description":"Adds a button to Twitch that allows you to \"click-to-insert\" an emote.","copyright":"2011+, {{{pkg.author}}}","author":"{{{pkg.author}}}","icon":"http://www.gravatar.com/avatar.php?gravatar_id=6875e83aa6c563790cb2da914aaba8b3&r=PG&s=48&default=identicon","license":"Creative Commons; http://creativecommons.org/licenses/by-nc-sa/3.0/","homepage":"{{{pkg.homepage}}}","supportURL":"{{{pkg.bugs}}}","contributionURL":"http://cletusc.github.io/Userscript--Twitch-Chat-Emotes/#donate","grant":"none","include":"http://*.twitch.tv/*","exclude":["http://api.twitch.tv/*","http://chatdepot.twitch.tv/*","http://*.twitch.tv/*/profile*"]},"scripts":{"install":"napa"},"devDependencies":{"napa":"~0.4.1","gulp":"^3.8.3","hogan.js":"^3.0.2","gulp-concat":"^2.2.0","gulp-conflict":"^0.1.2","gulp-css-base64":"^1.1.0","gulp-minify-css":"^0.3.5","gulp-header":"^1.0.2","gulp-hogan-compile":"^0.2.1","vinyl-map":"^1.0.1","gulp-rename":"^1.2.0","gulp-uglify":"^0.3.1"},"napa":{"jquery-custom-scrollbar":"mzubala/jquery-custom-scrollbar#0.5.5"}};
+	var pkg = {"name":"twitch-chat-emotes","version":"0.6.1","homepage":"http://cletusc.github.io/Userscript--Twitch-Chat-Emotes/","bugs":"https://github.com/cletusc/Userscript--Twitch-Chat-Emotes/issues","author":"Ryan Chatham <ryan.b.chatham@gmail.com> (https://github.com/cletusc)","repository":{"type":"git","url":"https://github.com/cletusc/Userscript--Twitch-Chat-Emotes.git"},"userscript":{"name":"Twitch Chat Emotes","namespace":"#Cletus","version":"{{{pkg.version}}}","description":"Adds a button to Twitch that allows you to \"click-to-insert\" an emote.","copyright":"2011+, {{{pkg.author}}}","author":"{{{pkg.author}}}","icon":"http://www.gravatar.com/avatar.php?gravatar_id=6875e83aa6c563790cb2da914aaba8b3&r=PG&s=48&default=identicon","license":"Creative Commons; http://creativecommons.org/licenses/by-nc-sa/3.0/","homepage":"{{{pkg.homepage}}}","supportURL":"{{{pkg.bugs}}}","contributionURL":"http://cletusc.github.io/Userscript--Twitch-Chat-Emotes/#donate","grant":"none","include":"http://*.twitch.tv/*","exclude":["http://api.twitch.tv/*","http://chatdepot.twitch.tv/*","http://*.twitch.tv/*/profile*"]},"scripts":{"install":"napa"},"devDependencies":{"napa":"~0.4.1","gulp":"^3.8.3","hogan.js":"^3.0.2","gulp-concat":"^2.2.0","gulp-conflict":"^0.1.2","gulp-css-base64":"^1.1.0","gulp-minify-css":"^0.3.5","gulp-header":"^1.0.2","gulp-hogan-compile":"^0.2.1","vinyl-map":"^1.0.1","gulp-rename":"^1.2.0","gulp-uglify":"^0.3.1"},"napa":{"jquery-custom-scrollbar":"mzubala/jquery-custom-scrollbar#0.5.5"}};
 	var $ = null;
 	var jQuery = null;
 
