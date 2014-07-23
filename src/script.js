@@ -49,7 +49,6 @@ var elements = {
 
 var SCRIPT_NAME = pkg.userscript.name;
 var MESSAGES = {
-	ALREADY_RUNNING: 'There is already an instance of this script running, cancelling this instance.',
 	NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
 	OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
 	TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
@@ -120,10 +119,6 @@ for (var message in MESSAGES) {
 			window.App.ChatRoute.reopen(activate);
 			isInitiated = true;
 		}
-	}
-	if (document.querySelector('#emote-menu-for-twitch')) {
-		console.warn(MESSAGES.ALREADY_RUNNING);
-		return;
 	}
 	if (!objectsLoaded || !routes) {
 		// Errors in approximately 102400ms.
@@ -205,6 +200,12 @@ function setup() {
  * Creates the initial menu elements
  */
 function createMenuElements() {
+	// Remove menu button if found.
+	elements.menuButton = $('#emote-menu-button');
+	if (elements.menuButton.length) {
+		elements.menuButton.remove();
+	}
+	// Create menu button.
 	elements.menuButton = $(templates.emoteButton());
 	elements.menuButton.appendTo(elements.menuButtonContainer);
 	elements.menuButton.hide();
@@ -221,7 +222,12 @@ function createMenuElements() {
 		});
 	}
 
-	// Create emote menu.
+	// Remove menu if found.
+	elements.menu = $('#emote-menu-for-twitch');
+	if (elements.menu.length) {
+		elements.menu.remove();
+	}
+	// Create menu.
 	elements.menu = $(templates.menu());
 	elements.menu.appendTo(document.body);
 }
