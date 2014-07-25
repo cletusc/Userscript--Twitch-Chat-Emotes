@@ -96,16 +96,21 @@ var emotes = {
 		emotes: {},
 		_sets: null,
 		get sets() {
-			if (emotes.subscriptions._sets) {
-				return emotes.subscriptions._sets;
+			try {
+				if (emotes.subscriptions._sets) {
+					return emotes.subscriptions._sets;
+				}
+				var user = window.App.__container__.lookup('controller:chat').get('currentRoom').tmiRoom.session._users._users[helpers.user.username];
+				if (user) {
+					emotes.subscriptions._sets = user.emotes;
+					setTimeout(function () {
+						emotes.subscriptions._sets = null;
+					}, 5000);
+					return user.emotes;
+				}
 			}
-			var user = window.App.__container__.lookup('controller:chat').get('currentRoom').tmiRoom.session._users._users[helpers.user.username];
-			if (user) {
-				emotes.subscriptions._sets = user.emotes;
-				setTimeout(function () {
-					emotes.subscriptions._sets = null;
-				}, 5000);
-				return user.emotes;
+			catch (e) {
+				return [];
 			}
 			return [];
 		}
@@ -557,6 +562,7 @@ function populateEmotesMenu() {
  * Refreshes the usable emotes. An emote is deemed usable if it either has no set or the set is in your user info. For turbo sets, it will use the turbo if in your user info, otherwise fall back to default.
  */
 function refreshUsableEmotes() {
+	var sets = emotes.subscriptions.sets;
 	emotes.usable = [];
 	emotes.raw.forEach(function (emote) {
 		// Allow hiding of emotes from the menu.
@@ -576,7 +582,7 @@ function refreshUsableEmotes() {
 			}
 			if (
 				(emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) ||
-				(emotes.subscriptions.sets.indexOf(image.emoticon_set) >= 0)
+				(sets.indexOf(image.emoticon_set) >= 0)
 			) {
 				emote.image = image;
 				return true;
