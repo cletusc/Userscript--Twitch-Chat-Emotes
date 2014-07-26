@@ -113,19 +113,16 @@
 	height: 16px;
 	width: 16px;
 	opacity: 0.5;
+	background-size: contain !important;
 }
 .emote-menu .icon:hover {
 	opacity: 1.0;
 }
-.emote-menu .icon-github {
-	/**
-	 * "The mark": inverted color to suit dark theme and resized to 16x16.
-	 * @attribution Github, Inc. (https://github.com/logos)
-	 */
-	background: url(../images/github-mark.png) no-repeat 50%;
+.emote-menu .icon-home {
+	background: url(../images/home.svg) no-repeat 50%;
 }
 .emote-menu .icon-resize-handle {
-	background: url(../images/resize-handle.png) no-repeat 50%;
+	background: url(../images/resize-handle.svg) no-repeat 50%;
 	cursor: nwse-resize !important;
 }
 
