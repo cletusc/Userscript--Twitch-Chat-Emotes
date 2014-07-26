@@ -46,7 +46,8 @@
 		"gulp-hogan-compile": "^0.2.1",
 		"vinyl-map": "^1.0.1",
 		"gulp-rename": "^1.2.0",
-		"gulp-uglify": "^0.3.1"
+		"gulp-uglify": "^0.3.1",
+		"gulp-autoprefixer": "0.0.8"
 	},
 	"napa": {
 		"jquery-custom-scrollbar": "mzubala/jquery-custom-scrollbar#0.5.5"

@@ -12,6 +12,7 @@ var hoganCompiler = require('gulp-hogan-compile')
 var map = require('vinyl-map');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
+var prefix = require('gulp-autoprefixer');
 
 // Custom modules.
 var generateUserscriptHeader = require('./gulp/generate-userscript-header');
@@ -38,6 +39,7 @@ gulp.task('vendor-js', function () {
 gulp.task('styles', function () {
 	return gulp.src(files.CSS)
 		.pipe(cssBase64())
+		.pipe(prefix())
 		.pipe(cssMin())
 		.pipe(header(minifyText))
 		.pipe(concat('styles.css'))
