@@ -288,10 +288,12 @@ function bindListeners() {
 	elements.menu.resizable({
 		handle: '[data-command="resize-handle"]',
 		resize: function () {
-			$(this).addClass('pinned');
-			$(this).addClass('moved');
 			// Recalculate any scroll bars.
 			elements.menu.find('.scrollable').customScrollbar('resize');
+		},
+		stop: function () {
+			$(this).addClass('pinned');
+			$(this).addClass('moved');
 		},
 		alsoResize: elements.menu.find('.scrollable'),
 		containment: $(document.body),
@@ -348,9 +350,6 @@ function populateEmotesMenu() {
 	emotes.usable.forEach(function (emote) {
 		createEmote(emote, container, true);
 	});
-
-	// Recalculate any scroll bars.
-	elements.menu.find('.scrollable').customScrollbar('resize');
 
 	/**
 	 * Sort by popularity: most used -> least used
