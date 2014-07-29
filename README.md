@@ -18,7 +18,7 @@ In order to speed up building and testing, this project uses [npm][npm] and [gul
 
 - Userscript metadata: All userscript metadata is found in `package.json` within the `userscript` property and must be valid JSON.
 - Templates: All templates are found in `src/templates` and are compiled with [hogan.js][hogan.js] using [mustache syntax][mustache spec]. Templates are accessible within `src/script.js` by referencing `templates.filename();`. For a filename of `foo.html`, you can reference it by `templates.foo();`. You may pass in data to the template like so: `templates.foo({bar: 'baz'});`. All templates are automatically referenced as partials for all other templates.
-- Styles: All CSS styles are found in `src/styles`. When adding a new file, you must also add the file to `gulp/files.js` in the correct order.
+- Styles: All CSS styles are found in `src/styles`. When adding a new file, you must also add the file to `gulp/files.js` in the correct order. Do not use vendor-specific property prefixes (`-webkit`, `-moz`, etc.) as this project uses [autoprefixer][autoprefixer] to prefix properties with the required vendor-specific prefixes.
 - News updates: All news updates should be put in `news.json` and must be valid JSON. The key must be a timestamp in the form of `YYYY-MM-DDTHH:MM`, e.g. `2014-02-05T15:07` and the value will be your message. All links must have `target="_blank"`.
 
 ### Third-party files
@@ -89,3 +89,4 @@ Some reading on the matter:
 [rimraf]: https://www.npmjs.org/package/rimraf
 [hogan.js]: http://twitter.github.io/hogan.js/
 [mustache spec]: http://mustache.github.io/mustache.5.html
+[autoprefixer]: https://github.com/ai/autoprefixer
