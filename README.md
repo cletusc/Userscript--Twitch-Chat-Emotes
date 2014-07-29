@@ -38,6 +38,18 @@ Each time you compile the script, the third party files will automatically be in
 - `script.user.js`: This is the userscript file which has all of the required metadata to work with the various userscript engines.
 - `script.min.js`: This is the browser-ready minified version of the script. This is ideal for referencing by third-party scripts. Third-party scripts should only check for updates directly from Github once every 24 hours; do not directly reference the Github file. For direct linking, you should mirror this script to a CDN and use that instead.
 
+### Version numbers
+
+This project uses [Semantic Versioning](http://semver.org/) for all releases. Version numbers are changed when creating a **stable** release. Developer or non-stable releases will be marked as the same version they were originally branched from. When referring to a developer or non-stable release, reference it's commit SHA or reference the download link that you used.
+
+### Installing developer versions
+
+A developer may ask you to install a developer version, or you may choose to install a specific version from a commit. The initial steps to install are the same as found [on the homepage](http://cletusc.github.io/Userscript--Twitch-Chat-Emotes/#install), but instead, you will use an install link directly from the source. A developer will provide an install link to a version for you--use the link they provide to install instead of the install button on the home page.
+
+You may retrieve your own install link by visiting the [script.user.js](script.user.js) file, and pressing the "Raw" button, which will redirect you to the install link to use (or, if you have a userscript engine installed, it will install it right then and there). If you need an install link for a specific commit, while on the [script.user.js](script.user.js) file, press `y` which will change the link to reference the exact commit, then the "Raw" button for the install link for that commit.
+
+_Please note: versions directly installed are strictly for testing only. Once you are done testing, please install the latest stable version._
+
 ### Gulp commands
 
 - `gulp`: Compiles the script.
