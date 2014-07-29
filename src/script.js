@@ -476,10 +476,6 @@ function refreshUsableEmotes() {
 			}
 		});
 		emote.image = emote.image || defaultImage;
-		// Fix missing image.html on new layout.
-		if (emote.image && !emote.image.html) {
-			emote.image.html = '<img src="' + emote.image.url + '">';
-		}
 
 		// Only add the emote if there is a URL.
 		if (emote.image && emote.image.url !== null) {
@@ -621,7 +617,7 @@ function createEmote(emote, container, showHeader) {
 
 	container.append(
 		$(templates.emote({
-			image: emote.image.html,
+			image: emote.image,
 			text: emote.text
 		}))
 	);

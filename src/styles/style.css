@@ -63,9 +63,11 @@
 	width: 32px;
 	height: 32px;
 }
-.emote-menu .emote img {
+.emote-menu .emote div {
 	max-width: 32px;
 	max-height: 32px;
+	background-repeat: no-repeat;
+	background-size: contain;
 
 	/* Center within container. Container must have a `position` other than `static`. */
 	margin: auto;
