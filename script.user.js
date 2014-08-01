@@ -553,7 +553,12 @@ function refreshUsableEmotes() {
 			if (image.emoticon_set === null) {
 				defaultImage = image;
 			}
-			if (emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) {
+			if (
+				// Image is the same URL as the subscription emote.
+				(emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) ||
+				// Emote is forced to show.
+				emote.hidden === false
+			) {
 				emote.image = image;
 				return true;
 			}
