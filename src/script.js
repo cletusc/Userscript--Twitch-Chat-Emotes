@@ -1,3 +1,8 @@
+var templates = require('./modules/templates');
+var pkg = require('../package.json');
+var $ = null;
+var jQuery = null;
+
 // Script-wide variables.
 //-----------------------
 var emotes = {
@@ -69,6 +74,7 @@ for (var message in MESSAGES) {
 // Only enable script if we have the right variables.
 //---------------------------------------------------
 (function init(time) {
+	$ = jQuery = window.jQuery;
 	var routes = window.App && (window.App.ChannelRoute || window.App.ChatRoute);
 	var objectsLoaded = (
 		window.Twitch !== undefined &&
@@ -78,7 +84,7 @@ for (var message in MESSAGES) {
 			window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
 			window.App.__container__.lookup('controller:emoticons').get('emoticons').length
 		) &&
-		window.jQuery !== undefined &&
+		jQuery !== undefined &&
 		// Chat button.
 		document.querySelector('#chat_speak, .send-chat-button')
 	);
@@ -122,8 +128,12 @@ for (var message in MESSAGES) {
  * Runs initial setup of DOM and variables.
  */
 function setup() {
-	loadjQueryPlugins();
-
+	// Load CSS.
+	require('../build/styles');
+	// Load jQuery plugins.
+	require('./plugins/resizable');
+	require('jquery-custom-scrollbar/jquery.custom-scrollbar');
+	
 	elements.chatButton = $('.send-chat-button');
 	elements.menuButtonContainer = $('.chat-buttons-container .chat-option-buttons');
 	elements.chatBox = $('.chat-interface textarea');
@@ -136,7 +146,6 @@ function setup() {
 	}
 
 	createMenuElements();
-	addStyle(templates.styles());
 	bindListeners();
 	showNews();
 
@@ -690,16 +699,6 @@ function getEmoteFromRegEx(regex) {
 
 // Generic functions.
 //-------------------
-/**
- * Adds a stylesheet to the document.
- * @param {string} text The styles to be added.
- */
-function addStyle(text) {
-	var style = document.createElement('style');
-	style.textContent = text;
-	document.querySelector('head').appendChild(style);
-}
-
 /**
  * Gets a storage value.
  * @param  {string} aKey     The key you want to get.
