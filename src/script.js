@@ -25,8 +25,6 @@ var isInitiated = false;
 var elements = {
 	// The button to send a chat message.
 	chatButton: null,
-	// The area where the menu button will be placed.
-	menuButtonContainer: null,
 	// The area where all chat messages are contained.
 	chatContainer: null,
 	// The input field for chat messages.
@@ -135,7 +133,6 @@ function setup() {
 	require('jquery-custom-scrollbar/jquery.custom-scrollbar');
 	
 	elements.chatButton = $('.send-chat-button');
-	elements.menuButtonContainer = $('.chat-buttons-container .chat-option-buttons');
 	elements.chatBox = $('.chat-interface textarea');
 	elements.chatContainer = $('.chat-messages');
 
@@ -195,20 +192,9 @@ function createMenuElements() {
 	}
 	// Create menu button.
 	elements.menuButton = $(templates.emoteButton());
-	elements.menuButton.appendTo(elements.menuButtonContainer);
+	elements.menuButton.insertBefore(elements.chatButton);
 	elements.menuButton.hide();
-
-	// Only correct styling for non-BetterTTV.
-	if (window.BetterTTV) {
-		elements.menuButton.fadeIn();
-	}
-	else {
-		elements.chatButton.animate({'left': '121px'}, {
-			complete: function () {
-				elements.menuButton.fadeIn();
-			}
-		});
-	}
+	elements.menuButton.fadeIn();
 
 	// Remove menu if found.
 	elements.menu = $('#emote-menu-for-twitch');
