@@ -7,6 +7,7 @@ var jQuery = null;
 
 // Script-wide variables.
 //-----------------------
+var url = require('url');
 var emotes = {
 	usable: [],
 	get raw() {
@@ -470,7 +471,6 @@ function populateEmotesMenu() {
  * Refreshes the usable emotes. An emote is deemed usable if it either has no set or the set is in your user info. For turbo sets, it will use the turbo if in your user info, otherwise fall back to default.
  */
 function refreshUsableEmotes() {
-	var urlParser = document.createElement('a');
 	emotes.usable = [];
 	emotes.raw.forEach(function (emote) {
 		// Allow hiding of emotes from the menu.
@@ -503,13 +503,7 @@ function refreshUsableEmotes() {
 		// Only add the emote if there is a URL.
 		if (emote.image && emote.image.url !== null) {
 			// Determine if emote is from a third-party addon.
-			urlParser.href = emote.image.url;
-			if (urlParser.hostname === 'static-cdn.jtvnw.net') {
-				emote.isThirdParty = false;
-			}
-			else {
-				emote.isThirdParty = true;
-			}
+			emote.isThirdParty = url.parse(emote.image.url).hostname !== 'static-cdn.jtvnw.net';
 			
 			emotes.usable.push(emote);
 		}
