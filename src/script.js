@@ -564,7 +564,7 @@ function createEmote(emote, container, showHeader) {
 	}
 	if (showHeader) {
 		if (emote.channel && emote.channel !== 'Twitch Turbo') {
-			var badge = emotes.subscriptions.badges[emote.channel] || emote.badge;
+			var badge = emotes.subscriptions.badges[emote.channel] || emote.badge || 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
 			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.channel + '"]').length) {
 				container.append(
 					$(templates.emoteGroupHeader({
