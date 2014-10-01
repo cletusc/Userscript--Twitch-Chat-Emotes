@@ -58,7 +58,8 @@
 		"pretty-hrtime": "^0.2.1",
 		"vinyl-map": "^1.0.1",
 		"vinyl-source-stream": "^0.1.1",
-		"watchify": "^1.0.1"
+		"watchify": "^1.0.1",
+		"storage-wrapper": "cletusc/storage-wrapper#0.x"
 	},
 	"napa": {
 		"jquery-custom-scrollbar": "mzubala/jquery-custom-scrollbar#0.5.5"

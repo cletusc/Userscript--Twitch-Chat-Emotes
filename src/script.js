@@ -1,5 +1,7 @@
 var templates = require('./modules/templates');
 var pkg = require('../package.json');
+var Store = require('storage-wrapper');
+
 var $ = null;
 var jQuery = null;
 
@@ -18,8 +20,38 @@ var emotes = {
 		emotes: {}
 	}
 };
-var emotePopularity = false;
 var isInitiated = false;
+
+// Setup storage.
+var storage = {};
+storage.global = new Store({
+	namespace: 'emote-menu-for-twitch'
+});
+storage.popularity = storage.global.createSubstore('popularity')
+
+// Migrate old keys.
+storage.global.migrate({
+	fromNamespace: '',
+	fromKey: 'emote-popularity-tracking',
+	toKey: '_migrate',
+	// overwriteNewData: true,
+	// keepOldData: true,
+	transform: function (data) {
+		try {
+			data = JSON.parse(data);
+		}
+		catch (e) {
+			data = {};
+		}
+		for (var key in data) {
+			if (!data.hasOwnProperty(key)) {
+				continue;
+			}
+			storage.popularity.set(key, Number(data[key]));
+		}
+		return data;
+	}
+});
 
 // DOM elements.
 var elements = {
@@ -144,7 +176,6 @@ function setup() {
 
 	createMenuElements();
 	bindListeners();
-	showNews();
 
 	// Get active subscriptions.
 	window.Twitch.api.get(
@@ -298,7 +329,7 @@ function bindListeners() {
 
 	// Enable the popularity reset.
 	elements.menu.find('[data-command="reset-popularity"]').on('click', function () {
-		emotePopularityClear();
+		storage.popularity.removeAll();
 		populateEmotesMenu();
 	});
 
@@ -350,16 +381,8 @@ function populateEmotesMenu() {
 	 * Sort by popularity: most used -> least used
 	 */
 	function sortByPopularity(a, b) {
-		var aGet = emotePopularityGet(a.text);
-		var bGet = emotePopularityGet(b.text);
-		var aNumber = typeof aGet === 'number';
-		var bNumber = typeof bGet === 'number';
-		if (aNumber && !bNumber) {
-			return -1;
-		}
-		if (bNumber && !aNumber) {
-			return 1;
-		}
+		var aGet = storage.popularity.get(a.text, 0);
+		var bGet = storage.popularity.get(b.text, 0);
 		if (aGet < bGet) {
 			return 1;
 		}
@@ -484,68 +507,11 @@ function refreshUsableEmotes() {
 }
 
 /**
- * Adds / sets popularity of an emote. Note: saves popularity data to storage each time this is called.
- * @param {string} text          The text of the emote (e.g. "Kappa").
- * @param {number} [forceAmount] The amount of popularity to force the emote to have. If not specificed, popularity will increase by 1.
- */
-function emotePopularityAdd(text, forceAmount) {
-	emotePopularityInit();
-	if (emotePopularity[text] === undefined) {
-		emotePopularity[text] = 0;
-	}
-	if (typeof forceAmount === 'number' && forceAmount >= 0) {
-		emotePopularity[text] = forceAmount;
-	}
-	else {
-		emotePopularity[text]++;
-	}
-	setSetting('emote-popularity-tracking', JSON.stringify(emotePopularity));
-}
-
-/**
- * Gets the current popularity of an emote.
- * @param  {string} text The text of the emote (e.g. "Kappa").
- * @return {number}      The amount of popularity. Possible to be 0 if it has been forced.
- * @return {boolean}     `false` if the emote is not in the popularity tracking data (never been added by `emotePopularityAdd`).
- */
-function emotePopularityGet(text) {
-	emotePopularityInit();
-	if (typeof emotePopularity[text] === 'number' && emotePopularity[text] >= 0) {
-		return emotePopularity[text];
-	}
-	return false;
-}
-
-/**
- * Clears the current emote popularity tracking data.
- */
-function emotePopularityClear() {
-	deleteSetting('emote-popularity-tracking');
-	emotePopularity = false;
-	emotePopularityInit();
-}
-
-/**
- * Initiates the popularity tracking. This will pull data from storage, or if none exists, set some common defaults.
- */
-function emotePopularityInit() {
-	if (!emotePopularity) {
-		emotePopularity = JSON.parse(getSetting('emote-popularity-tracking', '{}'));
-		emotePopularityAdd('BibleThump', 0);
-		emotePopularityAdd('DansGame', 0);
-		emotePopularityAdd('FailFish', 0);
-		emotePopularityAdd('Kappa', 0);
-		emotePopularityAdd('Kreygasm', 0);
-		emotePopularityAdd('SwiftRage', 0);
-	}
-}
-
-/**
  * Inserts an emote into the chat box.
  * @param {string} text The text of the emote (e.g. "Kappa").
  */
 function insertEmoteText(text) {
-	emotePopularityAdd(text);
+	storage.popularity.set(text, storage.popularity.get(text, 0) + 1);
 	// Get input.
 	var element = document.querySelector('#chat_text_input, .chat-interface textarea');
 
@@ -623,48 +589,6 @@ function createEmote(emote, container, showHeader) {
 }
 
 /**
- * Show latest news.
- */
-function showNews() {
-	var dismissedNews = JSON.parse(getSetting('twitch-chat-emotes:dismissed-news', '[]'));
-	var cachedNews = JSON.parse(getSetting('twitch-chat-emotes:cached-news', '{}'));
-	// Only poll news feed once per day.
-	if (Date.now() - getSetting('twitch-chat-emotes:news-date', 0) > 86400000) {
-		$.ajax('https://api.github.com/repos/cletusc/Userscript--Twitch-Chat-Emotes/contents/news.json', {
-			dataType: 'json',
-			headers: {
-				'Accept': 'application/vnd.github.v3.raw+json',
-				'User-Agent': 'cletusc/Userscript--Twitch-Chat-Emotes'
-			}
-		}).done(function (data) {
-			cachedNews = data || cachedNews;
-			setSetting('twitch-chat-emotes:cached-news', JSON.stringify(cachedNews));
-		}).always(function () {
-			handleNewsFeed();
-			setSetting('twitch-chat-emotes:news-date', Date.now());
-		});
-	}
-	else {
-		handleNewsFeed();
-	}
-
-	// Handles displaying of news feed.
-	function handleNewsFeed() {
-		for (var newsId in cachedNews) {
-			if (cachedNews.hasOwnProperty(newsId) && dismissedNews.indexOf(newsId) === -1) {
-				// TODO #43
-			}
-		}
-		$('#chat_lines, .chat-messages').on('click', 'a[data-command="twitch-chat-emotes:dismiss-news"]', function (evt) {
-			evt.preventDefault();
-			dismissedNews.push($(this).data('news-id'));
-			setSetting('twitch-chat-emotes:dismissed-news', JSON.stringify(dismissedNews));
-			$(this).parent().parent().remove();
-		});
-	}
-}
-
-/**
  * Gets the usable emote text from a regex.
  * @attribute http://userscripts.org/scripts/show/160183 (adaption)
  */
@@ -681,36 +605,4 @@ function getEmoteFromRegEx(regex) {
 		.replace(/[^\\]\?/g, '') // remove optional chars
 		.replace(/^\\b|\\b$/g, '') // remove boundaries
 		.replace(/\\/g, ''); // unescape
-}
-
-// Generic functions.
-//-------------------
-/**
- * Gets a storage value.
- * @param  {string} aKey     The key you want to get.
- * @param  {mixed}  aDefault The default value to return if there isn't anything in storage.
- * @return {mixed}           The value in storage or `aDefault` if there isn't anything in storage.
- */
-function getSetting(aKey, aDefault) {
-	var val = localStorage.getItem(aKey);
-	if (val === null && typeof aDefault !== 'undefined') {
-		return aDefault;
-	}
-	return val;
-}
-/**
- * Sets a storage value.
- * @param {string} aKey The key you want to set.
- * @param {mixed}  aVal The value you want to store.
- */
-function setSetting(aKey, aVal) {
-	localStorage.setItem(aKey, aVal);
-}
-
-/**
- * Deletes a storage key.
- * @param {string} aKey The key you want to set.
- */
-function deleteSetting(aKey) {
-	localStorage.removeItem(aKey);
 }
