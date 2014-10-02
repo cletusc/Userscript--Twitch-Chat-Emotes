@@ -648,3 +648,7 @@ p.capitalize:first-letter {
 .disqus_container {
 	padding: 0 20px;
 }
+
+.twitter-timeline {
+	width: 100% !important;
+}
