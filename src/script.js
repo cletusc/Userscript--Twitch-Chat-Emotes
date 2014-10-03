@@ -382,8 +382,8 @@ function populateEmotesMenu() {
 	 * Sort by popularity: most used -> least used
 	 */
 	function sortByPopularity(a, b) {
-		var aGet = storage.popularity.get(a.text, 0);
-		var bGet = storage.popularity.get(b.text, 0);
+		var aGet = Number(storage.popularity.get(a.text, 0));
+		var bGet = Number(storage.popularity.get(b.text, 0));
 		if (aGet < bGet) {
 			return 1;
 		}
@@ -515,7 +515,7 @@ function refreshUsableEmotes() {
  * @param {string} text The text of the emote (e.g. "Kappa").
  */
 function insertEmoteText(text) {
-	storage.popularity.set(text, storage.popularity.get(text, 0) + 1);
+	storage.popularity.set(text, Number(storage.popularity.get(text, 0)) + 1);
 	// Get input.
 	var element = document.querySelector('#chat_text_input, .chat-interface textarea');
 
