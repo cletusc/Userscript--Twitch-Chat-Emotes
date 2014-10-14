@@ -217,6 +217,7 @@ function bindListeners() {
 		if (elements.menu.is(':visible')) {
 			elements.menu.hide();
 			elements.menu.removeClass('pinned');
+			elements.menu.removeClass('editing');
 			elements.menuButton.removeClass('active');
 		}
 		// Menu hidden, show it.
@@ -308,9 +309,32 @@ function bindListeners() {
 		elements.menu.toggleClass('pinned');
 	});
 
+	// Enable menu editing.
+	elements.menu.find('[data-command="toggle-editing"]').on('click', function () {
+		elements.menu.toggleClass('editing');
+		// Recalculate any scroll bars.
+		elements.menu.find('.scrollable').customScrollbar('resize');
+	});
+
 	// Enable emote clicking (delegated).
 	elements.menu.on('click', '.emote', function () {
+		if (elements.menu.is('.editing')) {
+			return;
+		}
 		insertEmoteText($(this).attr('data-emote'));
+	});
+
+	// Enable emote hiding (delegated).
+	elements.menu.on('click', '[data-command="toggle-visibility"]', function () {
+		// Make sure we are in edit mode.
+		if (!elements.menu.is('.editing')) {
+			return;
+		}
+		var which = $(this).attr('data-which');
+		var isVisible = storage.visibility.get(which, true);
+		// Toggle visibility.
+		storage.visibility.set(which, !isVisible);
+		populateEmotesMenu();
 	});
 
 	elements.menu.find('.scrollable').customScrollbar({
@@ -473,6 +497,8 @@ function refreshUsableEmotes() {
 		if (emote.image && emote.image.url !== null) {
 			// Determine if emote is from a third-party addon.
 			emote.isThirdParty = url.parse(emote.image.url).hostname !== 'static-cdn.jtvnw.net';
+			// Determine if emote is hidden by user.
+			emote.isVisible = storage.visibility.get('channel-' + emote.channel, true) && storage.visibility.get(emote.text, true);
 			
 			emotes.usable.push(emote);
 		}
@@ -538,18 +564,24 @@ function createEmote(emote, container, showHeader) {
 				container.append(
 					$(templates.emoteGroupHeader({
 						badge: badge,
-						channel: emote.channel
+						channel: emote.channel,
+						isVisible: storage.visibility.get('channel-' + emote.channel, true)
 					}))
 				);
 			}
 		}
 	}
 
+	var channelContainer = container.find('.group-header[data-emote-channel="' + emote.channel + '"]');
+	if (channelContainer.length) {
+		container = channelContainer;
+	}
 	container.append(
 		$(templates.emote({
 			image: emote.image,
 			text: emote.text,
-			thirdParty: emote.isThirdParty
+			thirdParty: emote.isThirdParty,
+			isVisible: emote.isVisible
 		}))
 	);
 }

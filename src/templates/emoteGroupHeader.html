@@ -1,9 +1,7 @@
-{{#isAddonHeader}}
-	<div class="group-header addon-emotes-header" title="Below are emotes added by an addon. Only those who also have the same addon installed can see these emotes in chat.">
-		Addon Emotes
+<div class="group-header{{^isVisible}} emote-menu-hidden{{/isVisible}}" data-emote-channel="{{channel}}">
+	<div class="header-info">
+		<img src="{{badge}}" />
+		{{channel}}
+		<div class="edit-visibility" data-which="channel-{{channel}}" data-command="toggle-visibility" title="Hide/show all emotes for {{channel}}"></div>
 	</div>
-{{/isAddonHeader}}
-
-{{^isAddonHeader}}
-	<div class="group-header" data-emote-channel="{{channel}}"><img src="{{badge}}" />{{channel}}</div>
-{{/isAddonHeader}}
+</div>

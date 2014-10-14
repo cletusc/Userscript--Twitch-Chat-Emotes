@@ -1,3 +1,9 @@
+@keyframes spin {
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
 #emote-menu-button {
 	background-image: url(../images/smiley.png) !important;
 	background-position: 50%;
@@ -40,15 +46,16 @@
 .emote-menu .draggable:hover {
 	background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.1) 5px, rgba(255, 255, 255, 0.1) 10px);
 }
-.emote-menu .group-header {
+.emote-menu .header-info {
 	border-top: 1px solid black;
 	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
 	background-image: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.5));
 	padding: 2px;
 	color: #ddd;
 	text-align: center;
+	position: relative;
 }
-.emote-menu .group-header img {
+.emote-menu .header-info img {
 	margin-right: 8px;
 }
 
@@ -63,6 +70,9 @@
 	width: 32px;
 	height: 32px;
 	transition: all 0.25s ease;
+}
+.emote-menu.editing .emote {
+	cursor: auto;
 }
 .emote-menu .emote div {
 	max-width: 32px;
@@ -124,6 +134,12 @@
 .emote-menu .icon-home {
 	background: url(../images/home.svg) no-repeat 50%;
 }
+.emote-menu .icon-gear {
+	background: url(../images/gear.svg) no-repeat 50%;
+}
+.emote-menu.editing .icon-gear {
+	animation: spin 4s linear infinite;
+}
 .emote-menu .icon-resize-handle {
 	background: url(../images/resize-handle.svg) no-repeat 50%;
 	cursor: nwse-resize !important;
@@ -148,4 +164,44 @@
 	background-color: #555;
 	opacity: 0.2;
 	z-index: 1;
+}
+
+.emote-menu .edit-visibility {
+	background-color: rgb(0, 200, 0);
+	background-image: url(../images/eye-open.svg);
+	background-position: 50%;
+	background-repeat: no-repeat;
+	background-size: 14px;
+	border: 1px solid #000;
+	border-radius: 4px;
+	cursor: pointer;
+	display: none;
+	opacity: 0.5;
+	height: 14px;
+	position: absolute;
+	width: 14px;
+	z-index: 1;
+	transition: all 0.25s ease;
+}
+.emote-menu .edit-visibility:hover {
+	opacity: 1.0;
+}
+.emote-menu .emote > .edit-visibility {
+	top: 0;
+	right: 0;
+	left: auto;
+	bottom: auto;
+}
+.emote-menu .header-info > .edit-visibility {
+	margin-left: 5px;
+}
+.emote-menu.editing .edit-visibility {
+	display: inline-block;
+}
+.emote-menu .emote-menu-hidden .edit-visibility {
+	background-image: url(../images/eye-closed.svg);
+	background-color: rgb(255, 0, 0);
+}
+.emote-menu:not(.editing) .emote-menu-hidden {
+	display: none;
 }

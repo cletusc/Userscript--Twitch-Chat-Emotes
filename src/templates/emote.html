@@ -1,3 +1,4 @@
-<div class="emote{{#thirdParty}} third-party{{/thirdParty}}" data-emote="{{text}}" title="{{text}}{{#thirdParty}} (from 3rd party addon){{/thirdParty}}">
+<div class="emote{{#thirdParty}} third-party{{/thirdParty}}{{^isVisible}} emote-menu-hidden{{/isVisible}}" data-emote="{{text}}" title="{{text}}{{#thirdParty}} (from 3rd party addon){{/thirdParty}}">
 	<div style="background-image: url({{{image.url}}}); height: {{{image.height}}}px; width: {{{image.width}}}px"></div>
+	<div class="edit-visibility" data-which="{{text}}" data-command="toggle-visibility" title="Hide/show emote: {{text}}"></div>
 </div>
