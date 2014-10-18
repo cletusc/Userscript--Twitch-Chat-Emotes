@@ -1,6 +1,7 @@
 var templates = require('./modules/templates');
 var pkg = require('../package.json');
 var storage = require('./modules/storage');
+var api = require('./modules/api');
 
 var $ = null;
 var jQuery = null;
@@ -148,34 +149,30 @@ function setup() {
 	bindListeners();
 
 	// Get active subscriptions.
-	window.Twitch.api.get(
-		'/api/users/:login/tickets',
-		{
-			offset: 0,
-			limit: 100,
-			unended: true
-		}
-	).done(function (api) {
-		api.tickets.forEach(function (ticket) {
+	api.getTickets(function (tickets) {
+		tickets.forEach(function (ticket) {
+			var product = ticket.product;
+			var channel = product.owner_name || product.short_name;
 			// Get subscriptions with emotes.
-			if (ticket.product.emoticons && ticket.product.emoticons.length) {
-				var badge = ticket.product.features.badge;
-				var channel = ticket.product.owner_name;
-				// Add channel badges.
-				if (badge) {
-					badge = 'http://static-cdn.jtvnw.net/jtv_user_pictures/' + [badge.prefix, badge.owner, badge.type, badge.uid, badge.sizes[0]].join('-') + '.' + badge.format;
-				}
-				else {
-					badge = 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
-				}
-				emotes.subscriptions.badges[channel] = badge;
-				
+			if (product.emoticons && product.emoticons.length) {
 				// Add emotes channel.
-				ticket.product.emoticons.forEach(function (emote) {
+				product.emoticons.forEach(function (emote) {
 					emotes.subscriptions.emotes[getEmoteFromRegEx(new RegExp(emote.regex))] = {
 						channel: channel,
 						url: emote.url
 					};
+				});
+
+				// Get badge.
+				api.getBadges(channel, function (badges) {
+					var badge = '';
+					if (channel === 'turbo') {
+						badge = badges.turbo.image;
+					}
+					else if (badges.subscriber && badges.subscriber.image) {
+						badge = badges.subscriber.image;
+					}
+					emotes.subscriptions.badges[channel] = badge;
 				});
 			}
 		});
@@ -559,7 +556,7 @@ function createEmote(emote, container, showHeader) {
 	}
 	if (showHeader) {
 		if (emote.channel && emote.channel !== 'Twitch Turbo') {
-			var badge = emotes.subscriptions.badges[emote.channel] || emote.badge || 'https://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
+			var badge = emotes.subscriptions.badges[emote.channel] || emote.badge;
 			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.channel + '"]').length) {
 				container.append(
 					$(templates.emoteGroupHeader({
