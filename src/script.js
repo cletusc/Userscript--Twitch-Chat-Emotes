@@ -45,6 +45,9 @@ var MESSAGES = {
 	TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
 };
 
+// The basic smiley emotes.
+var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
+
 var helpers = {
 	user: {
 		/**
@@ -58,7 +61,25 @@ var helpers = {
 			}
 			// Not logged in, call Twitch's login method.
 			$.login();
-			return false;	
+			return false;
+		},
+		getEmoteSets: function () {
+			var sets = [];
+			try {
+				sets = App.__container__
+					.lookup('controller:chat')
+					.get('currentRoom')
+					.get('tmiRoom')
+					.getEmotes(Twitch.user.login());
+
+				sets = sets.filter(function (val) {
+					return typeof val === 'number' && val >= 0;
+				});
+				return sets;
+			}
+			catch (err) {
+				return [];
+			}
 		}
 	}
 };
@@ -408,21 +429,7 @@ function populateEmotesMenu() {
 	 * Sort by emoticon set: basic smileys -> no set -> subscription emotes
 	 */
 	function sortBySet(a, b){
-		// Override for turbo emotes.
-		if (
-			(a.channel && a.channel === 'Twitch Turbo') &&
-			(!b.channel || (b.channel && b.channel !== 'Twitch Turbo'))
-		) {
-			return -1;
-		}
-		if (
-			(b.channel && b.channel === 'Twitch Turbo') &&
-			(!a.channel || (a.channel && a.channel !== 'Twitch Turbo'))
-		) {
-			return 1;
-		}
 		// Override for basic emotes.
-		var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
 		if (basicEmotes.indexOf(a.text) >= 0 &&	basicEmotes.indexOf(b.text) < 0) {
 			return -1;
 		}
@@ -461,6 +468,8 @@ function populateEmotesMenu() {
  * Refreshes the usable emotes. An emote is deemed usable if it either has no set or the set is in your user info. For turbo sets, it will use the turbo if in your user info, otherwise fall back to default.
  */
 function refreshUsableEmotes() {
+	var turboSets = [457, 793];
+	storage.global.set('emoteSets', helpers.user.getEmoteSets());
 	emotes.usable = [];
 	emotes.raw.forEach(function (emote) {
 		// Allow hiding of emotes from the menu.
@@ -481,9 +490,13 @@ function refreshUsableEmotes() {
 			if (
 				// Image is the same URL as the subscription emote.
 				(emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) ||
+				(storage.global.get('emoteSets', []).indexOf(image.emoticon_set) >= 0) ||
 				// Emote is forced to show.
 				emote.hidden === false
 			) {
+				if (turboSets.indexOf(image.emoticon_set) >= 0) {
+					emote.channel = 'turbo';
+				}
 				emote.image = image;
 				return true;
 			}
@@ -555,7 +568,7 @@ function createEmote(emote, container, showHeader) {
 		return;
 	}
 	if (showHeader) {
-		if (emote.channel && emote.channel !== 'Twitch Turbo') {
+		if (emote.channel && basicEmotes.indexOf(emote.text) < 0) {
 			var badge = emotes.subscriptions.badges[emote.channel] || emote.badge;
 			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.channel + '"]').length) {
 				container.append(
