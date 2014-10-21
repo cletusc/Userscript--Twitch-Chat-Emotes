@@ -10,6 +10,8 @@ storage.global = new Store({
 storage.popularity = storage.global.createSubstore('popularity');
 // Emote visibility storage.
 storage.visibility = storage.global.createSubstore('visibility');
+// Display name storage.
+storage.displayNames = storage.global.createSubstore('displayNames');
 
 // Migrate old keys.
 storage.global.migrate({

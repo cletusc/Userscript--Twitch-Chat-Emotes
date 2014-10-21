@@ -195,6 +195,16 @@ function setup() {
 					}
 					emotes.subscriptions.badges[channel] = badge;
 				});
+
+				// Get display names.
+				if (storage.displayNames.get(channel) === null) {
+					api.getUser(channel, function (user) {
+						if (channel === 'turbo') {
+							user.display_name = 'Turbo';
+						}
+						storage.displayNames.set(channel, user.display_name, 86400);
+					});
+				}
 			}
 		});
 	});
@@ -575,6 +585,7 @@ function createEmote(emote, container, showHeader) {
 					$(templates.emoteGroupHeader({
 						badge: badge,
 						channel: emote.channel,
+						channelDisplayName: storage.displayNames.get(emote.channel, emote.channel),
 						isVisible: storage.visibility.get('channel-' + emote.channel, true)
 					}))
 				);

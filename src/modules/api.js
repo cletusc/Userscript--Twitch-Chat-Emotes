@@ -11,6 +11,17 @@ function getBadges(username, callback) {
 		});
 }
 
+function getUser(username, callback) {
+	// Note: not a documented API endpoint.
+	api.get('users/' + username)
+		.done(function (api) {
+			callback(api);
+		})
+		.fail(function () {
+			callback({});
+		});
+}
+
 function getTickets(callback) {
 	// Note: not a documented API endpoint.
 	api.get(
@@ -31,5 +42,6 @@ function getTickets(callback) {
 
 module.exports = {
 	getBadges: getBadges,
-	getTickets: getTickets
+	getTickets: getTickets,
+	getUser: getUser
 };
