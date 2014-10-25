@@ -326,12 +326,6 @@ function bindListeners() {
 		minWidth: 200
 	});
 
-	// Enable the popularity reset.
-	elements.menu.find('[data-command="reset-popularity"]').on('click', function () {
-		storage.popularity.removeAll();
-		populateEmotesMenu();
-	});
-
 	// Enable menu pinning.
 	elements.menu.find('[data-command="toggle-pinned"]').on('click', function () {
 		elements.menu.toggleClass('pinned');
@@ -365,6 +359,19 @@ function bindListeners() {
 		populateEmotesMenu();
 	});
 
+	// Enable emote starring (delegated).
+	elements.menu.on('click', '[data-command="toggle-starred"]', function () {
+		// Make sure we are in edit mode.
+		if (!elements.menu.is('.editing')) {
+			return;
+		}
+		var which = $(this).attr('data-which');
+		var isStarred = storage.starred.get(which, false);
+		// Toggle star.
+		storage.starred.set(which, !isStarred);
+		populateEmotesMenu();
+	});
+
 	elements.menu.find('.scrollable').customScrollbar({
 		skin: 'default-skin',
 		hScroll: false,
@@ -377,14 +384,18 @@ function bindListeners() {
  */
 function populateEmotesMenu() {
 	var container;
+	var starredEmotes = null;
 
 	refreshUsableEmotes();
 
-	// Add popular emotes.
-	container = elements.menu.find('#popular-emotes-group');
+	// Add starred emotes.
+	container = elements.menu.find('#starred-emotes-group');
 	container.html('');
-	emotes.usable.sort(sortByPopularity);
-	emotes.usable.forEach(function (emote) {
+	starredEmotes = emotes.usable.filter(function (emote) {
+		return emote.isStarred && emote.isVisible;
+	});
+	starredEmotes.sort(sortByNormal);
+	starredEmotes.forEach(function (emote) {
 		createEmote(emote, container);
 	});
 
@@ -398,21 +409,6 @@ function populateEmotesMenu() {
 	emotes.usable.forEach(function (emote) {
 		createEmote(emote, container, true);
 	});
-
-	/**
-	 * Sort by popularity: most used -> least used
-	 */
-	function sortByPopularity(a, b) {
-		var aGet = Number(storage.popularity.get(a.text, 0));
-		var bGet = Number(storage.popularity.get(b.text, 0));
-		if (aGet < bGet) {
-			return 1;
-		}
-		if (aGet > bGet) {
-			return -1;
-		}
-		return sortByNormal(a, b);
-	}
 
 	/**
 	 * Sort by alphanumeric in this order: symbols -> numbers -> AaBb... -> numbers
@@ -519,6 +515,8 @@ function refreshUsableEmotes() {
 			emote.isThirdParty = url.parse(emote.image.url).hostname !== 'static-cdn.jtvnw.net';
 			// Determine if emote is hidden by user.
 			emote.isVisible = storage.visibility.get('channel-' + emote.channel, true) && storage.visibility.get(emote.text, true);
+			// Get starred status.
+			emote.isStarred = storage.starred.get(emote.text, false);
 			
 			emotes.usable.push(emote);
 		}
@@ -530,7 +528,6 @@ function refreshUsableEmotes() {
  * @param {string} text The text of the emote (e.g. "Kappa").
  */
 function insertEmoteText(text) {
-	storage.popularity.set(text, Number(storage.popularity.get(text, 0)) + 1);
 	// Get input.
 	var element = document.querySelector('#chat_text_input, .chat-interface textarea');
 
@@ -602,7 +599,8 @@ function createEmote(emote, container, showHeader) {
 			image: emote.image,
 			text: emote.text,
 			thirdParty: emote.isThirdParty,
-			isVisible: emote.isVisible
+			isVisible: emote.isVisible,
+			isStarred: emote.isStarred
 		}))
 	);
 }

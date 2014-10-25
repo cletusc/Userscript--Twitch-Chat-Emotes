@@ -34,7 +34,7 @@
 	color: #ccc;
 }
 
-.emote-menu .emotes-popular {
+.emote-menu .emotes-starred {
 	height: 38px;
 }
 .emote-menu .draggable {
@@ -67,16 +67,17 @@
 	border-radius: 5px;
 	text-align: center;
 	position: relative;
-	width: 32px;
-	height: 32px;
+	width: 30px;
+	height: 30px;
 	transition: all 0.25s ease;
+	border: 1px solid transparent;
 }
 .emote-menu.editing .emote {
 	cursor: auto;
 }
 .emote-menu .emote div {
-	max-width: 32px;
-	max-height: 32px;
+	max-width: 30px;
+	max-height: 30px;
 	background-repeat: no-repeat;
 	background-size: contain;
 
@@ -114,6 +115,7 @@
 	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
 	padding: 5px 0 2px;
 	margin-top: 5px;
+	height: 18px;
 }
 .emote-menu .footer .pull-left {
 	margin-right: 5px;
@@ -166,42 +168,76 @@
 	z-index: 1;
 }
 
-.emote-menu .edit-visibility {
-	background-color: rgb(0, 200, 0);
-	background-image: url(../images/eye-open.svg);
+.emote-menu .edit-tool {
 	background-position: 50%;
 	background-repeat: no-repeat;
 	background-size: 14px;
-	border: 1px solid #000;
 	border-radius: 4px;
+	border: 1px solid #000;
 	cursor: pointer;
 	display: none;
-	opacity: 0.5;
 	height: 14px;
+	opacity: 0.25;
 	position: absolute;
+	transition: all 0.25s ease;
 	width: 14px;
 	z-index: 1;
-	transition: all 0.25s ease;
 }
-.emote-menu .edit-visibility:hover {
+.emote-menu .emote:hover .edit-tool,
+.emote-menu .edit-tool:hover {
 	opacity: 1.0;
 }
-.emote-menu .emote > .edit-visibility {
-	top: 0;
-	right: 0;
-	left: auto;
-	bottom: auto;
+.emote-menu .edit-visibility {
+	background-color: rgb(0, 200, 0);
+	background-image: url(../images/eye-open.svg);
 }
-.emote-menu .header-info > .edit-visibility {
+.emote-menu .edit-starred {
+	background-color: rgb(50, 50, 50);
+	background-image: url(../images/star-dark.svg);
+}
+.emote-menu .emote > .edit-visibility {
+	bottom: auto;
+	left: auto;
+	right: 0;
+	top: 0;
+}
+.emote-menu .emote > .edit-starred {
+	bottom: auto;
+	left: 0;
+	right: auto;
+	top: 0;
+}
+.emote-menu .header-info > .edit-tool {
 	margin-left: 5px;
 }
-.emote-menu.editing .edit-visibility {
+.emote-menu.editing .edit-tool {
 	display: inline-block;
 }
 .emote-menu .emote-menu-hidden .edit-visibility {
 	background-image: url(../images/eye-closed.svg);
 	background-color: rgb(255, 0, 0);
 }
+.emote-menu .emote-menu-starred .edit-starred {
+	background-image: url(../images/star.svg);
+}
+.emote-menu .emote.emote-menu-starred {
+	border-color: rgba(200, 200, 0, 0.5);
+}
+.emote-menu .emote.emote-menu-hidden {
+	border-color: rgba(255, 0, 0, 0.5);
+}
 .emote-menu:not(.editing) .emote-menu-hidden {
 	display: none;
+}
+.emote-menu:not(.editing) #starred-emotes-group .emote-menu-starred {
+	border-color: transparent;
+}
+.emote-menu #starred-emotes-group {
+	text-align: center;
+	color: rgb(100, 100, 100);
+}
+.emote-menu #starred-emotes-group:empty:before {
+	content: "Use the edit mode to star an emote!";
+	position: relative;
+	top: 8px;
 }
