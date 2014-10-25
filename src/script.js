@@ -197,13 +197,15 @@ function setup() {
 				});
 
 				// Get display names.
-				if (storage.displayNames.get(channel) === null) {
-					api.getUser(channel, function (user) {
-						if (channel === 'turbo') {
-							user.display_name = 'Turbo';
-						}
-						storage.displayNames.set(channel, user.display_name, 86400);
-					});
+				if (channel !== null && storage.displayNames.get(channel) === null) {
+					if (channel === 'turbo') {
+						storage.displayNames.set(channel, 'Turbo');
+					}
+					else {
+						api.getUser(channel, function (user) {
+							storage.displayNames.set(channel, user.display_name, 86400000);
+						});
+					}
 				}
 			}
 		});
