@@ -22,7 +22,10 @@ var emotes = {
 		emotes: {}
 	}
 };
-var isInitiated = false;
+var isHooked = {
+	channelRoute: false,
+	chatRoute: false
+};
 
 // DOM elements.
 var elements = {
@@ -97,7 +100,6 @@ for (var message in MESSAGES) {
 //---------------------------------------------------
 (function init(time) {
 	$ = jQuery = window.jQuery;
-	var routes = window.App && (window.App.ChannelRoute || window.App.ChatRoute);
 	var objectsLoaded = (
 		window.Twitch !== undefined &&
 		(
@@ -110,24 +112,24 @@ for (var message in MESSAGES) {
 		// Chat button.
 		document.querySelector('#chat_speak, .send-chat-button')
 	);
-	if (!isInitiated && routes) {
-		var activate = {
-			activate: function () {
-				this._super();
-				init(50);
-			}
-		};
+	var activate = {
+		activate: function () {
+			this._super();
+			init(50);
+		}
+	};
+	var channelRoute = window.App.__container__.lookup('route:channel');
+	var chatRoute = window.App.__container__.lookup('route:chat');
 
-		if (window.App.ChannelRoute) {
-			window.App.ChannelRoute.reopen(activate);
-			isInitiated = true;
-		}
-		if (window.App.ChatRoute) {
-			window.App.ChatRoute.reopen(activate);
-			isInitiated = true;
-		}
+	if (!isHooked.channelRoute && channelRoute) {
+		channelRoute.reopen(activate);
+		isHooked.channelRoute = true;
 	}
-	if (!objectsLoaded || !routes) {
+	if (!isHooked.chatRoute && chatRoute) {
+		chatRoute.reopen(activate);
+		isHooked.chatRoute = true;
+	}
+	if (!objectsLoaded) {
 		// Errors in approximately 102400ms.
 		if (time >= 60000) {
 			console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
