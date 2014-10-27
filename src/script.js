@@ -112,6 +112,20 @@ for (var message in MESSAGES) {
 		// Chat button.
 		document.querySelector('#chat_speak, .send-chat-button')
 	);
+	if (!objectsLoaded) {
+		// Errors in approximately 102400ms.
+		if (time >= 60000) {
+			console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
+			return;
+		}
+		if (time >= 10000) {
+			if (!objectsLoaded) {
+				console.warn(MESSAGES.OBJECTS_NOT_LOADED);
+			}
+		}
+		setTimeout(init, time, time * 2);
+		return;
+	}
 	var activate = {
 		activate: function () {
 			this._super();
@@ -128,20 +142,6 @@ for (var message in MESSAGES) {
 	if (!isHooked.chatRoute && chatRoute) {
 		chatRoute.reopen(activate);
 		isHooked.chatRoute = true;
-	}
-	if (!objectsLoaded) {
-		// Errors in approximately 102400ms.
-		if (time >= 60000) {
-			console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
-			return;
-		}
-		if (time >= 10000) {
-			if (!objectsLoaded) {
-				console.warn(MESSAGES.OBJECTS_NOT_LOADED);
-			}
-		}
-		setTimeout(init, time, time * 2);
-		return;
 	}
 	setup();
 })(50);
