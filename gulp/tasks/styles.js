@@ -25,7 +25,29 @@ gulp.task('styles', function () {
 		.pipe(concat('styles.css'))
 		.pipe(css2js({
 			trimSpacesBeforeNewline: false,
-			trimTrailingNewline: false
+			trimTrailingNewline: false,
+			prefix: [
+				'(function (doc, cssText) {',
+				'    var id = "emote-menu-for-twitch-styles";',
+				'    var styleEl = doc.getElementById(id);',
+				'    if (!styleEl) {',
+				'        styleEl = doc.createElement("style");',
+				'        styleEl.id = id;',
+				'        doc.getElementsByTagName("head")[0].appendChild(styleEl);',
+				'    }',
+				'    if (styleEl.styleSheet) {',
+				'        if (!styleEl.styleSheet.disabled) {',
+				'            styleEl.styleSheet.cssText = cssText;',
+				'        }',
+				'    } else {',
+				'        try {',
+				'            styleEl.innerHTML = cssText;',
+				'        } catch (ignore) {',
+				'            styleEl.innerText = cssText;',
+				'        }',
+				'    }',
+				'}(document, "'
+			].join('\n')
 		}))
 		.pipe(gulp.dest('build'));
 });
