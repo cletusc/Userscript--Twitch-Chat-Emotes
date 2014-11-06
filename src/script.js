@@ -1,10 +1,17 @@
 var templates = require('./modules/templates');
 var pkg = require('../package.json');
 var storage = require('./modules/storage');
-var api = require('./modules/api');
+var twitchApi = require('./modules/twitch-api');
+var publicApi = require('./modules/public-api');
+var logger = require('./modules/logger');
 
 var $ = null;
 var jQuery = null;
+
+// Expose public api.
+if (typeof window.emoteMenu === 'undefined') {
+	window.emoteMenu = publicApi;
+}
 
 // Script-wide variables.
 //-----------------------
@@ -41,13 +48,6 @@ var elements = {
 	menu: null
 };
 
-var SCRIPT_NAME = pkg.userscript.name;
-var MESSAGES = {
-	NO_CHAT_ELEMENT: 'There is no chat element on the page, unable to continue.',
-	OBJECTS_NOT_LOADED: 'Needed objects haven\'t loaded yet.',
-	TIMEOUT_SCRIPT_LOAD: 'Script took too long to load. Refresh to try again.'
-};
-
 // The basic smiley emotes.
 var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
 
@@ -60,10 +60,12 @@ var helpers = {
 		login: function () {
 			// Check if logged in already.
 			if (window.Twitch && window.Twitch.user.isLoggedIn()) {
+				logger.debug('User is logged in.');
 				return true;
 			}
 			// Not logged in, call Twitch's login method.
 			$.login();
+			logger.debug('User is not logged in, show the login screen.');
 			return false;
 		},
 		getEmoteSets: function () {
@@ -78,6 +80,8 @@ var helpers = {
 				sets = sets.filter(function (val) {
 					return typeof val === 'number' && val >= 0;
 				});
+
+				logger.debug('Emoticon sets retrieved.', sets);
 				return sets;
 			}
 			catch (err) {
@@ -87,14 +91,7 @@ var helpers = {
 	}
 };
 
-// Quick manipulation of script-wide variables.
-//---------------------------------------------
-// Prefix all messages with script name.
-for (var message in MESSAGES) {
-	if (MESSAGES.hasOwnProperty(message)) {
-		MESSAGES[message] = '[' + SCRIPT_NAME + ']: ' + MESSAGES[message];
-	}
-}
+logger.log('Initial load.');
 
 // Only enable script if we have the right variables.
 //---------------------------------------------------
@@ -115,12 +112,12 @@ for (var message in MESSAGES) {
 	if (!objectsLoaded) {
 		// Errors in approximately 102400ms.
 		if (time >= 60000) {
-			console.error(MESSAGES.TIMEOUT_SCRIPT_LOAD);
+			logger.debug('Taking too long to load, stopping.');
 			return;
 		}
 		if (time >= 10000) {
 			if (!objectsLoaded) {
-				console.warn(MESSAGES.OBJECTS_NOT_LOADED);
+				logger.debug('Objects still not loaded.');
 			}
 		}
 		setTimeout(init, time, time * 2);
@@ -138,10 +135,12 @@ for (var message in MESSAGES) {
 	if (!isHooked.channelRoute && channelRoute) {
 		channelRoute.reopen(activate);
 		isHooked.channelRoute = true;
+		logger.debug('Hooked into channel route.');
 	}
 	if (!isHooked.chatRoute && chatRoute) {
 		chatRoute.reopen(activate);
 		isHooked.chatRoute = true;
+		logger.debug('Hooked into chat route.');
 	}
 	setup();
 })(50);
@@ -152,6 +151,7 @@ for (var message in MESSAGES) {
  * Runs initial setup of DOM and variables.
  */
 function setup() {
+	logger.debug('Running setup...');
 	// Load CSS.
 	require('../build/styles');
 	// Load jQuery plugins.
@@ -164,7 +164,7 @@ function setup() {
 
 	// No chat, just exit.
 	if (!elements.chatButton.length) {
-		console.warn(MESSAGES.NO_CHAT_ELEMENT);
+		logger.debug('No chat element available, ignore setup this time.');
 		return;
 	}
 
@@ -172,7 +172,8 @@ function setup() {
 	bindListeners();
 
 	// Get active subscriptions.
-	api.getTickets(function (tickets) {
+	twitchApi.getTickets(function (tickets) {
+		logger.debug('Tickets loaded.', tickets);
 		tickets.forEach(function (ticket) {
 			var product = ticket.product;
 			var channel = product.owner_name || product.short_name;
@@ -187,7 +188,7 @@ function setup() {
 				});
 
 				// Get badge.
-				api.getBadges(channel, function (badges) {
+				twitchApi.getBadges(channel, function (badges) {
 					var badge = '';
 					if (channel === 'turbo') {
 						badge = badges.turbo.image;
@@ -204,7 +205,8 @@ function setup() {
 						storage.displayNames.set(channel, 'Turbo');
 					}
 					else {
-						api.getUser(channel, function (user) {
+						twitchApi.getUser(channel, function (user) {
+							logger.debug('Getting fresh display name for user', user);
 							storage.displayNames.set(channel, user.display_name, 86400000);
 						});
 					}
@@ -237,6 +239,8 @@ function createMenuElements() {
 	// Create menu.
 	elements.menu = $(templates.menu());
 	elements.menu.appendTo(document.body);
+
+	logger.debug('Created menu elements.');
 }
 
 /**
@@ -251,6 +255,8 @@ function bindListeners() {
 			elements.menu.removeClass('pinned');
 			elements.menu.removeClass('editing');
 			elements.menuButton.removeClass('active');
+
+			logger.debug('Menu hidden.');
 		}
 		// Menu hidden, show it.
 		else if (helpers.user.login()) {
@@ -277,6 +283,8 @@ function bindListeners() {
 			}
 			// Recalculate any scroll bars.
 			elements.menu.find('.scrollable').customScrollbar('resize');
+
+			logger.debug('Menu visible.');
 		}
 
 		function checkForClickOutside(e) {
@@ -348,6 +356,7 @@ function bindListeners() {
 			return;
 		}
 		insertEmoteText($(this).attr('data-emote'));
+		logger.debug('Clicked emote: ' + $(this).attr('data-emote'));
 	});
 
 	// Enable emote hiding (delegated).
@@ -361,6 +370,11 @@ function bindListeners() {
 		// Toggle visibility.
 		storage.visibility.set(which, !isVisible);
 		populateEmotesMenu();
+
+		logger.debug('Set hidden emote.', {
+			which: which,
+			isVisible: !isVisible
+		});
 	});
 
 	// Enable emote starring (delegated).
@@ -374,6 +388,11 @@ function bindListeners() {
 		// Toggle star.
 		storage.starred.set(which, !isStarred);
 		populateEmotesMenu();
+
+		logger.debug('Set starred emote.', {
+			which: which,
+			isStarred: !isStarred
+		});
 	});
 
 	elements.menu.find('.scrollable').customScrollbar({
@@ -381,6 +400,8 @@ function bindListeners() {
 		hScroll: false,
 		preventDefaultScroll: true
 	});
+
+	logger.debug('Bounded event listeners.');
 }
 
 /**

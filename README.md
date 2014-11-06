@@ -50,6 +50,15 @@ You may retrieve your own install link by visiting the [script.user.js][script.u
 
 _Please note: versions directly installed are strictly for testing only. Once you are done testing, please install the [latest stable version][homepage install]._
 
+### Debugging
+
+To enable full debug messages, you must toggle a flag so we know it is OK to bug you with the logging.
+
+1. Open the developer console.
+2. Enter `emoteMenu.toggleDebug();` in your console.
+3. You will get a message showing the debug message status.
+4. Refresh to start getting full debug messages.
+
 ### [Gulp][gulp] commands
 
 - `gulp`: Compiles the script.
