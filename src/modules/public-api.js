@@ -7,7 +7,7 @@ api.toggleDebug = function (forced) {
 		forced = !storage.global.get('debugMessagesEnabled', false);
 	}
 	else {
-		force = !!forced;
+		forced = !!forced;
 	}
 	storage.global.set('debugMessagesEnabled', forced);
 	logger.log('Debug messages are now ' + (forced ? 'enabled' : 'disabled'));
