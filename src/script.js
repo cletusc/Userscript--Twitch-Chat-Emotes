@@ -127,6 +127,13 @@ logger.log('Initial load.');
 		activate: function () {
 			this._super();
 			init(50);
+		},
+		deactivate: function () {
+			this._super();
+			// Remove menu from screen when redirecting.
+			if (elements.menu) {
+				elements.menu.hide();
+			}
 		}
 	};
 	var channelRoute = window.App.__container__.lookup('route:channel');
