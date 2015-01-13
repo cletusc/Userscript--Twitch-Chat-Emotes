@@ -3,6 +3,7 @@ var pkg = require('../package.json');
 var storage = require('./modules/storage');
 var twitchApi = require('./modules/twitch-api');
 var publicApi = require('./modules/public-api');
+var ember = require('./modules/ember-api');
 var logger = require('./modules/logger');
 
 var $ = null;
@@ -19,19 +20,12 @@ var url = require('url');
 var emotes = {
 	usable: [],
 	get raw() {
-		if (window.App) {
-			return window.App.__container__.lookup('controller:emoticons').get('emoticons');
-		}
-		return [];
+		return ember.get('controller:emoticons', 'emoticons') || [];
 	},
 	subscriptions: {
 		badges: {},
 		emotes: {}
 	}
-};
-var isHooked = {
-	channelRoute: false,
-	chatRoute: false
 };
 
 // DOM elements.
@@ -71,12 +65,7 @@ var helpers = {
 		getEmoteSets: function () {
 			var sets = [];
 			try {
-				sets = App.__container__
-					.lookup('controller:chat')
-					.get('currentRoom')
-					.get('tmiRoom')
-					.getEmotes(Twitch.user.login());
-
+				sets = ember.get('controller:chat', 'currentRoom.tmiRoom').getEmotes(Twitch.user.login());
 				sets = sets.filter(function (val) {
 					return typeof val === 'number' && val >= 0;
 				});
@@ -85,6 +74,8 @@ var helpers = {
 				return sets;
 			}
 			catch (err) {
+				logger.debug('Emote sets failed.');
+				logger.debug(err);
 				return [];
 			}
 		}
@@ -96,15 +87,14 @@ logger.log('Initial load.');
 // Only enable script if we have the right variables.
 //---------------------------------------------------
 (function init(time) {
+	if (!time) {
+		time = 50;
+	}
 	$ = jQuery = window.jQuery;
 	var objectsLoaded = (
 		window.Twitch !== undefined &&
-		(
-			window.App !== undefined &&
-			window.App.__container__ !== undefined &&
-			window.App.__container__.lookup('controller:emoticons').get('emoticons') !== undefined &&
-			window.App.__container__.lookup('controller:emoticons').get('emoticons').length
-		) &&
+		ember.isLoaded() &&
+		ember.get('controller:emoticons', 'emoticons').length &&
 		jQuery !== undefined &&
 		// Chat button.
 		document.querySelector('#chat_speak, .send-chat-button')
@@ -123,34 +113,18 @@ logger.log('Initial load.');
 		setTimeout(init, time, time * 2);
 		return;
 	}
-	var activate = {
-		activate: function () {
-			this._super();
-			init(50);
-		},
-		deactivate: function () {
-			this._super();
-			// Remove menu from screen when redirecting.
-			if (elements.menu) {
-				elements.menu.hide();
-			}
-		}
-	};
-	var channelRoute = window.App.__container__.lookup('route:channel');
-	var chatRoute = window.App.__container__.lookup('route:chat');
 
-	if (!isHooked.channelRoute && channelRoute) {
-		channelRoute.reopen(activate);
-		isHooked.channelRoute = true;
-		logger.debug('Hooked into channel route.');
+	function deactivate() {
+		// Remove menu from screen when redirecting.
+		if (elements.menu) {
+			elements.menu.hide();
+		}
 	}
-	if (!isHooked.chatRoute && chatRoute) {
-		chatRoute.reopen(activate);
-		isHooked.chatRoute = true;
-		logger.debug('Hooked into chat route.');
-	}
+	ember.hook('route:channel', init, deactivate);
+	ember.hook('route:chat', init, deactivate);
+
 	setup();
-})(50);
+})();
 
 // Start of functions.
 //--------------------
@@ -579,7 +553,7 @@ function insertEmoteText(text) {
 	// Always put space at end.
 	text = beforeText + text + ' ' + afterText;
 	// Set the text.
-	window.App.__container__.lookup('controller:chat').get('currentRoom').set('messageToSend', text);
+	ember.get('controller:chat', 'currentRoom').set('messageToSend', text);
 	element.focus();
 	// Put cursor at end.
 	selectionEnd = element.selectionStart + text.length;
