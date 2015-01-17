@@ -19,10 +19,18 @@ api.isLoaded = function () {
 };
 
 api.lookup = function (lookupFactory) {
+	if (!api.isLoaded()) {
+		logger.debug('Factory lookup failure, Ember not loaded.');
+		return false;
+	}
 	return api.getEmber().lookup(lookupFactory);
 };
 
 api.hook = function (lookupFactory, activateCb, deactivateCb) {
+	if (!api.isLoaded()) {
+		logger.debug('Factory hook failure, Ember not loaded.');
+		return false;
+	}
 	if (hookedFactories[lookupFactory]) {
 		logger.debug('Factory already hooked: ' + lookupFactory);
 		return true;
@@ -64,18 +72,25 @@ api.hook = function (lookupFactory, activateCb, deactivateCb) {
 };
 
 api.get = function (lookupFactory, property) {
+	if (!api.isLoaded()) {
+		logger.debug('Factory get failure, Ember not loaded.');
+		return false;
+	}
 	var properties = property.split('.');
 	var getter = api.lookup(lookupFactory);
 
 	properties.some(function (property) {
 		// If getter fails, just exit, otherwise, keep looping.
-		try {
+		if (typeof getter.get === 'function' && typeof getter.get(property) !== 'undefined') {
 			getter = getter.get(property);
 		}
-		catch (err) {
+		else if (typeof getter[property] !== 'undefined') {
+			getter = getter[property];
+		}
+		else {
+			getter = null;
 			return true;
 		}
-
 	});
 
 	return getter;

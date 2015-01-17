@@ -75,11 +75,9 @@
 .emote-menu.editing .emote {
 	cursor: auto;
 }
-.emote-menu .emote div {
-	max-width: 30px;
-	max-height: 30px;
-	background-repeat: no-repeat;
-	background-size: contain;
+.emote-menu .emote img {
+	max-width: 100%;
+	max-height: 100%;
 
 	/* Center within container. Container must have a `position` other than `static`. */
 	margin: auto;

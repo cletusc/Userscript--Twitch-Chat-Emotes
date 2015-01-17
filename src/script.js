@@ -1,7 +1,6 @@
 var templates = require('./modules/templates');
 var pkg = require('../package.json');
 var storage = require('./modules/storage');
-var twitchApi = require('./modules/twitch-api');
 var publicApi = require('./modules/public-api');
 var ember = require('./modules/ember-api');
 var logger = require('./modules/logger');
@@ -16,18 +15,6 @@ if (typeof window.emoteMenu === 'undefined') {
 
 // Script-wide variables.
 //-----------------------
-var url = require('url');
-var emotes = {
-	usable: [],
-	get raw() {
-		return ember.get('controller:emoticons', 'emoticons') || [];
-	},
-	subscriptions: {
-		badges: {},
-		emotes: {}
-	}
-};
-
 // DOM elements.
 var elements = {
 	// The button to send a chat message.
@@ -61,56 +48,48 @@ var helpers = {
 			$.login();
 			logger.debug('User is not logged in, show the login screen.');
 			return false;
-		},
-		getEmoteSets: function () {
-			var sets = [];
-			try {
-				sets = ember.get('controller:chat', 'currentRoom.tmiRoom').getEmotes(Twitch.user.login());
-				sets = sets.filter(function (val) {
-					return typeof val === 'number' && val >= 0;
-				});
-
-				logger.debug('Emoticon sets retrieved.', sets);
-				return sets;
-			}
-			catch (err) {
-				logger.debug('Emote sets failed.');
-				logger.debug(err);
-				return [];
-			}
 		}
 	}
 };
 
-logger.log('Initial load.');
+logger.log('Initial load on ' + location.href);
 
 // Only enable script if we have the right variables.
 //---------------------------------------------------
+var initTimer = 0;
 (function init(time) {
+	var emotes = require('./modules/emotes');
+
 	if (!time) {
-		time = 50;
+		time = 0;
 	}
+
 	$ = jQuery = window.jQuery;
 	var objectsLoaded = (
 		window.Twitch !== undefined &&
 		ember.isLoaded() &&
-		ember.get('controller:emoticons', 'emoticons').length &&
+		emotes.getEmotes().length &&
 		jQuery !== undefined &&
 		// Chat button.
 		document.querySelector('#chat_speak, .send-chat-button')
 	);
 	if (!objectsLoaded) {
-		// Errors in approximately 102400ms.
-		if (time >= 60000) {
-			logger.debug('Taking too long to load, stopping.');
+		// Stops trying after 10 minutes.
+		if (initTimer >= 600000) {
+			logger.log('Taking too long to load, stopping. Refresh the page to try again. (' + initTimer + 'ms)');
 			return;
 		}
-		if (time >= 10000) {
-			if (!objectsLoaded) {
-				logger.debug('Objects still not loaded.');
-			}
+
+		// Give an update every 10 seconds.
+		if (initTimer % 10000) {
+			logger.debug('Still waiting for objects to load. (' + initTimer + 'ms)');
 		}
-		setTimeout(init, time, time * 2);
+
+		// Bump time up after 1s to reduce possible lag.
+		time = time >= 1000 ? 1000 : time + 25;
+		initTimer += time;
+
+		setTimeout(init, time, time);
 		return;
 	}
 
@@ -132,6 +111,7 @@ logger.log('Initial load.');
  * Runs initial setup of DOM and variables.
  */
 function setup() {
+	var emotes = require('./modules/emotes');
 	logger.debug('Running setup...');
 	// Load CSS.
 	require('../build/styles');
@@ -151,50 +131,7 @@ function setup() {
 
 	createMenuElements();
 	bindListeners();
-
-	// Get active subscriptions.
-	twitchApi.getTickets(function (tickets) {
-		logger.debug('Tickets loaded.', tickets);
-		tickets.forEach(function (ticket) {
-			var product = ticket.product;
-			var channel = product.owner_name || product.short_name;
-			// Get subscriptions with emotes.
-			if (product.emoticons && product.emoticons.length) {
-				// Add emotes channel.
-				product.emoticons.forEach(function (emote) {
-					emotes.subscriptions.emotes[getEmoteFromRegEx(new RegExp(emote.regex))] = {
-						channel: channel,
-						url: emote.url
-					};
-				});
-
-				// Get badge.
-				twitchApi.getBadges(channel, function (badges) {
-					var badge = '';
-					if (channel === 'turbo') {
-						badge = badges.turbo.image;
-					}
-					else if (badges.subscriber && badges.subscriber.image) {
-						badge = badges.subscriber.image;
-					}
-					emotes.subscriptions.badges[channel] = badge;
-				});
-
-				// Get display names.
-				if (channel !== null && storage.displayNames.get(channel) === null) {
-					if (channel === 'turbo') {
-						storage.displayNames.set(channel, 'Turbo');
-					}
-					else {
-						twitchApi.getUser(channel, function (user) {
-							logger.debug('Getting fresh display name for user', user);
-							storage.displayNames.set(channel, user.display_name, 86400000);
-						});
-					}
-				}
-			}
-		});
-	});
+	emotes.init();
 }
 
 /**
@@ -389,15 +326,15 @@ function bindListeners() {
  * Populates the popup menu with current emote data.
  */
 function populateEmotesMenu() {
+	var emotes = require('./modules/emotes');
 	var container;
 	var starredEmotes = null;
-
-	refreshUsableEmotes();
+	var usableEmotes = emotes.getEmotes();
 
 	// Add starred emotes.
 	container = elements.menu.find('#starred-emotes-group');
 	container.html('');
-	starredEmotes = emotes.usable.filter(function (emote) {
+	starredEmotes = usableEmotes.filter(function (emote) {
 		return emote.isStarred && emote.isVisible;
 	});
 	starredEmotes.sort(sortByNormal);
@@ -411,8 +348,8 @@ function populateEmotesMenu() {
 		container = container.find('.overview');
 	}
 	container.html('');
-	emotes.usable.sort(sortBySet);
-	emotes.usable.forEach(function (emote) {
+	usableEmotes.sort(sortBySet);
+	usableEmotes.forEach(function (emote) {
 		createEmote(emote, container, true);
 	});
 
@@ -457,10 +394,10 @@ function populateEmotesMenu() {
 		}
 		if (a.channel && b.channel) {
 			// Force addon emote groups below standard Twitch groups.
-			if (emotes.subscriptions.badges[a.channel] && !emotes.subscriptions.badges[b.channel]) {
+			if (emotes.getBadge(a.channel) && !emotes.getBadge(b.channel)) {
 				return -1;
 			}
-			if (emotes.subscriptions.badges[b.channel] && !emotes.subscriptions.badges[a.channel]) {
+			if (emotes.getBadge(b.channel) && !emotes.getBadge(a.channel)) {
 				return 1;
 			}
 
@@ -474,59 +411,6 @@ function populateEmotesMenu() {
 		// Get it back to a stable sort.
 		return sortByNormal(a, b);
 	}
-}
-
-/**
- * Refreshes the usable emotes. An emote is deemed usable if it either has no set or the set is in your user info. For turbo sets, it will use the turbo if in your user info, otherwise fall back to default.
- */
-function refreshUsableEmotes() {
-	var turboSets = [457, 793];
-	storage.global.set('emoteSets', helpers.user.getEmoteSets());
-	emotes.usable = [];
-	emotes.raw.forEach(function (emote) {
-		// Allow hiding of emotes from the menu.
-		if (emote.hidden) {
-			return;
-		}
-		if (!emote.text) {
-			emote.text = getEmoteFromRegEx(emote.regex);
-		}
-		if (emotes.subscriptions.emotes[emote.text]) {
-			emote.channel = emotes.subscriptions.emotes[emote.text].channel;
-		}
-		var defaultImage;
-		emote.images.some(function (image) {
-			if (image.emoticon_set === null) {
-				defaultImage = image;
-			}
-			if (
-				// Image is the same URL as the subscription emote.
-				(emotes.subscriptions.emotes[emote.text] && image.url === emotes.subscriptions.emotes[emote.text].url) ||
-				(storage.global.get('emoteSets', []).indexOf(image.emoticon_set) >= 0) ||
-				// Emote is forced to show.
-				emote.hidden === false
-			) {
-				if (turboSets.indexOf(image.emoticon_set) >= 0) {
-					emote.channel = 'turbo';
-				}
-				emote.image = image;
-				return true;
-			}
-		});
-		emote.image = emote.image || defaultImage;
-
-		// Only add the emote if there is a URL.
-		if (emote.image && emote.image.url !== null) {
-			// Determine if emote is from a third-party addon.
-			emote.isThirdParty = url.parse(emote.image.url).hostname !== 'static-cdn.jtvnw.net';
-			// Determine if emote is hidden by user.
-			emote.isVisible = storage.visibility.get('channel-' + emote.channel, true) && storage.visibility.get(emote.text, true);
-			// Get starred status.
-			emote.isStarred = storage.starred.get(emote.text, false);
-			
-			emotes.usable.push(emote);
-		}
-	});
 }
 
 /**
@@ -576,13 +460,14 @@ function insertEmoteText(text) {
  * @param {boolean} showHeader Whether a header shouldbe created if found. Only creates the header once.
  */
 function createEmote(emote, container, showHeader) {
+	var emotes = require('./modules/emotes');
 	// Emote not usable or no container, can't add.
-	if (!emote || !emote.image || !container.length) {
+	if (!emote || !emote.url || !container.length) {
 		return;
 	}
 	if (showHeader) {
 		if (emote.channel && basicEmotes.indexOf(emote.text) < 0) {
-			var badge = emotes.subscriptions.badges[emote.channel] || emote.badge;
+			var badge = emotes.getBadge(emote.channel) || emote.badge;
 			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.channel + '"]').length) {
 				container.append(
 					$(templates.emoteGroupHeader({
@@ -602,30 +487,11 @@ function createEmote(emote, container, showHeader) {
 	}
 	container.append(
 		$(templates.emote({
-			image: emote.image,
+			url: emote.url,
 			text: emote.text,
 			thirdParty: emote.isThirdParty,
 			isVisible: emote.isVisible,
 			isStarred: emote.isStarred
 		}))
 	);
-}
-
-/**
- * Gets the usable emote text from a regex.
- * @attribute http://userscripts.org/scripts/show/160183 (adaption)
- */
-function getEmoteFromRegEx(regex) {
-	if (typeof regex === 'string') {
-		regex = new RegExp(regex);
-	}
-	return decodeURI(regex.source)
-		.replace('&gt\\;', '>') // right angle bracket
-		.replace('&lt\\;', '<') // left angle bracket
-		.replace(/\(\?![^)]*\)/g, '') // remove negative group
-		.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
-		.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
-		.replace(/[^\\]\?/g, '') // remove optional chars
-		.replace(/^\\b|\\b$/g, '') // remove boundaries
-		.replace(/\\/g, ''); // unescape
 }

@@ -1,5 +1,5 @@
 <div class="emote{{#thirdParty}} third-party{{/thirdParty}}{{^isVisible}} emote-menu-hidden{{/isVisible}}{{#isStarred}} emote-menu-starred{{/isStarred}}" data-emote="{{text}}" title="{{text}}{{#thirdParty}} (from 3rd party addon){{/thirdParty}}">
-	<div style="background-image: url({{{image.url}}}); height: {{{image.height}}}px; width: {{{image.width}}}px"></div>
+	<img src="{{{url}}}">
 	<div class="edit-tool edit-starred" data-which="{{text}}" data-command="toggle-starred" title="Star/unstar emote: {{text}}"></div>
 	<div class="edit-tool edit-visibility" data-which="{{text}}" data-command="toggle-visibility" title="Hide/show emote: {{text}}"></div>
 </div>
