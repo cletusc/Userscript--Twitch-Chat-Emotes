@@ -1,50 +1,71 @@
 var storage = require('./storage');
 var logger = require('./logger');
-var url = require('url');
 var api = {};
+var emoteGetters = {};
 
 api.getEmotes = function () {
 	var ember = require('./ember-api');
 
 	var emotes = [];
-	var userSets = getEmoteSets();
+	var emotesStored = [];
 
-	// Get raw emotes.
+	// Parse the native emotes.
 	var raw = ember.get('controller:chat', 'currentRoom.tmiSession._emotesParser.emoticonRegexToIds') || {};
-	// Parse the raw emotes.
-	Object.keys(raw).forEach(parse);
+	Object.keys(raw).forEach(function (key) {
+		var emote = raw[key];
+		emote.url = 'http://static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/1.0';
+		emote.text = emote.isRegex ? getEmoteFromRegEx(key) : key;
 
-	function parse(emote) {
-		var rawEmote = raw[emote];
-		var parsed = {};
+		parse(emote, false);
+	});
 
-		// Essentials.
-		parsed.text = emote.text || rawEmote.isRegex ? getEmoteFromRegEx(emote) : emote;
-		parsed.url = emote.url || 'http://static-cdn.jtvnw.net/emoticons/v1/' + rawEmote.id + '/1.0';
+	// Parse the custom emotes provided by third party addons.
+	Object.keys(emoteGetters).forEach(function (name) {
+		var getterEmotes = null;
+		try {
+			getterEmotes = emoteGetters[name]();
+		}
+		catch (err) {
+			logger.debug('Emote getter `' + name + '` failed unexpectedly.', err.toString());
+			return;
+		}
 
-		// Optional grouping.
+		if (!Array.isArray(getterEmotes)) {
+			logger.debug('Emote getter `' + name + '` failed to return a usable array.');
+			return;
+		}
+		getterEmotes.forEach(function (emote) {
+			parse(emote, true);
+		});
+	});
+
+	function parse(emote, isThirdParty) {
+		// Ignore emotes that were forced hidden, don't have URLs, or don't have text.
+		if (emote.hidden || !emote.url || !emote.text) {
+			return;
+		}
+		var parsed = {}
+		parsed.text = emote.text;
+		parsed.url = emote.url;
 		parsed.channel = emote.channel || api.getChannel(parsed.text);
 		parsed.badge = emote.badge || api.getBadge(parsed.channel);
 		parsed.hidden = emote.hidden;
-
-		// Ignore emotes without URLs.
-		if (!parsed.url) {
-			return;
-		}
-
-		// Ignore emotes that were forced hidden.
-		if (emote.hidden) {
-			return;
-		}
-
 		// Determine if emote is from a third-party addon.
-		parsed.isThirdParty = url.parse(parsed.url).hostname !== 'static-cdn.jtvnw.net';
+		parsed.isThirdParty = isThirdParty;
 		// Determine if emote is hidden by user.
 		parsed.isVisible = storage.visibility.get('channel-' + parsed.channel, true) && storage.visibility.get(parsed.text, true);
 		// Get starred status.
 		parsed.isStarred = storage.starred.get(parsed.text, false);
 		
-		emotes.push(parsed);
+		// Override emotes if they've been stored.
+		var storedIndex = emotesStored.indexOf(parsed.text);
+		if (storedIndex === -1) {
+			emotes.push(parsed);
+			emotesStored.push(parsed.text);
+		}
+		else {
+			emotes[storedIndex] = parsed;
+		}
 	}
 
 	return emotes;
@@ -65,7 +86,6 @@ api.addBadge = function (channel, badge) {
 // Channels.
 var channels = {};
 api.getChannel = function (text) {
-	console.log(channels);
 	if (channels[text]) {
 		return channels[text];
 	}
@@ -122,6 +142,25 @@ api.init = function () {
 			}
 		});
 	});
+};
+
+api.registerGetter = function (name, getter) {
+	if (typeof name !== 'string') {
+		throw new Error('Name must be a string.');
+	}
+	if (emoteGetters[name]) {
+		throw new Error('Getter already exists.');
+	}
+	if (typeof getter !== 'function') {
+		throw new Error('Getter must be a function.');
+	}
+	logger.debug('Getter registered: ' + name);
+	emoteGetters[name] = getter;
+};
+
+api.deregisterGetter = function (name) {
+	logger.debug('Getter unregistered: ' + name);
+	delete emoteGetters[name];
 };
 
 /**
