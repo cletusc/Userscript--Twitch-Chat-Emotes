@@ -486,7 +486,6 @@ Emote.prototype.getChannelDisplayName = function () {
 
 /**
  * Gets the usable emote text from a regex.
- * @attribute http://userscripts.org/scripts/show/160183 (adaption)
  */
 function getEmoteFromRegEx(regex) {
 	if (typeof regex === 'string') {
@@ -495,15 +494,62 @@ function getEmoteFromRegEx(regex) {
 	if (!regex) {
 		throw new Error('`regex` must be a RegExp string or object.');
 	}
+
 	return decodeURI(regex.source)
-		.replace('&gt\\;', '>') // right angle bracket
-		.replace('&lt\\;', '<') // left angle bracket
-		.replace(/\(\?![^)]*\)/g, '') // remove negative group
-		.replace(/\(([^|])*\|?[^)]*\)/g, '$1') // pick first option from a group
-		.replace(/\[([^|])*\|?[^\]]*\]/g, '$1') // pick first character from a character group
-		.replace(/[^\\]\?/g, '') // remove optional chars
-		.replace(/^\\b|\\b$/g, '') // remove boundaries
-		.replace(/\\/g, ''); // unescape
+
+		// Replace HTML entity brackets with actual brackets.
+		.replace('&gt\\;', '>')
+		.replace('&lt\\;', '<')
+
+		// Remove negative groups.
+		//
+		// /
+		//   \(\?!              // (?!
+		//   [^)]*              // any amount of characters that are not )
+		//   \)                 // )
+		// /g
+		.replace(/\(\?![^)]*\)/g, '')
+
+		// Pick first option from a group.
+		//
+		// /
+		//   \(                 // (
+		//   ([^|])*            // any amount of characters that are not |
+		//   \|?                // an optional | character
+		//   [^)]*              // any amount of characters that are not )
+		//   \)                 // )
+		// /g
+		.replace(/\(([^|])*\|?[^)]*\)/g, '$1')
+
+		// Pick first character from a character group.
+		//
+		// /
+		//   \[                 // [
+		//   ([^|])*            // any amount of characters that are not |
+		//   \|?                // an optional | character
+		//   [^\]]*             // any amount of characters that are not ]
+		//   \]                 // ]
+		// /g
+		.replace(/\[([^|])*\|?[^\]]*\]/g, '$1')
+
+		// Remove optional characters.
+		//
+		// /
+		//   [^\\]              // any character that is not \
+		//   \?                 // ?
+		// /g
+		.replace(/[^\\]\?/g, '')
+
+		// Remove boundaries at beginning and end.
+		.replace(/^\\b|\\b$/g, '') 
+
+		// Unescape only single backslash, not multiple.
+		//
+		// /
+		//   \\                 // \
+		//   (?!\\)             // look-ahead, any character that isn't \
+		// /g
+		.replace(/\\(?!\\)/g, '');
 }
 
 var sorting = {};
