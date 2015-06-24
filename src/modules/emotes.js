@@ -1,166 +1,487 @@
 var storage = require('./storage');
 var logger = require('./logger');
 var api = {};
-var emoteGetters = {};
+var emoteStore = new EmoteStore();
+var $ = window.jQuery;
 
-api.getEmotes = function () {
-	var ember = require('./ember-api');
+/**
+ * The entire emote storing system.
+ */
+function EmoteStore() {
+	var getters = {};
+	var nativeEmotes = {};
 
-	var emotes = [];
-	var emotesStored = [];
+	/**
+	 * Get a list of usable emoticons.
+	 * @param  {function} [filters]       A filter method to limit what emotes are returned. Passed to Array#filter.
+	 * @param  {function|string} [sortBy] How the emotes should be sorted. `function` will be passed to sort via Array#sort. `'channel'` sorts by channel name, globals first. All other values (or omitted) sort alphanumerically.
+	 * @param  {string} [returnType]      `'object'` will return in object format, e.g. `{'Kappa': Emote(...), ...}`. All other values (or omitted) return an array format, e.g. `[Emote(...), ...]`.
+	 * @return {object|array}             See `returnType` param.
+	 */
+	this.getEmotes = function (filters, sortBy, returnType) {
+		var twitchApi = require('./twitch-api');
 
-	// Parse the native emotes.
-	var raw = ember.get('controller:chat', 'currentRoom.tmiSession._emotesParser.emoticonRegexToIds') || {};
-	Object.keys(raw).forEach(function (key) {
-		var emote = raw[key];
-		emote.url = 'http://static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/1.0';
-		emote.text = emote.isRegex ? getEmoteFromRegEx(key) : key;
+		// Get native emotes.
+		var emotes = $.extend({}, nativeEmotes);
 
-		parse(emote, false);
-	});
-
-	// Parse the custom emotes provided by third party addons.
-	Object.keys(emoteGetters).forEach(function (name) {
-		var getterEmotes = null;
-		try {
-			getterEmotes = emoteGetters[name]();
-		}
-		catch (err) {
-			logger.debug('Emote getter `' + name + '` failed unexpectedly.', err.toString());
-			return;
-		}
-
-		if (!Array.isArray(getterEmotes)) {
-			logger.debug('Emote getter `' + name + '` failed to return a usable array.');
-			return;
-		}
-		getterEmotes.forEach(function (emote) {
-			parse(emote, true);
-		});
-	});
-
-	function parse(emote, isThirdParty) {
-		// Ignore emotes that were forced hidden, don't have URLs, or don't have text.
-		if (emote.hidden || !emote.url || !emote.text) {
-			return;
-		}
-		var parsed = {}
-		parsed.text = emote.text;
-		parsed.url = emote.url;
-		parsed.channel = emote.channel || api.getChannel(parsed.text);
-		parsed.badge = emote.badge || api.getBadge(parsed.channel);
-		parsed.hidden = emote.hidden;
-		// Determine if emote is from a third-party addon.
-		parsed.isThirdParty = isThirdParty;
-		// Determine if emote is hidden by user.
-		parsed.isVisible = storage.visibility.get('channel-' + parsed.channel, true) && storage.visibility.get(parsed.text, true);
-		// Get starred status.
-		parsed.isStarred = storage.starred.get(parsed.text, false);
-		
-		// Override emotes if they've been stored.
-		var storedIndex = emotesStored.indexOf(parsed.text);
-		if (storedIndex === -1) {
-			emotes.push(parsed);
-			emotesStored.push(parsed.text);
-		}
-		else {
-			emotes[storedIndex] = parsed;
-		}
-	}
-
-	return emotes;
-};
-
-// Badges.
-var badges = {};
-api.getBadge = function (channel) {
-	if (badges[channel]) {
-		return badges[channel];
-	}
-	return '';
-};
-api.addBadge = function (channel, badge) {
-	badges[channel] = badge;
-}
-
-// Channels.
-var channels = {};
-api.getChannel = function (text) {
-	if (channels[text]) {
-		return channels[text];
-	}
-	return '';
-};
-api.addChannel = function (text, channel) {
-	channels[text] = channel;
-};
-
-api.init = function () {
-	var ember = require('./ember-api');
-	var twitchApi = require('./twitch-api');
-
-	logger.debug('Tickets call started.');
-	// Get active subscriptions.
-	twitchApi.getTickets(function (tickets) {
-		logger.debug('Tickets loaded.', tickets);
-
-		tickets.forEach(function (ticket) {
-			var product = ticket.product;
-			var channel = product.owner_name || product.short_name;
-			
-			// Get subscriptions with emotes only.
-			if (!product.emoticons || !product.emoticons.length) {
+		// Parse the custom emotes provided by third party addons.
+		Object.keys(getters).forEach(function (getterName) {
+			// Try the getter.
+			var results = null;
+			try {
+				results = getters[getterName]();
+			}
+			catch (err) {
+				logger.debug('Emote getter `' + getterName + '` failed unexpectedly, skipping.', err.toString());
+				return;
+			}
+			if (!Array.isArray(results)) {
+				logger.debug('Emote getter `' + getterName + '` must return an array, skipping.');
 				return;
 			}
 
-			// Get channels.
-			product.emoticons.forEach(function (emote) {
-				api.addChannel(getEmoteFromRegEx(emote.regex), channel);
+			// Override natives and previous getters.
+			results.forEach(function (emote) {
+				try {
+					// Create the emote.
+					var instance = new Emote(emote);
+
+					// Force the getter.
+					instance.setGetterName(getterName);
+
+					// Force emotes without channels to the getter's name.
+					if (!emote.channel) {
+						instance.setChannelName(getterName);
+					}
+
+					// Add/override it.
+					emotes[instance.getText()] = instance;
+				}
+				catch (err) {
+					logger.debug('Emote parsing for getter `' + getterName + '` failed, skipping.', err.toString(), emote);
+				}
+			});
+		});
+
+		// Covert to array.
+		emotes = Object.keys(emotes).map(function (emote) {
+			return emotes[emote];
+		});
+
+		// Filter results.
+		if (typeof filters === 'function') {
+			emotes = emotes.filter(filters);
+		}
+		
+		// Return as an object if requested.
+		if (returnType === 'object') {
+			var asObject = {};
+			emotes.forEach(function (emote) {
+				asObject[emote.getText()] = emote;
+			});
+			return asObject;
+		}
+
+		// Sort results.
+		if (typeof sortBy === 'function') {
+			emotes.sort(sortBy);
+		}
+		else if (sortBy === 'channel') {
+			emotes.sort(sorting.allEmotesCategory);
+		}
+		else {
+			emotes.sort(sorting.byText);
+		}
+
+		// Return the emotes in array format.
+		return emotes;
+	};
+
+	/**
+	 * Registers a 3rd party emote hook.
+	 * @param  {string} name   The name of the 3rd party registering the hook.
+	 * @param  {function} getter The function called when looking for emotes. Must return an array of emote objects, e.g. `[emote, ...]`. See Emote class.
+	 */
+	this.registerGetter = function (name, getter) {
+		if (typeof name !== 'string') {
+			throw new Error('Name must be a string.');
+		}
+		if (getters[name]) {
+			throw new Error('Getter already exists.');
+		}
+		if (typeof getter !== 'function') {
+			throw new Error('Getter must be a function.');
+		}
+		logger.debug('Getter registered: ' + name);
+		getters[name] = getter;
+	};
+
+	/**
+	 * Registers a 3rd party emote hook.
+	 * @param  {string} name   The name of the 3rd party hook to deregister.
+	 */
+	this.deregisterGetter = function (name) {
+		logger.debug('Getter unregistered: ' + name);
+		delete getters[name];
+	};
+
+	/**
+	 * Initializes the raw data from the API endpoints. Should be called at load and/or whenever the API may have changed. Populates internal objects with updated data.
+	 */
+	this.init = function () {
+		logger.debug('Starting initialization.');
+
+		var twitchApi = require('./twitch-api');
+		var self = this;
+
+		logger.debug('Initializing emote set change listener.');
+
+		twitchApi.onEmotesChange(function (emoteSets) {
+			logger.debug('Parsing emote sets.');
+
+			Object.keys(emoteSets).forEach(function (set) {
+				var emotes = emoteSets[set];
+				emotes.forEach(function (emote) {
+					// Set some required info.
+					emote.url = 'http://static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/1.0';
+					emote.text = getEmoteFromRegEx(emote.code);
+					emote.set = set;
+
+					// Force turbo channel for easter-egg sets.
+					if (['457', '793'].indexOf(set) >= 0) {
+						emote.channel = 'turbo';
+					}
+
+					var instance = new Emote(emote);
+
+					// Save the emote for use later.
+					nativeEmotes[emote.text] = instance;
+				});
 			});
 
-			// Get badges.
-			twitchApi.getBadges(channel, function (badges) {
-				if (channel === 'turbo') {
-					api.addBadge(channel, badges.turbo.image);
-				}
-				else if (badges.subscriber && badges.subscriber.image) {
-					api.addBadge(channel, badges.subscriber.image);
-				}
-			});
+			logger.debug('Loading subscription data.');
 
-			// Get display name.
-			if (channel !== null && storage.displayNames.get(channel) === null) {
-				if (channel === 'turbo') {
-					storage.displayNames.set(channel, 'Turbo');
-				}
-				else {
-					twitchApi.getUser(channel, function (user) {
-						logger.debug('Getting fresh display name for user', user);
-						storage.displayNames.set(channel, user.display_name, 86400000);
+			// Get active subscriptions to find the channels.
+			twitchApi.getTickets(function (tickets) {
+				logger.debug('Tickets loaded from the API.', tickets);
+				tickets.forEach(function (ticket) {
+					var product = ticket.product;
+					var channel = product.owner_name || product.short_name;
+
+					// Get subscriptions with emotes only.
+					if (!product.emoticons || !product.emoticons.length) {
+						return;
+					}
+					
+					// Set the channel on the emotes.
+					product.emoticons.forEach(function (emote) {
+						var instance = nativeEmotes[getEmoteFromRegEx(emote.regex)];
+						instance.setChannelName(channel);
+						instance.getChannelBadge();
+						instance.getChannelDisplayName();
 					});
+				});
+			});
+		}, true);
+	};
+};
+
+/**
+ * Gets a specific emote, if available.
+ * @param  {string}     text The text of the emote to get.
+ * @return {Emote|null}      The Emote instance of the emote or `null` if it couldn't be found.
+ */
+EmoteStore.prototype.getEmote = function (text) {
+	return this.getEmotes(null, null, 'object')[text] || null;
+};
+
+/**
+ * Emote object.
+ * @param {object} details              Object describing the emote.
+ * @param {string} details.text         The text to use in the chat box when emote is clicked.
+ * @param {string} details.url          The URL of the image for the emote.
+ * @param {string} [details.badge]      The URL of the badge for the emote.
+ * @param {string} [details.channel]    The channel the emote should be categorized under.
+ * @param {string} [details.getterName] The 3rd party getter that registered the emote. Used internally only.
+ */
+function Emote(details) {
+	var text = null;
+	var url = null;
+	var getterName = null;
+	var channel = {
+		name: null,
+		badge: null
+	};
+
+	/**
+	 * Gets the text of the emote.
+	 * @return {string} The emote text.
+	 */
+	this.getText = function () {
+		return text;
+	};
+
+	/**
+	 * Sets the text of the emote.
+	 * @param {string} theText The text to set.
+	 */
+	this.setText = function (theText) {
+		if (typeof theText !== 'string' || theText.length < 1) {
+			throw new Error('Invalid text');
+		}
+		text = theText;
+	};
+
+	/**
+	 * Gets the getter name this emote belongs to.
+	 * @return {string} The getter's name.
+	 */
+	this.getGetterName = function () {
+		return getterName;
+	};
+
+	/**
+	 * Sets the getter name this emote belongs to.
+	 * @param {string} theGetterName The getter's name.
+	 */
+	this.setGetterName = function (theGetterName) {
+		if (typeof theGetterName !== 'string' || theGetterName.length < 1) {
+			throw new Error('Invalid getter name');
+		}
+		getterName = theGetterName;
+	};
+
+	/**
+	 * Gets the emote's image URL.
+	 * @return {string} The emote image URL.
+	 */
+	this.getUrl = function () {
+		return url;
+	};
+	/**
+	 * Sets the emote's image URL.
+	 * @param {string} theUrl The image URL to set.
+	 */
+	this.setUrl = function (theUrl) {
+		if (typeof theUrl !== 'string' || theUrl.length < 1) {
+			throw new Error('Invalid URL');
+		}
+		url = theUrl;
+	};
+
+	/**
+	 * Gets the emote's channel name.
+	 * @return {string|null} The emote's channel or `null` if it doesn't have one.
+	 */
+	this.getChannelName = function () {
+		if (!channel.name) {
+			channel.name = storage.channelNames.get(this.getText());
+		}
+		return channel.name;
+	};
+	/**
+	 * Sets the emote's channel name.
+	 * @param {string} theChannel The channel name to set.
+	 */
+	this.setChannelName = function (theChannel) {
+		if (typeof theChannel !== 'string' || theChannel.length < 1) {
+			throw new Error('Invalid channel');
+		}
+		storage.channelNames.set(this.getText(), theChannel);
+		channel.name = theChannel;
+	};
+
+	/**
+	 * Gets the emote channel's badge image URL.
+	 * @return {string|null} The URL of the badge image for the emote's channel or `null` if it doesn't have a channel.
+	 */
+	this.getChannelBadge = function () {
+		var twitchApi = require('./twitch-api');
+		var channelName = this.getChannelName();
+
+		// No channel.
+		if (!channelName) {
+			return null;
+		}
+
+		// Already have one preset.
+		if (channel.badge) {
+			return channel.badge;
+		}
+
+		// Check storage.
+		channel.badge = storage.badges.get(channelName);
+		if (channel.badge !== null) {
+			return channel.badge;
+		}
+
+		// Get from API.
+		twitchApi.getBadges(channelName, function (badges) {
+			var badge = null;
+			logger.debug('Getting fresh badge for user', channelName, badges);
+
+			// Save turbo badge while we are here.
+			if (badges.turbo && badges.turbo.image) {
+				badge = badges.turbo.image;
+				storage.badges.set('turbo', badge, 86400000);
+
+				// Turbo is actually what we wanted, so we are done.
+				if (channelName === 'turbo') {
+					channel.badge = badge;
+					return;
 				}
 			}
+
+			// Save subscriber badge in storage.
+			if (badges.subscriber && badges.subscriber.image) {
+				channel.badge = badges.subscriber.image;
+				storage.badges.set(channelName, channel.badge, 86400000);
+			}
+			// No subscriber badge.
+			else {
+				logger.debug('Failed to get subscriber badge.', channelName);
+			}
 		});
-	});
+		
+		return channel.badge || 'http://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
+	};
+
+	/**
+	 * Sets the emote's channel badge image URL.
+	 * @param {string} theBadge The badge image URL to set.
+	 */
+	this.setChannelBadge = function (theBadge) {
+		if (typeof theBadge !== 'string' || theBadge.length < 1) {
+			throw new Error('Invalid badge');
+		}
+		channel.badge = theBadge;
+	};
+
+	/**
+	 * Initialize the details.
+	 */
+	
+	// Required fields.
+	this.setText(details.text);
+	this.setUrl(details.url);
+
+	// Optional fields.
+	if (details.getterName) {
+		this.setGetterName(details.getterName);
+	}
+	if (details.channel) {
+		this.setChannelName(details.channel);
+	}
+	if (details.badge) {
+		this.setChannelBadge(details.badge);
+	}
 };
 
-api.registerGetter = function (name, getter) {
-	if (typeof name !== 'string') {
-		throw new Error('Name must be a string.');
+/**
+ * State changers.
+ */
+
+/**
+ * Toggle whether an emote should be a favorite.
+ * @param {boolean} [force] `true` forces the emote to be a favorite, `false` forces the emote to not be a favorite.
+ */
+Emote.prototype.toggleFavorite = function (force) {
+	if (typeof force !== 'undefined') {
+		storage.starred.set(this.getText(), !!force);
+		return;
 	}
-	if (emoteGetters[name]) {
-		throw new Error('Getter already exists.');
-	}
-	if (typeof getter !== 'function') {
-		throw new Error('Getter must be a function.');
-	}
-	logger.debug('Getter registered: ' + name);
-	emoteGetters[name] = getter;
+	storage.starred.set(this.getText(), !this.isFavorite());
 };
 
-api.deregisterGetter = function (name) {
-	logger.debug('Getter unregistered: ' + name);
-	delete emoteGetters[name];
+/**
+ * Toggle whether an emote should be visible out of editing mode.
+ * @param {boolean} [force] `true` forces the emote to be visible, `false` forces the emote to be hidden.
+ */
+Emote.prototype.toggleVisibility = function (force) {
+	if (typeof force !== 'undefined') {
+		storage.visibility.set(this.getText(), !!force);
+		return;
+	}
+	storage.visibility.set(this.getText(), !this.isVisible());
+};
+
+/**
+ * State getters.
+ */
+
+/**
+ * Whether the emote is from a 3rd party.
+ * @return {boolean} Whether the emote is from a 3rd party.
+ */
+Emote.prototype.isThirdParty = function () {
+	return !!this.getGetterName();
+};
+
+/**
+ * Whether the emote was favorited.
+ * @return {boolean} Whether the emote was favorited.
+ */
+Emote.prototype.isFavorite = function () {
+	return storage.starred.get(this.getText(), false);
+};
+
+/**
+ * Whether the emote is visible outside of editing mode.
+ * @return {boolean} Whether the emote is visible outside of editing mode.
+ */
+Emote.prototype.isVisible = function () {
+	return storage.visibility.get(this.getText(), true);
+};
+
+/**
+ * Whether the emote is considered a simple smiley.
+ * @return {boolean} Whether the emote is considered a simple smiley.
+ */
+Emote.prototype.isSmiley = function () {
+	// The basic smiley emotes.
+	var emotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
+	return emotes.indexOf(this.getText()) !== -1;
+};
+
+/**
+ * Property getters/setters.
+ */
+
+/**
+ * Get a channel's display name.
+ * @return {string} The channel's display name. May be equivalent to the channel the first time the API needs to be called.
+ */
+Emote.prototype.getChannelDisplayName = function () {
+	var twitchApi = require('./twitch-api');
+	var channelName = this.getChannelName();
+	var displayName = null;
+
+	// No channel.
+	if (!channelName) {
+		return null;
+	}
+
+	// Check storage.
+	displayName = storage.displayNames.get(channelName);
+	if (displayName !== null) {
+		return displayName;
+	}
+
+	// Turbo-specific display name.
+	if (channelName === 'turbo') {
+		displayName = 'Turbo';
+	}
+	// Get from API.
+	else {
+		twitchApi.getUser(channelName, function (user) {
+			logger.debug('Getting fresh display name for user', user);
+			displayName = user.display_name;
+			// Save in storage.
+			storage.displayNames.set(channelName, displayName, 86400000);
+		});
+	}
+	
+	return displayName || channelName;
 };
 
 /**
@@ -185,33 +506,88 @@ function getEmoteFromRegEx(regex) {
 		.replace(/\\/g, ''); // unescape
 }
 
-/**
- * Gets the emote sets for the currently logged in user.
- * @return {array} The emote sets.
- */
-function getEmoteSets() {
-	var ember = require('./ember-api');
-	var sets = [];
-	try {
-		sets = ember.get('controller:chat', 'currentRoom.tmiRoom').getEmotes(window.Twitch.user.login());
-		sets = sets.filter(function (val) {
-			return typeof val === 'number' && val >= 0;
-		});
+var sorting = {};
 
-		logger.debug('Emoticon sets retrieved.', sets);
-		return sets;
+/**
+ * Sort by alphanumeric in this order: symbols -> numbers -> AaBb... -> numbers
+ */
+sorting.byText = function (a, b) {
+	textA = a.getText().toLowerCase();
+	textB = b.getText().toLowerCase();
+
+	if (textA < textB) {
+		return -1;
 	}
-	catch (err) {
-		logger.debug('Emote sets failed.', err);
-		return [];
+	if (textA > textB) {
+		return 1;
 	}
+	return 0;
 }
 
-// Temporary hardcoding of turbo emotes. See issue #72.
-api.addChannel('duDudu', 'turbo');
-api.addChannel('KappaHD', 'turbo');
-api.addChannel('MiniK', 'turbo');
-api.addChannel('PraiseIt', 'turbo');
-api.addChannel('riPepperonis', 'turbo');
+/**
+ * Basic smilies before non-basic smilies.
+ */
+sorting.bySmiley = function (a, b) {
+	if (a.isSmiley() &&	!b.isSmiley()) {
+		return -1;
+	}
+	if (b.isSmiley() &&	!a.isSmiley()) {
+		return 1;
+	}
+	return 0;
+};
 
-module.exports = api;
+/**
+ * Globals before subscription emotes, subscriptions in alphabetical order.
+ */
+sorting.byChannelName = function (a, b) {
+	var channelA = a.getChannelName();
+	var channelB = b.getChannelName();
+
+	// Both don't have channels.
+	if (!channelA && !channelB) {
+		return 0;
+	}
+
+	// "A" has channel, "B" doesn't.
+	if (channelA && !channelB) {
+		return 1;
+	}
+	// "B" has channel, "A" doesn't.
+	if (channelB && !channelA) {
+		return -1;
+	}
+
+	channelA = channelA.toLowerCase();
+	channelB = channelB.toLowerCase();
+
+	if (channelA < channelB) {
+		return -1;
+	}
+	if (channelB > channelA) {
+		return 1;
+	}
+
+	// All the same
+	return 0;
+};
+
+/**
+ * The general sort order for the all emotes category.
+ * Smileys -> Channel grouping -> alphanumeric
+ */
+sorting.allEmotesCategory = function (a, b) {
+	var bySmiley = sorting.bySmiley(a, b);
+	var byChannelName  = sorting.byChannelName(a, b);
+	var byText = sorting.byText(a, b);
+
+	if (bySmiley !== 0) {
+		return bySmiley;
+	}
+	if (byChannelName !== 0) {
+		return byChannelName;
+	}
+	return byText;
+};
+
+module.exports = emoteStore;

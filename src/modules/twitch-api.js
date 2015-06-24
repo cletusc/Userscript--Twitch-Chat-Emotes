@@ -1,30 +1,32 @@
-var api = window.Twitch.api;
+var twitchApi = window.Twitch.api;
+var logger = require('./logger');
+var api = {};
 
-function getBadges(username, callback) {
+api.getBadges = function (username, callback) {
 	// Note: not a documented API endpoint.
-	api.get('chat/' + username + '/badges')
+	twitchApi.get('chat/' + username + '/badges')
 		.done(function (api) {
 			callback(api);
 		})
 		.fail(function () {
 			callback({});
 		});
-}
+};
 
-function getUser(username, callback) {
+api.getUser = function (username, callback) {
 	// Note: not a documented API endpoint.
-	api.get('users/' + username)
+	twitchApi.get('users/' + username)
 		.done(function (api) {
 			callback(api);
 		})
 		.fail(function () {
 			callback({});
 		});
-}
+};
 
-function getTickets(callback) {
+api.getTickets = function (callback) {
 	// Note: not a documented API endpoint.
-	api.get(
+	twitchApi.get(
 		'/api/users/:login/tickets',
 		{
 			offset: 0,
@@ -38,10 +40,41 @@ function getTickets(callback) {
 		.fail(function () {
 			callback([]);
 		});
-}
-
-module.exports = {
-	getBadges: getBadges,
-	getTickets: getTickets,
-	getUser: getUser
 };
+
+api.onEmotesChange = function (callback, immediate) {
+	var ember = require('./ember-api');
+	var session = ember.get('controller:chat', 'currentRoom.tmiRoom.session');
+	var response = null;
+
+	if (typeof callback !== 'function') {
+		throw new Error('`callback` must be a function.');
+	}
+
+	// No parser or no emotes loaded yet, try again.
+	if (!session) {
+		setTimeout(api.onEmotesChange, 100, callback, immediate);
+		return;
+	}
+
+	// Call the callback immediately on registering.
+	if (immediate) {
+		response = session.getEmotes();
+		if (!response || !response.emoticon_sets) {
+			setTimeout(api.onEmotesChange, 100, callback, immediate);
+			return;
+		}
+
+		callback(response.emoticon_sets);
+		logger.debug('Called emote change handler immediately.');
+	}
+
+	// Listen for the event.
+	session._emotesParser.on('emotes_changed', function (response) {
+		callback(response.emoticon_sets);
+		logger.debug('Called emote change handler.')
+	});
+	logger.debug('Registered listener for emote changes.');
+};
+
+module.exports = api;

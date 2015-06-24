@@ -29,9 +29,6 @@ var elements = {
 	menu: null
 };
 
-// The basic smiley emotes.
-var basicEmotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
-
 var helpers = {
 	user: {
 		/**
@@ -58,8 +55,6 @@ logger.log('Initial load on ' + location.href);
 //---------------------------------------------------
 var initTimer = 0;
 (function init(time) {
-	var emotes = require('./modules/emotes');
-
 	if (!time) {
 		time = 0;
 	}
@@ -68,10 +63,8 @@ var initTimer = 0;
 	var objectsLoaded = (
 		window.Twitch !== undefined &&
 		ember.isLoaded() &&
-		emotes.getEmotes().length &&
 		jQuery !== undefined &&
-		// Chat button.
-		document.querySelector('#chat_speak, .send-chat-button')
+		$('.send-chat-button').length
 	);
 	if (!objectsLoaded) {
 		// Stops trying after 10 minutes.
@@ -122,12 +115,6 @@ function setup() {
 	elements.chatButton = $('.send-chat-button');
 	elements.chatBox = $('.chat-interface textarea');
 	elements.chatContainer = $('.chat-messages');
-
-	// No chat, just exit.
-	if (!elements.chatButton.length) {
-		logger.debug('No chat element available, ignore setup this time.');
-		return;
-	}
 
 	createMenuElements();
 	bindListeners();
@@ -327,18 +314,17 @@ function bindListeners() {
  */
 function populateEmotesMenu() {
 	var emotes = require('./modules/emotes');
-	var container;
-	var starredEmotes = null;
-	var usableEmotes = emotes.getEmotes();
+	var container = null;
 
 	// Add starred emotes.
 	container = elements.menu.find('#starred-emotes-group');
 	container.html('');
-	starredEmotes = usableEmotes.filter(function (emote) {
-		return emote.isStarred && emote.isVisible;
-	});
-	starredEmotes.sort(sortByNormal);
-	starredEmotes.forEach(function (emote) {
+	emotes.getEmotes(
+		function (emote) {
+			return emote.isFavorite();
+		},
+		'default'
+	).forEach(function (emote) {
 		createEmote(emote, container);
 	});
 
@@ -348,69 +334,9 @@ function populateEmotesMenu() {
 		container = container.find('.overview');
 	}
 	container.html('');
-	usableEmotes.sort(sortBySet);
-	usableEmotes.forEach(function (emote) {
+	emotes.getEmotes(null, 'channel').forEach(function (emote) {
 		createEmote(emote, container, true);
 	});
-
-	/**
-	 * Sort by alphanumeric in this order: symbols -> numbers -> AaBb... -> numbers
-	 */
-	function sortByNormal(a, b){
-		a = a.text;
-		b = b.text;
-		if (a.toLowerCase() < b.toLowerCase()) {
-			return -1;
-		}
-		if (a.toLowerCase() > b.toLowerCase()) {
-			return 1;
-		}
-		if (a < b) {
-			return -1;
-		}
-		if (a > b) {
-			return 1;
-		}
-		return 0;
-	}
-
-	/**
-	 * Sort by emoticon set: basic smileys -> no set -> subscription emotes
-	 */
-	function sortBySet(a, b){
-		// Override for basic emotes.
-		if (basicEmotes.indexOf(a.text) >= 0 &&	basicEmotes.indexOf(b.text) < 0) {
-			return -1;
-		}
-		if (basicEmotes.indexOf(b.text) >= 0 &&	basicEmotes.indexOf(a.text) < 0) {
-			return 1;
-		}
-		// Sort by channel name.
-		if (a.channel && !b.channel) {
-			return 1;
-		}
-		if (b.channel && !a.channel) {
-			return -1;
-		}
-		if (a.channel && b.channel) {
-			// Force addon emote groups below standard Twitch groups.
-			if (emotes.getBadge(a.channel) && !emotes.getBadge(b.channel)) {
-				return -1;
-			}
-			if (emotes.getBadge(b.channel) && !emotes.getBadge(a.channel)) {
-				return 1;
-			}
-
-			var channelSort = sortByNormal({text: a.channel}, {text: b.channel});
-			var normalSort = sortByNormal(a, b);
-			if (channelSort === 0) {
-				return normalSort;
-			}
-			return channelSort;
-		}
-		// Get it back to a stable sort.
-		return sortByNormal(a, b);
-	}
 }
 
 /**
@@ -460,38 +386,36 @@ function insertEmoteText(text) {
  * @param {boolean} showHeader Whether a header shouldbe created if found. Only creates the header once.
  */
 function createEmote(emote, container, showHeader) {
-	var emotes = require('./modules/emotes');
-	// Emote not usable or no container, can't add.
-	if (!emote || !emote.url || !container.length) {
+	// No container, can't add.
+	if (!container.length) {
 		return;
 	}
 	if (showHeader) {
-		if (emote.channel && basicEmotes.indexOf(emote.text) < 0) {
-			var badge = emotes.getBadge(emote.channel) || emote.badge;
-			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.channel + '"]').length) {
+		if (emote.getChannelName() && !emote.isSmiley()) {
+			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.getChannelName() + '"]').length) {
 				container.append(
 					$(templates.emoteGroupHeader({
-						badge: badge,
-						channel: emote.channel,
-						channelDisplayName: storage.displayNames.get(emote.channel, emote.channel),
-						isVisible: storage.visibility.get('channel-' + emote.channel, true)
+						badge: emote.getChannelBadge(),
+						channel: emote.getChannelName(),
+						channelDisplayName: emote.getChannelDisplayName(),
+						isVisible: storage.visibility.get('channel-' + emote.getChannelName(), true)
 					}))
 				);
 			}
 		}
 	}
 
-	var channelContainer = container.find('.group-header[data-emote-channel="' + emote.channel + '"]');
+	var channelContainer = container.find('.group-header[data-emote-channel="' + emote.getChannelName() + '"]');
 	if (channelContainer.length) {
 		container = channelContainer;
 	}
 	container.append(
 		$(templates.emote({
-			url: emote.url,
-			text: emote.text,
-			thirdParty: emote.isThirdParty,
-			isVisible: emote.isVisible,
-			isStarred: emote.isStarred
+			url: emote.getUrl(),
+			text: emote.getText(),
+			thirdParty: emote.isThirdParty(),
+			isVisible: emote.isVisible(),
+			isStarred: emote.isFavorite()
 		}))
 	);
 }
