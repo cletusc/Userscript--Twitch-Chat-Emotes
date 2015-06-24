@@ -55,6 +55,11 @@ logger.log('Initial load on ' + location.href);
 //---------------------------------------------------
 var initTimer = 0;
 (function init(time) {
+	// Don't run in an iframe.
+	if (window.frameElement) {
+		return;
+	}
+	
 	if (!time) {
 		time = 0;
 	}
