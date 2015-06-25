@@ -453,7 +453,7 @@ Emote.prototype.isVisible = function () {
  */
 Emote.prototype.isSmiley = function () {
 	// The basic smiley emotes.
-	var emotes = [':(', ':)', ':/', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
+	var emotes = [':(', ':)', ':/', ':\\', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
 	return emotes.indexOf(this.getText()) !== -1;
 };
 
