@@ -177,6 +177,9 @@ function EmoteStore() {
 
 			// Get active subscriptions to find the channels.
 			twitchApi.getTickets(function (tickets) {
+				// Instances from each channel to preload channel data.
+				var deferredChannelGets = {};
+
 				logger.debug('Tickets loaded from the API.', tickets);
 				tickets.forEach(function (ticket) {
 					var product = ticket.product;
@@ -191,9 +194,19 @@ function EmoteStore() {
 					product.emoticons.forEach(function (emote) {
 						var instance = nativeEmotes[getEmoteFromRegEx(emote.regex)];
 						instance.setChannelName(channel);
-						instance.getChannelBadge();
-						instance.getChannelDisplayName();
+
+						// Save instance for later, but only one instance per channel.
+						if (!deferredChannelGets[channel]) {
+							deferredChannelGets[channel] = instance;
+						}
 					});
+				});
+
+				// Preload channel data.
+				Object.keys(deferredChannelGets).forEach(function (key) {
+					var instance = deferredChannelGets[key];
+					instance.getChannelBadge();
+					instance.getChannelDisplayName();
 				});
 			});
 		}, true);
@@ -312,10 +325,16 @@ function Emote(details) {
 	this.getChannelBadge = function () {
 		var twitchApi = require('./twitch-api');
 		var channelName = this.getChannelName();
+		var defaultBadge = 'http://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
 
 		// No channel.
 		if (!channelName) {
 			return null;
+		}
+
+		// Give globals a default badge.
+		if (channelName === '~global') {
+			return defaultBadge;
 		}
 
 		// Already have one preset.
@@ -357,7 +376,7 @@ function Emote(details) {
 			}
 		});
 		
-		return channel.badge || 'http://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
+		return channel.badge || defaultBadge;
 	};
 
 	/**
