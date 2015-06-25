@@ -134,6 +134,19 @@ function EmoteStore() {
 		var twitchApi = require('./twitch-api');
 		var self = this;
 
+		// Hash of emote set to forced channel.
+		var forcedSetsToChannels = {
+			// Globals.
+			0: '~global',
+			// Bubble emotes.
+			33: 'turbo',
+			// Monkey emotes.
+			42: 'turbo',
+			// Hidden turbo emotes.
+			457: 'turbo',
+			793: 'turbo'
+		};
+
 		logger.debug('Initializing emote set change listener.');
 
 		twitchApi.onEmotesChange(function (emoteSets) {
@@ -141,15 +154,16 @@ function EmoteStore() {
 
 			Object.keys(emoteSets).forEach(function (set) {
 				var emotes = emoteSets[set];
+				set = Number(set);
 				emotes.forEach(function (emote) {
 					// Set some required info.
 					emote.url = 'http://static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/1.0';
 					emote.text = getEmoteFromRegEx(emote.code);
 					emote.set = set;
 
-					// Force turbo channel for easter-egg sets.
-					if (['457', '793'].indexOf(set) >= 0) {
-						emote.channel = 'turbo';
+					// Hardcode the channels of certain sets.
+					if (forcedSetsToChannels[set]) {
+						emote.channel = forcedSetsToChannels[set];
 					}
 
 					var instance = new Emote(emote);
@@ -456,20 +470,25 @@ Emote.prototype.getChannelDisplayName = function () {
 	var channelName = this.getChannelName();
 	var displayName = null;
 
+	var forcedChannelToDisplayNames = {
+		'~global': 'Global',
+		'turbo': 'Turbo'
+	};
+
 	// No channel.
 	if (!channelName) {
 		return null;
+	}
+
+	// Forced display name.
+	if (forcedChannelToDisplayNames[channelName]) {
+		return forcedChannelToDisplayNames[channelName];
 	}
 
 	// Check storage.
 	displayName = storage.displayNames.get(channelName);
 	if (displayName !== null) {
 		return displayName;
-	}
-
-	// Turbo-specific display name.
-	if (channelName === 'turbo') {
-		displayName = 'Turbo';
 	}
 	// Get from API.
 	else {

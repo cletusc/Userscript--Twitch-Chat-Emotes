@@ -396,7 +396,7 @@ function createEmote(emote, container, showHeader) {
 		return;
 	}
 	if (showHeader) {
-		if (emote.getChannelName() && !emote.isSmiley()) {
+		if (emote.getChannelName()) {
 			if (!elements.menu.find('.group-header[data-emote-channel="' + emote.getChannelName() + '"]').length) {
 				container.append(
 					$(templates.emoteGroupHeader({
