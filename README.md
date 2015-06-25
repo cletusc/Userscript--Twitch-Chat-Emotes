@@ -80,7 +80,7 @@ Due to a limit of folder nesting in Windows, more specifically length of the pat
 
 1. Browse to the project folder.
 2. Install [rimraf][rimraf]: `npm install rimraf -g`
-3. Clear the `node_moules` folder: `rimraf node_modules`
+3. Clear the `node_modules` folder: `rimraf node_modules`
 
 Some reading on the matter:
 
