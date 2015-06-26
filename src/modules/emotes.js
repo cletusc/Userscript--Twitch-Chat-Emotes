@@ -314,7 +314,11 @@ function Emote(details) {
 		if (typeof theChannel !== 'string' || theChannel.length < 1) {
 			throw new Error('Invalid channel');
 		}
-		storage.channelNames.set(this.getText(), theChannel);
+
+		// Only save the channel to storage if it's dynamic.
+		if (theChannel !== '~global' && theChannel !== 'turbo') {
+			storage.channelNames.set(this.getText(), theChannel);
+		}
 		channel.name = theChannel;
 	};
 
