@@ -102,11 +102,6 @@ UIMenu.prototype.init = function () {
 
 	this.favorites = new UIFavoritesGroup();
 
-	// Prevent selection on double-click
-	this.dom.on('mousedown', function (evt) {
-		evt.preventDefault();
-	});
-
 	// Enable dragging.
 	this.dom.draggable({
 		handle: '.draggable',
