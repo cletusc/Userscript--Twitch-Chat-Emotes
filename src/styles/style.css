@@ -23,6 +23,7 @@
 }
 .emote-menu {
 	background-color: #202020;
+	position: relative;
 }
 
 .emote-menu a {
@@ -88,7 +89,7 @@
 	right: 0;
 }
 
-.emote-menu .single-row {
+.emote-menu .single-row .emote-container {
 	overflow: hidden;
 	height: 37px;
 }
@@ -155,17 +156,6 @@
 	opacity: 1.0;
 }
 
-/* Override custom scroll bar defaults. */
-.emote-menu .scrollable.default-skin {
-	padding-right: 0;
-	padding-bottom: 0;
-}
-.emote-menu .scrollable.default-skin .scroll-bar .thumb {
-	background-color: #555;
-	opacity: 0.2;
-	z-index: 1;
-}
-
 .emote-menu .edit-tool {
 	background-position: 50%;
 	background-repeat: no-repeat;
@@ -224,7 +214,8 @@
 .emote-menu .emote.emote-menu-hidden {
 	border-color: rgba(255, 0, 0, 0.5);
 }
-.emote-menu:not(.editing) .emote-menu-hidden {
+.emote-menu:not(.editing) .emote-menu-hidden,
+.emote-menu #starred-emotes-group .emote:not(.emote-menu-starred) {
 	display: none;
 }
 .emote-menu:not(.editing) #starred-emotes-group .emote-menu-starred {
@@ -238,4 +229,19 @@
 	content: "Use the edit mode to star an emote!";
 	position: relative;
 	top: 8px;
+}
+.emote-menu .scrollable {
+	height: calc(100% - 101px);
+	overflow-y: auto;
+}
+.emote-menu .sticky {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+}
+
+.emote-menu .emote-menu-inner {
+	position: relative;
+	max-height: 100%;
+	height: 100%;
 }

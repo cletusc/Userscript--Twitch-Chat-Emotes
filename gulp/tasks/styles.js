@@ -15,7 +15,7 @@ var minifyText = [
 
 gulp.task('styles', function () {
 	return gulp.src([
-			'node_modules/jquery-custom-scrollbar/jquery.custom-scrollbar.css',
+			'node_modules/jquery.scrollbar/jquery.scrollbar.css',
 			'src/styles/style.css'
 		])
 		.pipe(cssBase64())

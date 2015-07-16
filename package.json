@@ -54,14 +54,11 @@
 		"gulp-util": "^3.0.0",
 		"hogan.js": "^3.0.2",
 		"jquery-ui": "^1.10.5",
-		"napa": "^0.4.1",
 		"pretty-hrtime": "^0.2.1",
 		"vinyl-map": "^1.0.1",
 		"vinyl-source-stream": "^0.1.1",
 		"watchify": "^1.0.1",
-		"storage-wrapper": "cletusc/storage-wrapper#v0.1.1"
-	},
-	"napa": {
-		"jquery-custom-scrollbar": "mzubala/jquery-custom-scrollbar#0.5.5"
+		"storage-wrapper": "cletusc/storage-wrapper#v0.1.1",
+		"jquery.scrollbar": "gromo/jquery.scrollbar#0.2.7"
 	}
 }

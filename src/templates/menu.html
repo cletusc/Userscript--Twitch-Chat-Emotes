@@ -1,16 +1,25 @@
 <div class="emote-menu" id="emote-menu-for-twitch">
-	<div class="draggable"></div>
+	<div class="emote-menu-inner">
 
-	<div class="header-info">All Emotes</div>
-	<div class="group-container scrollable" id="all-emotes-group"></div>
+		<div class="draggable"></div>
 
-	<div class="header-info">Favorite Emotes</div>
-	<div class="group-container single-row" id="starred-emotes-group"></div>
+		<div class="scrollable scrollbar-macosx">
+			<div class="group-container" id="all-emotes-group"></div>
+		</div>
 
-	<div class="footer">
-		<a class="pull-left icon icon-home" href="http://cletusc.github.io/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the homepage where you can donate, post a review, or contact the developer"></a>
-		<a class="pull-left icon icon-gear" data-command="toggle-editing" title="Toggle edit mode"></a>
-		<a class="pull-right icon icon-resize-handle" data-command="resize-handle"></a>
-		<a class="pull-right icon icon-pin" data-command="toggle-pinned" title="Pin/unpin the emote menu to the screen"></a>
+		<div class="sticky">
+			<div class="group-header single-row" id="starred-emotes-group">
+				<div class="header-info">Favorite Emotes</div>
+				<div class="emote-container"></div>
+			</div>
+
+			<div class="footer">
+				<a class="pull-left icon icon-home" href="http://cletusc.github.io/Userscript--Twitch-Chat-Emotes" target="_blank" title="Visit the homepage where you can donate, post a review, or contact the developer"></a>
+				<a class="pull-left icon icon-gear" data-command="toggle-editing" title="Toggle edit mode"></a>
+				<a class="pull-right icon icon-resize-handle" data-command="resize-handle"></a>
+				<a class="pull-right icon icon-pin" data-command="toggle-pinned" title="Pin/unpin the emote menu to the screen"></a>
+			</div>
+		</div>
+
 	</div>
 </div>
