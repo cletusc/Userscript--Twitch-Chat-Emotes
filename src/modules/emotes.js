@@ -346,6 +346,10 @@ function Emote(details) {
 			return channel.badge;
 		}
 
+		if (this.isThirdParty()) {
+			return defaultBadge;
+		}
+
 		// Check storage.
 		channel.badge = storage.badges.get(channelName);
 		if (channel.badge !== null) {
@@ -501,6 +505,10 @@ Emote.prototype.getChannelDisplayName = function () {
 	// No channel.
 	if (!channelName) {
 		return null;
+	}
+
+	if (this.isThirdParty()) {
+		return channelName;
 	}
 
 	// Forced display name.
