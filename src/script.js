@@ -10,12 +10,7 @@ logger.log('Initial load on ' + location.href);
 // Only enable script if we have the right variables.
 //---------------------------------------------------
 var initTimer = 0;
-(function init(time) {
-	// Don't run in an iframe.
-	if (window.frameElement) {
-		return;
-	}
-	
+(function init(time) {	
 	if (!time) {
 		time = 0;
 	}
