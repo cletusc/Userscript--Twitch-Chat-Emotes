@@ -32,9 +32,6 @@
 			"http://chatdepot.twitch.tv/*"
 		]
 	},
-	"scripts": {
-		"install": "napa"
-	},
 	"devDependencies": {
 		"browser-sync": "^1.3.2",
 		"browserify": "^5.9.1",
