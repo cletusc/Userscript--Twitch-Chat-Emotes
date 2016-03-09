@@ -24,7 +24,10 @@
 		"supportURL": "{{{pkg.bugs}}}",
 		"contributionURL": "http://cletusc.github.io/Userscript--Twitch-Chat-Emotes/#donate",
 		"grant": "none",
-		"include": "http://*.twitch.tv/*",
+		"include": [
+			"http://*.twitch.tv/*",
+			"https://*.twitch.tv/*"
+		],
 		"exclude": [
 			"http://api.twitch.tv/*",
 			"http://tmi.twitch.tv/*",
