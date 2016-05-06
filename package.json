@@ -30,9 +30,19 @@
 		],
 		"exclude": [
 			"http://api.twitch.tv/*",
+			"https://api.twitch.tv/*",
 			"http://tmi.twitch.tv/*",
+			"https://tmi.twitch.tv/*",
 			"http://*.twitch.tv/*/dashboard",
-			"http://chatdepot.twitch.tv/*"
+			"https://*.twitch.tv/*/dashboard",
+			"http://chatdepot.twitch.tv/*",
+			"https://chatdepot.twitch.tv/*",
+			"http://im.twitch.tv/*",
+			"https://im.twitch.tv/*",
+			"http://platform.twitter.com/*",
+			"https://platform.twitter.com/*",
+			"http://www.facebook.com/*",
+			"https://www.facebook.com/*"
 		]
 	},
 	"devDependencies": {
