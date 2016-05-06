@@ -157,7 +157,7 @@ function EmoteStore() {
 				set = Number(set);
 				emotes.forEach(function (emote) {
 					// Set some required info.
-					emote.url = 'http://static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/1.0';
+					emote.url = '//static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/1.0';
 					emote.text = getEmoteFromRegEx(emote.code);
 					emote.set = set;
 
@@ -329,7 +329,7 @@ function Emote(details) {
 	this.getChannelBadge = function () {
 		var twitchApi = require('./twitch-api');
 		var channelName = this.getChannelName();
-		var defaultBadge = 'http://static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
+		var defaultBadge = '//static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
 
 		// No channel.
 		if (!channelName) {
