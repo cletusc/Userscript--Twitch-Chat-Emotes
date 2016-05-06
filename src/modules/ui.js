@@ -30,9 +30,10 @@ function UIMenuButton() {
 	this.dom = null;
 }
 
-UIMenuButton.prototype.init = function () {
-	var chatButton = $('.send-chat-button');
-	
+UIMenuButton.prototype.init = function (timesFailed) {
+	var self = this;
+	var chatButton = $('.send-chat-button, .chat-buttons-container button');
+	var failCounter = timesFailed || 0;
 	this.dom = $('#emote-menu-button');
 
 	// Element already exists.
@@ -42,7 +43,17 @@ UIMenuButton.prototype.init = function () {
 	}
 
 	if (!chatButton.length) {
-		setTimeout(this.init, 1000);
+		failCounter += 1;
+		if (failCounter === 1) {
+			logger.log('MenuButton container missing, trying again.');
+		}
+		if (failCounter >= 10) {
+			logger.log('MenuButton container missing, MenuButton unable to be added, stopping init.');
+			return this;
+		}
+		setTimeout(function () {
+			self.init(failCounter);
+		}, 1000);
 		return this;
 	}
 
