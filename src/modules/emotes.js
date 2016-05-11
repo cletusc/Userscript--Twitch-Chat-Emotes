@@ -10,6 +10,7 @@ var $ = window.jQuery;
 function EmoteStore() {
 	var getters = {};
 	var nativeEmotes = {};
+	var hasInitialized = false;
 
 	/**
 	 * Get a list of usable emoticons.
@@ -129,6 +130,11 @@ function EmoteStore() {
 	 * Initializes the raw data from the API endpoints. Should be called at load and/or whenever the API may have changed. Populates internal objects with updated data.
 	 */
 	this.init = function () {
+		if (hasInitialized) {
+			logger.debug('Already initialized EmoteStore, stopping init.');
+			return;
+		}
+
 		logger.debug('Starting initialization.');
 
 		var twitchApi = require('./twitch-api');
@@ -210,6 +216,9 @@ function EmoteStore() {
 				});
 			});
 		}, true);
+
+		hasInitialized = true;
+		logger.debug('Finished EmoteStore initialization.');
 	};
 };
 
