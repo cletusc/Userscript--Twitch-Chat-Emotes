@@ -365,9 +365,9 @@ function Emote(details) {
 		channel.badge = defaultBadge;
 
 		// Get from API.
+		logger.debug('Getting fresh badge for: ' + channelName);
 		twitchApi.getBadges(channelName, function (badges) {
 			var badge = null;
-			logger.debug('Getting fresh badge for user', channelName, badges);
 
 			// Save turbo badge while we are here.
 			if (badges.turbo && badges.turbo.image) {
@@ -389,7 +389,7 @@ function Emote(details) {
 			// No subscriber badge.
 			else {
 				channel.badge = defaultBadge;
-				logger.debug('Failed to get subscriber badge.', channelName);
+				logger.debug('Failed to get subscriber badge for: ' + channelName);
 			}
 		});
 		
@@ -531,8 +531,13 @@ Emote.prototype.getChannelDisplayName = function () {
 		// Set default until API returns something.
 		storage.displayNames.set(channelName, channelName, 86400000);
 
+		logger.debug('Getting fresh display name for: ' + channelName);
 		twitchApi.getUser(channelName, function (user) {
-			logger.debug('Getting fresh display name for user', user);
+			if (!user || !user.display_name) {
+				logger.debug('Failed to get display name for: ' + channelName);
+				return;
+			}
+
 			displayName = user.display_name;
 			// Save in storage.
 			storage.displayNames.set(channelName, displayName, 86400000);
