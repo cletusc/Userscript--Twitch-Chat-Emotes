@@ -355,15 +355,14 @@ function Emote(details) {
 			return channel.badge;
 		}
 
-		if (this.isThirdParty()) {
-			return defaultBadge;
-		}
-
 		// Check storage.
 		channel.badge = storage.badges.get(channelName);
 		if (channel.badge !== null) {
 			return channel.badge;
 		}
+
+		// Set default until API returns something.
+		channel.badge = defaultBadge;
 
 		// Get from API.
 		twitchApi.getBadges(channelName, function (badges) {
@@ -389,6 +388,7 @@ function Emote(details) {
 			}
 			// No subscriber badge.
 			else {
+				channel.badge = defaultBadge;
 				logger.debug('Failed to get subscriber badge.', channelName);
 			}
 		});
@@ -516,10 +516,6 @@ Emote.prototype.getChannelDisplayName = function () {
 		return null;
 	}
 
-	if (this.isThirdParty()) {
-		return channelName;
-	}
-
 	// Forced display name.
 	if (forcedChannelToDisplayNames[channelName]) {
 		return forcedChannelToDisplayNames[channelName];
@@ -532,6 +528,9 @@ Emote.prototype.getChannelDisplayName = function () {
 	}
 	// Get from API.
 	else {
+		// Set default until API returns something.
+		storage.displayNames.set(channelName, channelName, 86400000);
+
 		twitchApi.getUser(channelName, function (user) {
 			logger.debug('Getting fresh display name for user', user);
 			displayName = user.display_name;
