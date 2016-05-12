@@ -246,6 +246,7 @@ function Emote(details) {
 	var getterName = null;
 	var channel = {
 		name: null,
+		displayName: null,
 		badge: null
 	};
 
@@ -408,6 +409,72 @@ function Emote(details) {
 	};
 
 	/**
+	 * Get a channel's display name.
+	 * @return {string} The channel's display name. May be equivalent to the channel the first time the API needs to be called.
+	 */
+	this.getChannelDisplayName = function () {
+		var twitchApi = require('./twitch-api');
+		var channelName = this.getChannelName();
+		var self = this;
+
+		var forcedChannelToDisplayNames = {
+			'~global': 'Global',
+			'turbo': 'Turbo'
+		};
+
+		// No channel.
+		if (!channelName) {
+			return null;
+		}
+
+		// Forced display name.
+		if (forcedChannelToDisplayNames[channelName]) {
+			return forcedChannelToDisplayNames[channelName];
+		}
+
+		// Already have one preset.
+		if (channel.displayName) {
+			return channel.displayName;
+		}
+
+		// Check storage.
+		channel.displayName = storage.displayNames.get(channelName);
+		if (channel.displayName !== null) {
+			return channel.displayName;
+		}
+		// Get from API.
+		else {
+			// Set default until API returns something.
+			channel.displayName = channelName;
+
+			logger.debug('Getting fresh display name for: ' + channelName);
+			twitchApi.getUser(channelName, function (user) {
+				if (!user || !user.display_name) {
+					logger.debug('Failed to get display name for: ' + channelName);
+					return;
+				}
+
+				// Save it.
+				self.setChannelDisplayName(user.display_name);
+			});
+		}
+		
+		return channel.displayName;
+	};
+
+	/**
+	 * Sets the emote's channel badge image URL.
+	 * @param {string} theBadge The badge image URL to set.
+	 */
+	this.setChannelDisplayName = function (displayName) {
+		if (typeof displayName !== 'string' || displayName.length < 1) {
+			throw new Error('Invalid displayName');
+		}
+		channel.displayName = displayName;
+		storage.displayNames.set(this.getChannelName(), displayName, 86400000);
+	};
+
+	/**
 	 * Initialize the details.
 	 */
 	
@@ -421,6 +488,9 @@ function Emote(details) {
 	}
 	if (details.channel) {
 		this.setChannelName(details.channel);
+	}
+	if (details.channelDisplayName) {
+		this.setChannelDisplayName(details.channelDisplayName);
 	}
 	if (details.badge) {
 		this.setChannelBadge(details.badge);
@@ -496,56 +566,6 @@ Emote.prototype.isSmiley = function () {
 /**
  * Property getters/setters.
  */
-
-/**
- * Get a channel's display name.
- * @return {string} The channel's display name. May be equivalent to the channel the first time the API needs to be called.
- */
-Emote.prototype.getChannelDisplayName = function () {
-	var twitchApi = require('./twitch-api');
-	var channelName = this.getChannelName();
-	var displayName = null;
-
-	var forcedChannelToDisplayNames = {
-		'~global': 'Global',
-		'turbo': 'Turbo'
-	};
-
-	// No channel.
-	if (!channelName) {
-		return null;
-	}
-
-	// Forced display name.
-	if (forcedChannelToDisplayNames[channelName]) {
-		return forcedChannelToDisplayNames[channelName];
-	}
-
-	// Check storage.
-	displayName = storage.displayNames.get(channelName);
-	if (displayName !== null) {
-		return displayName;
-	}
-	// Get from API.
-	else {
-		// Set default until API returns something.
-		storage.displayNames.set(channelName, channelName, 86400000);
-
-		logger.debug('Getting fresh display name for: ' + channelName);
-		twitchApi.getUser(channelName, function (user) {
-			if (!user || !user.display_name) {
-				logger.debug('Failed to get display name for: ' + channelName);
-				return;
-			}
-
-			displayName = user.display_name;
-			// Save in storage.
-			storage.displayNames.set(channelName, displayName, 86400000);
-		});
-	}
-	
-	return displayName || channelName;
-};
 
 /**
  * Gets the usable emote text from a regex.
