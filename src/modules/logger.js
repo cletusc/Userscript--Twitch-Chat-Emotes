@@ -1,4 +1,5 @@
 var api = {};
+var instance = '[instance ' + (Math.floor(Math.random() * (999 - 100)) + 100) + '] ';
 var prefix = '[Emote Menu] ';
 var storage = require('./storage');
 
@@ -12,6 +13,9 @@ api.log = function () {
 		}
 		return arg;
 	});
+	if (storage.global.get('debugMessagesEnabled', false)) {
+		arguments.unshift(instance);
+	}
 	arguments.unshift(prefix);
 	console.log.apply(console, arguments);
 };
