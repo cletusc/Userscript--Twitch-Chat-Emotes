@@ -26,6 +26,10 @@ api.hideMenu = function () {
 	}
 };
 
+api.updateEmotes = function () {
+	theMenu.updateEmotes();
+}
+
 function UIMenuButton() {
 	this.dom = null;
 }

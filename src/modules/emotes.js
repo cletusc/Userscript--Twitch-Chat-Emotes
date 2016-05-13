@@ -1,5 +1,6 @@
 var storage = require('./storage');
 var logger = require('./logger');
+var ui = require('./ui');
 var api = {};
 var emoteStore = new EmoteStore();
 var $ = window.jQuery;
@@ -115,6 +116,7 @@ function EmoteStore() {
 		}
 		logger.debug('Getter registered: ' + name);
 		getters[name] = getter;
+		ui.updateEmotes();
 	};
 
 	/**
@@ -124,6 +126,7 @@ function EmoteStore() {
 	this.deregisterGetter = function (name) {
 		logger.debug('Getter unregistered: ' + name);
 		delete getters[name];
+		ui.updateEmotes();
 	};
 
 	/**
@@ -214,7 +217,9 @@ function EmoteStore() {
 					instance.getChannelBadge();
 					instance.getChannelDisplayName();
 				});
+				ui.updateEmotes();
 			});
+			ui.updateEmotes();
 		}, true);
 
 		hasInitialized = true;
@@ -386,6 +391,7 @@ function Emote(details) {
 			if (badges.subscriber && badges.subscriber.image) {
 				channel.badge = badges.subscriber.image;
 				storage.badges.set(channelName, channel.badge, 86400000);
+				ui.updateEmotes();
 			}
 			// No subscriber badge.
 			else {
@@ -462,6 +468,7 @@ function Emote(details) {
 
 				// Save it.
 				self.setChannelDisplayName(user.display_name);
+				ui.updateEmotes();
 			});
 		}
 		
