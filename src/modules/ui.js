@@ -423,7 +423,7 @@ UIGroup.prototype.init = function () {
 	}
 
 	// Enable emote hiding.
-	this.dom.find('[data-command="toggle-visibility"]').on('click', function () {
+	this.dom.find('.header-info [data-command="toggle-visibility"]').on('click', function () {
 		if (!theMenu.isEditing()) {
 			return;
 		}
