@@ -572,7 +572,7 @@ Emote.prototype.isVisible = function () {
  */
 Emote.prototype.isSmiley = function () {
 	// The basic smiley emotes.
-	var emotes = [':(', ':)', ':/', ':\\', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', '#/', ':7', ':>', ':S', '<]'];
+	var emotes = [':(', ':)', ':/', ':\\', ':D', ':o', ':p', ':z', ';)', ';p', '<3', '>(', 'B)', 'R)', 'o_o', 'O_O', '#/', ':7', ':>', ':S', '<]'];
 	return emotes.indexOf(this.getText()) !== -1;
 };
 
@@ -621,12 +621,12 @@ function getEmoteFromRegEx(regex) {
 		//
 		// /
 		//   \[                 // [
-		//   ([^|])*            // any amount of characters that are not |
+		//   ([^|\]\[])*        // any amount of characters that are not |, [, or ]
 		//   \|?                // an optional | character
-		//   [^\]]*             // any amount of characters that are not ]
+		//   [^\]]*             // any amount of characters that are not [, or ]
 		//   \]                 // ]
 		// /g
-		.replace(/\[([^|])*\|?[^\]]*\]/g, '$1')
+		.replace(/\[([^|\]\[])*\|?[^\]\[]*\]/g, '$1')
 
 		// Remove optional characters.
 		//
