@@ -5,7 +5,7 @@ var logger = require('./modules/logger');
 var emotes = require('./modules/emotes');
 var ui = require('./modules/ui');
 
-logger.log('Initial load on ' + location.href);
+logger.log('(v'+ pkg.version + ') Initial load on ' + location.href);
 
 // Only enable script if we have the right variables.
 //---------------------------------------------------

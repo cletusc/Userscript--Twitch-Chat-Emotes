@@ -43,6 +43,7 @@ api.getTickets = function (callback) {
 };
 
 api.onEmotesChange = function (callback, immediate) {
+	logger.debug('onEmotesChange called.');
 	var ember = require('./ember-api');
 	var session = ember.get('controller:chat', 'currentRoom.tmiRoom.session');
 	var response = null;
@@ -53,6 +54,7 @@ api.onEmotesChange = function (callback, immediate) {
 
 	// No parser or no emotes loaded yet, try again.
 	if (!session) {
+		logger.debug('onEmotesChange session missing, trying again.');
 		setTimeout(api.onEmotesChange, 100, callback, immediate);
 		return;
 	}
@@ -61,19 +63,21 @@ api.onEmotesChange = function (callback, immediate) {
 	if (immediate) {
 		response = session.getEmotes();
 		if (!response || !response.emoticon_sets) {
+			logger.debug('onEmotesChange no emoticon_sets, trying again.');
 			setTimeout(api.onEmotesChange, 100, callback, immediate);
 			return;
 		}
 
+		logger.debug('onEmotesChange callback called immediately.');
 		callback(response.emoticon_sets);
-		logger.debug('Called emote change handler immediately.');
 	}
 
 	// Listen for the event.
 	session._emotesParser.on('emotes_changed', function (response) {
+		logger.debug('onEmotesChange callback called while listening.');
 		callback(response.emoticon_sets);
-		logger.debug('Called emote change handler.')
 	});
+
 	logger.debug('Registered listener for emote changes.');
 };
 

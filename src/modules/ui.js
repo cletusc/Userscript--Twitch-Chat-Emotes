@@ -26,6 +26,10 @@ api.hideMenu = function () {
 	}
 };
 
+api.updateEmotes = function () {
+	theMenu.updateEmotes();
+}
+
 function UIMenuButton() {
 	this.dom = null;
 }
@@ -244,6 +248,12 @@ UIMenu.prototype.updateEmotes = function (which) {
 	emotes.getEmotes().forEach(function (emoteInstance) {
 		self.addEmote(emoteInstance);
 	});
+
+	//Update groups.
+	Object.keys(this.groups).forEach(function (group) {
+		self.getGroup(group).init();
+	});
+
 	return this;
 };
 
@@ -385,16 +395,35 @@ function UIGroup(emoteInstance) {
 	this.emotes = {};
 	this.emoteInstance = emoteInstance;
 
-	var self = this;
+	this.init();
+}
 
-	this.dom = $(templates.emoteGroupHeader({
-		badge: emoteInstance.getChannelBadge(),
-		channel: emoteInstance.getChannelName(),
-		channelDisplayName: emoteInstance.getChannelDisplayName()
-	}));
+UIGroup.prototype.init = function () {
+	var self = this;
+	var emoteInstance = this.emoteInstance;
+
+	// First init, create new DOM.
+	if (this.dom === null) {
+		this.dom = $(templates.emoteGroupHeader({
+			badge: emoteInstance.getChannelBadge(),
+			channel: emoteInstance.getChannelName(),
+			channelDisplayName: emoteInstance.getChannelDisplayName()
+		}));
+	}
+	// Update DOM instead.
+	else {
+		this.dom.find('.header-info').replaceWith(
+			$(templates.emoteGroupHeader({
+				badge: emoteInstance.getChannelBadge(),
+				channel: emoteInstance.getChannelName(),
+				channelDisplayName: emoteInstance.getChannelDisplayName()
+			}))
+			.find('.header-info')
+		);
+	}
 
 	// Enable emote hiding.
-	this.dom.find('[data-command="toggle-visibility"]').on('click', function () {
+	this.dom.find('.header-info [data-command="toggle-visibility"]').on('click', function () {
 		if (!theMenu.isEditing()) {
 			return;
 		}
@@ -402,7 +431,7 @@ function UIGroup(emoteInstance) {
 	});
 
 	this.toggleDisplay(this.isVisible(), true);
-}
+};
 
 UIGroup.prototype.toggleDisplay = function (forced, skipUpdatingEmoteDisplay) {
 	var self = this;
