@@ -444,7 +444,7 @@ function Emote(details) {
 		}
 
 		// Look for obvious bad channel names that shouldn't hit the API or storage. Use channel name instead.
-		if (/[^a-z0-9]/.test(channelName)) {
+		if (/[^a-z0-9_]/.test(channelName)) {
 			logger.debug('Unable to get display name due to obvious non-standard channel name for: ' + channelName);
 			return channelName;
 		}
