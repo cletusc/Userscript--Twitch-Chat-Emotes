@@ -52,8 +52,8 @@ var initTimer = 0;
 })();
 
 function activate() {
-	emotes.init();
 	ui.init();
+	emotes.init();
 }
 function deactivate() {
 	ui.hideMenu();
