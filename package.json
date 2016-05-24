@@ -70,6 +70,7 @@
 		"vinyl-source-stream": "^0.1.1",
 		"watchify": "^1.0.1",
 		"storage-wrapper": "cletusc/storage-wrapper#v0.1.1",
-		"jquery.scrollbar": "^0.2.7"
+		"jquery.scrollbar": "^0.2.7",
+		"generate-userscript-header": "^1.0.0"
 	}
 }

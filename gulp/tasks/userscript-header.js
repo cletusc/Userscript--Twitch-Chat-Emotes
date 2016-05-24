@@ -1,4 +1,4 @@
-var generateUserscriptHeader = require('../util/generate-userscript-header');
+var generateUserscriptHeader = require('generate-userscript-header');
 var gulp = require('gulp');
 var readJSON = require('../util/readJSON');
 var header = require('gulp-header');
