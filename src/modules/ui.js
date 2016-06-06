@@ -95,7 +95,7 @@ UIMenuButton.prototype.isVisible = function () {
 function UIMenu() {
 	this.dom = null;
 	this.groups = {};
-	this.emotes = {};
+	this.emotes = [];
 	this.offset = null;
 	this.favorites = null;
 }
@@ -244,10 +244,26 @@ UIMenu.prototype.updateEmotes = function (which) {
 		return this;
 	}
 	var emotes = require('./emotes');
+	var theEmotes = emotes.getEmotes();
+	var theEmotesKeys = [];
 	var self = this;
-	emotes.getEmotes().forEach(function (emoteInstance) {
+
+	theEmotes.forEach(function (emoteInstance) {
 		self.addEmote(emoteInstance);
+		theEmotesKeys.push(emoteInstance.getText());
 	});
+
+	// Difference the emotes and remove all non-valid emotes.
+	this.emotes.forEach(function (oldEmote) {
+		var text = oldEmote.getText()
+		if (theEmotesKeys.indexOf(text) < 0) {
+			logger.debug('Emote difference found, removing emote from UI: ' + text);
+			self.removeEmote(text);
+		}
+	});
+
+	// Save the emotes for next differencing.
+	this.emotes = theEmotes;
 
 	//Update groups.
 	Object.keys(this.groups).forEach(function (group) {
@@ -369,6 +385,16 @@ UIMenu.prototype.addEmote = function (emoteInstance) {
 	group.toggleDisplay(group.isVisible(), true);
 
 	this.favorites.addEmote(emoteInstance);
+
+	return this;
+};
+
+UIMenu.prototype.removeEmote = function (name) {
+	var self = this;
+	Object.keys(this.groups).forEach(function (groupName) {
+		self.groups[groupName].removeEmote(name);
+	});
+	this.favorites.removeEmote(name);
 
 	return this;
 };
