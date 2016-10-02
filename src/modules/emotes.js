@@ -356,7 +356,7 @@ function Emote(details) {
 
 		// Give globals a default badge.
 		if (channelName === '~global') {
-			return defaultBadge;
+			return '/favicon.ico';
 		}
 
 		// Already have one preset.
