@@ -153,7 +153,10 @@ function EmoteStore() {
 			42: 'turbo',
 			// Hidden turbo emotes.
 			457: 'turbo',
-			793: 'turbo'
+			793: 'turbo',
+			19151: 'twitch_prime',
+			19194: 'twitch_prime'
+
 		};
 
 		logger.debug('Initializing emote set change listener.');
@@ -313,13 +316,13 @@ function Emote(details) {
 
 	/**
 	 * Gets the emote's channel name.
-	 * @return {string|null} The emote's channel or `null` if it doesn't have one.
+	 * @return {string} The emote's channel or an empty string if it doesn't have one.
 	 */
 	this.getChannelName = function () {
 		if (!channel.name) {
 			channel.name = storage.channelNames.get(this.getText());
 		}
-		return channel.name;
+		return channel.name || '';
 	};
 	/**
 	 * Sets the emote's channel name.
@@ -331,7 +334,7 @@ function Emote(details) {
 		}
 
 		// Only save the channel to storage if it's dynamic.
-		if (theChannel !== '~global' && theChannel !== 'turbo') {
+		if (theChannel !== '~global' && theChannel !== 'turbo' && theChannel !== 'twitch_prime') {
 			storage.channelNames.set(this.getText(), theChannel);
 		}
 		channel.name = theChannel;
@@ -353,7 +356,7 @@ function Emote(details) {
 
 		// Give globals a default badge.
 		if (channelName === '~global') {
-			return defaultBadge;
+			return '/favicon.ico';
 		}
 
 		// Already have one preset.
@@ -382,6 +385,18 @@ function Emote(details) {
 
 				// Turbo is actually what we wanted, so we are done.
 				if (channelName === 'turbo') {
+					channel.badge = badge;
+					return;
+				}
+			}
+
+			// Save turbo badge while we are here.
+			if (badges.premium && badges.premium.image) {
+				badge = badges.premium.image;
+				storage.badges.set('twitch_prime', badge, 86400000);
+
+				// Turbo is actually what we wanted, so we are done.
+				if (channelName === 'twitch_prime') {
 					channel.badge = badge;
 					return;
 				}
@@ -425,12 +440,13 @@ function Emote(details) {
 
 		var forcedChannelToDisplayNames = {
 			'~global': 'Global',
-			'turbo': 'Turbo'
+			'turbo': 'Twitch Turbo',
+			'twitch_prime': 'Twitch Prime'
 		};
 
 		// No channel.
 		if (!channelName) {
-			return null;
+			return '';
 		}
 
 		// Forced display name.

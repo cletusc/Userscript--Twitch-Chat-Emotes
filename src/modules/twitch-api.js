@@ -1,16 +1,45 @@
 var twitchApi = window.Twitch.api;
+var jQuery = window.jQuery;
 var logger = require('./logger');
 var api = {};
 
 api.getBadges = function (username, callback) {
-	// Note: not a documented API endpoint.
-	twitchApi.get('chat/' + username + '/badges')
-		.done(function (api) {
-			callback(api);
-		})
-		.fail(function () {
+	if (
+		[
+			'~global',
+			'turbo',
+			'twitch_prime'
+		].indexOf(username) > -1
+	) {
+		if (!jQuery) {
 			callback({});
-		});
+		}
+		// Note: not a documented API endpoint.
+		jQuery.getJSON('https://badges.twitch.tv/v1/badges/global/display')
+			.done(function (api) {
+				var badges = {
+					turbo: {
+						image: api.badge_sets.turbo.versions['1'].image_url_1x
+					},
+					premium: {
+						image: api.badge_sets.premium.versions['1'].image_url_1x
+					}
+				};
+				callback(badges);
+			})
+			.fail(function () {
+				callback({});
+			});
+	}
+	else {
+		twitchApi.get('chat/' + username + '/badges')
+			.done(function (api) {
+				callback(api);
+			})
+			.fail(function () {
+				callback({});
+			});
+	}
 };
 
 api.getUser = function (username, callback) {

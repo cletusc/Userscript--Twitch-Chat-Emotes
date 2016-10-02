@@ -9,11 +9,14 @@
 	background-position: 50%;
 	background-repeat: no-repeat;
 	cursor: pointer;
-	margin-left: 7px;
+	height: 30px;
+	width: 30px;
+}
+#emote-menu-button:focus {
+	box-shadow: none;
 }
 #emote-menu-button.active {
-	border-radius: 2px;
-	background-color: rgba(128, 128, 128, 0.5);
+	box-shadow: 0 0 6px 0 #7d5bbe, inset 0 0 0 1px rgba(100, 65, 164, .5);
 }
 .emote-menu {
 	padding: 5px;
@@ -23,7 +26,7 @@
 }
 .emote-menu {
 	background-color: #202020;
-	position: relative;
+	position: absolute;
 }
 
 .emote-menu a {
