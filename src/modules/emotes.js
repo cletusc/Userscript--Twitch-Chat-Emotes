@@ -390,6 +390,18 @@ function Emote(details) {
 				}
 			}
 
+			// Save turbo badge while we are here.
+			if (badges.premium && badges.premium.image) {
+				badge = badges.premium.image;
+				storage.badges.set('twitch_prime', badge, 86400000);
+
+				// Turbo is actually what we wanted, so we are done.
+				if (channelName === 'twitch_prime') {
+					channel.badge = badge;
+					return;
+				}
+			}
+
 			// Save subscriber badge in storage.
 			if (badges.subscriber && badges.subscriber.image) {
 				channel.badge = badges.subscriber.image;
