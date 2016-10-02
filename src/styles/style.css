@@ -24,7 +24,7 @@
 }
 .emote-menu {
 	background-color: #202020;
-	position: relative;
+	position: absolute;
 }
 
 .emote-menu a {
