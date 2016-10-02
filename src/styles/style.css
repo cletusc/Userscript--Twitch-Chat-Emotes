@@ -9,7 +9,8 @@
 	background-position: 50%;
 	background-repeat: no-repeat;
 	cursor: pointer;
-	margin-left: 7px;
+	height: 30px;
+	width: 30px;
 }
 #emote-menu-button.active {
 	border-radius: 2px;
