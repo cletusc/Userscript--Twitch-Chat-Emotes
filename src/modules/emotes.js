@@ -153,7 +153,10 @@ function EmoteStore() {
 			42: 'turbo',
 			// Hidden turbo emotes.
 			457: 'turbo',
-			793: 'turbo'
+			793: 'turbo',
+			19151: 'twitch_prime',
+			19194: 'twitch_prime'
+
 		};
 
 		logger.debug('Initializing emote set change listener.');
@@ -331,7 +334,7 @@ function Emote(details) {
 		}
 
 		// Only save the channel to storage if it's dynamic.
-		if (theChannel !== '~global' && theChannel !== 'turbo') {
+		if (theChannel !== '~global' && theChannel !== 'turbo' && theChannel !== 'twitch_prime') {
 			storage.channelNames.set(this.getText(), theChannel);
 		}
 		channel.name = theChannel;
@@ -425,7 +428,8 @@ function Emote(details) {
 
 		var forcedChannelToDisplayNames = {
 			'~global': 'Global',
-			'turbo': 'Turbo'
+			'turbo': 'Twitch Turbo',
+			'twitch_prime': 'Twitch Prime'
 		};
 
 		// No channel.

@@ -331,7 +331,15 @@ UIMenu.prototype.addGroup = function (emoteInstance) {
 		a = a.getChannelDisplayName().toLowerCase();
 		b = b.getChannelDisplayName().toLowerCase();
 
-		// Turbo goes first, always.
+		// Prime goes first, always.
+		if (aChannel === 'twitch_prime' && bChannel !== 'twitch_prime') {
+			return -1;
+		}
+		if (bChannel === 'twitch_prime' && aChannel !== 'twitch_prime') {
+			return 1;
+		}
+
+		// Turbo goes after Prime, always.
 		if (aChannel === 'turbo' && bChannel !== 'turbo') {
 			return -1;
 		}
@@ -339,7 +347,7 @@ UIMenu.prototype.addGroup = function (emoteInstance) {
 			return 1;
 		}
 
-		// Global goes second, always.
+		// Global goes after Turbo, always.
 		if (aChannel === '~global' && bChannel !== '~global') {
 			return -1;
 		}
