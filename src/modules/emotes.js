@@ -313,13 +313,13 @@ function Emote(details) {
 
 	/**
 	 * Gets the emote's channel name.
-	 * @return {string|null} The emote's channel or `null` if it doesn't have one.
+	 * @return {string} The emote's channel or an empty string if it doesn't have one.
 	 */
 	this.getChannelName = function () {
 		if (!channel.name) {
 			channel.name = storage.channelNames.get(this.getText());
 		}
-		return channel.name;
+		return channel.name || '';
 	};
 	/**
 	 * Sets the emote's channel name.
@@ -430,7 +430,7 @@ function Emote(details) {
 
 		// No channel.
 		if (!channelName) {
-			return null;
+			return '';
 		}
 
 		// Forced display name.
