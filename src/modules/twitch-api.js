@@ -84,7 +84,7 @@ api.onEmotesChange = function (callback, immediate) {
 	// No parser or no emotes loaded yet, try again.
 	if (!session) {
 		logger.debug('onEmotesChange session missing, trying again.');
-		setTimeout(api.onEmotesChange, 100, callback, immediate);
+		setTimeout(api.onEmotesChange, 1000, callback, immediate);
 		return;
 	}
 

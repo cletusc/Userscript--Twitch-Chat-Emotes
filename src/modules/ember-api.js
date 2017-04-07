@@ -81,16 +81,23 @@ api.get = function (lookupFactory, property) {
 
 	properties.some(function (property) {
 		// If getter fails, just exit, otherwise, keep looping.
-		if (typeof getter.get === 'function' && typeof getter.get(property) !== 'undefined') {
-			getter = getter.get(property);
-		}
-		else if (typeof getter[property] !== 'undefined') {
-			getter = getter[property];
-		}
-		else {
+		if (getter == null || typeof getter === 'undefined') {
 			getter = null;
 			return true;
 		}
+		if (getter[property] == null || typeof getter[property] === 'undefined') {
+			getter = null;
+			return true;
+		}
+		if (typeof getter.get === 'function') {
+			getter = getter.get(property);
+			if (getter == null || typeof getter === 'undefined') {
+				getter = null;
+				return true;
+			}
+			return false;
+		}
+		getter = getter[property];
 	});
 
 	return getter;
