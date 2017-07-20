@@ -32,7 +32,10 @@ api.getBadges = function (username, callback) {
 			});
 	}
 	else {
-		twitchApi.get('chat/' + username + '/badges')
+		twitchApi.get(
+			'chat/' + username + '/badges',
+			{api_version: 3}
+		)
 			.done(function (api) {
 				callback(api);
 			})
@@ -44,7 +47,10 @@ api.getBadges = function (username, callback) {
 
 api.getUser = function (username, callback) {
 	// Note: not a documented API endpoint.
-	twitchApi.get('users/' + username)
+	twitchApi.get(
+		'users/' + username,
+		{api_version: 3}
+	)
 		.done(function (api) {
 			callback(api);
 		})
@@ -60,7 +66,8 @@ api.getTickets = function (callback) {
 		{
 			offset: 0,
 			limit: 100,
-			unended: true
+			unended: true,
+			api_version: 3
 		}
 	)
 		.done(function (api) {
@@ -72,7 +79,10 @@ api.getTickets = function (callback) {
 };
 
 api.getEmotes = function (callback) {
-	twitchApi.get('users/:login/emotes')
+	twitchApi.get(
+		'users/:login/emotes',
+		{api_version: 3}
+	)
 		.done(function (response) {
 			if (!response || !response.emoticon_sets) {
 				logger.debug('getEmotes emoticon_sets empty');
