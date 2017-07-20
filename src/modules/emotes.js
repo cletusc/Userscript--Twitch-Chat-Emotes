@@ -161,7 +161,7 @@ function EmoteStore() {
 
 		logger.debug('Initializing emote set change listener.');
 
-		twitchApi.onEmotesChange(function (emoteSets) {
+		twitchApi.getEmotes(function (emoteSets) {
 			logger.debug('Parsing emote sets.');
 
 			Object.keys(emoteSets).forEach(function (set) {
@@ -223,7 +223,7 @@ function EmoteStore() {
 				ui.updateEmotes();
 			});
 			ui.updateEmotes();
-		}, true);
+		});
 
 		hasInitialized = true;
 		logger.debug('Finished EmoteStore initialization.');
