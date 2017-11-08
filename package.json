@@ -17,8 +17,8 @@
     "author": "{{{pkg.author}}}",
     "icon": "http://www.gravatar.com/avatar.php?gravatar_id=6875e83aa6c563790cb2da914aaba8b3&r=PG&s=48&default=identicon",
     "license": [
-      "MIT; http://opensource.org/licenses/MIT",
-      "CC BY-NC-SA 3.0; http://creativecommons.org/licenses/by-nc-sa/3.0/"
+      "CC-BY-NC-SA-3.0; https://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "MIT; https://opensource.org/licenses/MIT"
     ],
     "homepage": "{{{pkg.homepage}}}",
     "supportURL": "{{{pkg.bugs}}}",
