@@ -1,3 +1,5 @@
+var jQuery = require('jquery');
+
 (function ($) {
 	$.fn.resizable = function (options) {
 		var settings = $.extend({

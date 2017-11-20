@@ -1,5 +1,5 @@
 var api = {};
-var $ = jQuery = window.jQuery;
+var $ = require('jquery');
 var templates = require('./templates');
 var storage = require('./storage');
 var emotes = require('./emotes');
@@ -14,6 +14,7 @@ api.init = function () {
 
 	// Load jQuery plugins.
 	require('../plugins/resizable');
+	require('jquery-ui/ui/widgets/draggable');
 	require('jquery.scrollbar');
 
 	theMenuButton.init();
@@ -36,7 +37,7 @@ function UIMenuButton() {
 
 UIMenuButton.prototype.init = function (timesFailed) {
 	var self = this;
-	var chatButton = $('.send-chat-button, .chat-buttons-container button');
+	var chatButtons = $('.chat-input .chat-buttons-container .flex');
 	var failCounter = timesFailed || 0;
 	this.dom = $('#emote-menu-button');
 
@@ -46,7 +47,7 @@ UIMenuButton.prototype.init = function (timesFailed) {
 		return this;
 	}
 
-	if (!chatButton.length) {
+	if (!chatButtons.length) {
 		failCounter += 1;
 		if (failCounter === 1) {
 			logger.log('MenuButton container missing, trying again.');
@@ -63,7 +64,7 @@ UIMenuButton.prototype.init = function (timesFailed) {
 
 	// Create element.
 	this.dom = $(templates.emoteButton());
-	this.dom.insertBefore(chatButton);
+	this.dom.appendTo(chatButtons);
 
 	// Hide then fade it in.
 	this.dom.hide();
@@ -105,6 +106,7 @@ UIMenu.prototype.init = function () {
 	var self = this;
 
 	this.dom = $('#emote-menu-for-twitch');
+	var containment = $('.twilight-root, .twilight-minimal-root');
 
 	// Element already exists.
 	if (this.dom.length) {
@@ -127,7 +129,7 @@ UIMenu.prototype.init = function () {
 		stop: function () {
 			self.offset = self.dom.offset();
 		},
-		containment: $(document.body)
+		containment: containment
 	});
 
 	// Enable resizing.
@@ -138,7 +140,7 @@ UIMenu.prototype.init = function () {
 			self.toggleMovement(true);
 		},
 		alsoResize: self.dom.find('.scrollable'),
-		containment: $(document.body),
+		containment: containment,
 		minHeight: 180,
 		minWidth: 200
 	});
@@ -182,17 +184,9 @@ UIMenu.prototype._detectOutsideClick = function (event) {
 
 UIMenu.prototype.toggleDisplay = function (forced) {
 	var state = typeof forced !== 'undefined' ? !!forced : !this.isVisible();
-	var loggedIn = window.Twitch && window.Twitch.user.isLoggedIn();
 
 	// Menu should be shown.
 	if (state) {
-		// Check if user is logged in.
-		if (!loggedIn) {
-			// Call native login form.
-			$.login();
-			return this;
-		}
-
 		this.updateEmotes();
 		this.dom.show();
 
@@ -202,7 +196,7 @@ UIMenu.prototype.toggleDisplay = function (forced) {
 		}
 		// Never moved, make it the same size as the chat window.
 		else {
-			var chatContainer = $('.chat-messages');
+			var chatContainer = $('.chat-list');
 			
 			// Adjust the size to be the same as the chat container.
 			this.dom.height(chatContainer.outerHeight() - (this.dom.outerHeight() - this.dom.height()));
@@ -324,34 +318,30 @@ UIMenu.prototype.addGroup = function (emoteInstance) {
 		b = self.groups[b].emoteInstance;
 
 		// Get the channel name.
-		var aChannel = a.getChannelName();
-		var bChannel = b.getChannelName();
-
-		// Get the channel display name.
-		a = a.getChannelDisplayName().toLowerCase();
-		b = b.getChannelDisplayName().toLowerCase();
+		a = a.getChannelName();
+		b = b.getChannelName();
 
 		// Prime goes first, always.
-		if (aChannel === 'twitch_prime' && bChannel !== 'twitch_prime') {
+		if (a === 'twitch_prime' && b !== 'twitch_prime') {
 			return -1;
 		}
-		if (bChannel === 'twitch_prime' && aChannel !== 'twitch_prime') {
+		if (b === 'twitch_prime' && a !== 'twitch_prime') {
 			return 1;
 		}
 
 		// Turbo goes after Prime, always.
-		if (aChannel === 'turbo' && bChannel !== 'turbo') {
+		if (a === 'turbo' && b !== 'turbo') {
 			return -1;
 		}
-		if (bChannel === 'turbo' && aChannel !== 'turbo') {
+		if (b === 'turbo' && a !== 'turbo') {
 			return 1;
 		}
 
 		// Global goes after Turbo, always.
-		if (aChannel === '~global' && bChannel !== '~global') {
+		if (a === '~global' && b !== '~global') {
 			return -1;
 		}
-		if (bChannel === '~global' && aChannel !== '~global') {
+		if (b === '~global' && a !== '~global') {
 			return 1;
 		}
 
@@ -439,18 +429,14 @@ UIGroup.prototype.init = function () {
 	// First init, create new DOM.
 	if (this.dom === null) {
 		this.dom = $(templates.emoteGroupHeader({
-			badge: emoteInstance.getChannelBadge(),
-			channel: emoteInstance.getChannelName(),
-			channelDisplayName: emoteInstance.getChannelDisplayName()
+			channel: emoteInstance.getChannelName()
 		}));
 	}
 	// Update DOM instead.
 	else {
 		this.dom.find('.header-info').replaceWith(
 			$(templates.emoteGroupHeader({
-				badge: emoteInstance.getChannelBadge(),
-				channel: emoteInstance.getChannelName(),
-				channelDisplayName: emoteInstance.getChannelDisplayName()
+				channel: emoteInstance.getChannelName()
 			}))
 			.find('.header-info')
 		);
@@ -659,9 +645,8 @@ UIEmote.prototype.isFavorite = function () {
 };
 
 UIEmote.prototype.addToChat = function () {
-	var ember = require('./ember-api');
 	// Get textarea element.
-	var element = $('.chat-interface textarea').get(0);
+	var element = $('.chat-input textarea').get(0);
 	var text = this.instance.getText();
 
 	// Insert at cursor / replace selection.
@@ -680,8 +665,9 @@ UIEmote.prototype.addToChat = function () {
 	// Always put space at end.
 	text = beforeText + text + ' ' + afterText;
 	// Set the text.
-	ember.get('controller:chat', 'currentRoom').set('messageToSend', text);
+	element.value = text;
 	element.focus();
+	element.dispatchEvent(new Event('input', {bubbles: true}));
 	// Put cursor at end.
 	selectionEnd = element.selectionStart + text.length;
 	element.setSelectionRange(selectionEnd, selectionEnd);

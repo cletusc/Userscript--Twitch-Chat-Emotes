@@ -19,6 +19,8 @@ gulp.task('browserify', ['templates', 'styles'], function() {
 		bundleLogger.start();
 
 		return bundler
+			// runs deamdify to make jquery-ui import compatible
+			.transform({global: true}, 'deamdify')
 			.bundle()
 			// Report compile errors
 			.on('error', handleErrors)

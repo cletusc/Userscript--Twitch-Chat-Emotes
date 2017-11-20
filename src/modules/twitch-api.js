@@ -1,101 +1,74 @@
-var twitchApi = window.Twitch.api;
-var jQuery = window.jQuery;
+var $ = require('jquery');
+var cookies = require('browser-cookies');
 var logger = require('./logger');
 var api = {};
 
-api.getBadges = function (username, callback) {
-	if (
-		[
-			'~global',
-			'turbo',
-			'twitch_prime'
-		].indexOf(username) > -1
-	) {
-		if (!jQuery) {
+var TWITCH_API_ENDPOINT = 'https://api.twitch.tv/v5';
+var TWITCH_SITE_API_ENDPOINT = 'https://api.twitch.tv/api';
+
+var user;
+
+try {
+	user = JSON.parse(decodeURIComponent(cookies.get('twilight-user')));
+} catch (_) {
+	logger.log('Error grabbing user from cookie');
+}
+
+api.getUserEmotes = function (callback) {
+	if (!user) {
+		return callback({});
+	}
+
+	$.ajax({
+		url: TWITCH_API_ENDPOINT + '/users/' + user.id + '/emotes',
+		method: 'GET',
+		dataType: 'json',
+		timeout: 30000,
+		headers: {
+			'Authorization': 'OAuth ' + user.authToken
+		},
+		success: function (data) {
+			callback(data.emoticon_sets || {});
+		},
+		error: function () {
 			callback({});
 		}
-		// Note: not a documented API endpoint.
-		jQuery.getJSON('https://badges.twitch.tv/v1/badges/global/display')
-			.done(function (api) {
-				var badges = {
-					turbo: {
-						image: api.badge_sets.turbo.versions['1'].image_url_1x
-					},
-					premium: {
-						image: api.badge_sets.premium.versions['1'].image_url_1x
-					}
-				};
-				callback(badges);
-			})
-			.fail(function () {
-				callback({});
-			});
-	}
-	else {
-		twitchApi.get(
-			'chat/' + username + '/badges',
-			{api_version: 3}
-		)
-			.done(function (api) {
-				callback(api);
-			})
-			.fail(function () {
-				callback({});
-			});
-	}
+	});
 };
 
-api.getUser = function (username, callback) {
-	// Note: not a documented API endpoint.
-	twitchApi.get(
-		'users/' + username,
-		{api_version: 3}
-	)
-		.done(function (api) {
-			callback(api);
-		})
-		.fail(function () {
+api.getEmoteSets = function (callback) {
+	if (!user) {
+		return callback({});
+	}
+
+	$.ajax({
+		url: TWITCH_SITE_API_ENDPOINT + '/users/' + user.login + '/tickets?limit=100&with_gift_data=true',
+		method: 'GET',
+		dataType: 'json',
+		timeout: 30000,
+		headers: {
+			'Authorization': 'OAuth ' + user.authToken
+		},
+		success: function (data) {
+			var setsToChannels = {};
+
+			data.tickets.forEach(function (ticket) {
+				var product = ticket.product;
+				if (!product || !product.partner_login || !product.features || !product.features.emoticon_set_ids) {
+					return;
+				}
+
+				product.features.emoticon_set_ids.forEach(function (setId) {
+					setsToChannels[setId] = product.partner_login;
+				});
+			});
+
+			callback(setsToChannels);
+		},
+		error: function () {
 			callback({});
-		});
-};
-
-api.getTickets = function (callback) {
-	// Note: not a documented API endpoint.
-	twitchApi.get(
-		'/api/users/:login/tickets',
-		{
-			offset: 0,
-			limit: 100,
-			unended: true,
-			api_version: 3
 		}
-	)
-		.done(function (api) {
-			callback(api.tickets || []);
-		})
-		.fail(function () {
-			callback([]);
-		});
-};
-
-api.getEmotes = function (callback) {
-	twitchApi.get(
-		'users/:login/emotes',
-		{api_version: 3}
-	)
-		.done(function (response) {
-			if (!response || !response.emoticon_sets) {
-				logger.debug('getEmotes emoticon_sets empty');
-				callback({});
-				return;
-			}
-
-			callback(response.emoticon_sets);
-		})
-		.fail(function () {
-			logger.debug('getEmotes API call failed');
-			callback({});
-		});
+	});
 };
 
 module.exports = api;

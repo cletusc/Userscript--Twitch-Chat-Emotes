@@ -5,22 +5,34 @@
 }
 
 #emote-menu-button {
-	background-image: url(../images/smiley.png) !important;
-	background-position: 50%;
+	background-image: url(../images/smiley.svg) !important;
+	background-size: 20px;
+	background-position: center;
 	background-repeat: no-repeat;
 	cursor: pointer;
 	height: 30px;
 	width: 30px;
+	-webkit-filter: grayscale(100%);
+	filter: grayscale(100%);
+	opacity: 0.9;
+}
+#emote-menu-button:hover {
+	-webkit-filter: none;
+	filter: none;
+	opacity: 1;
 }
 #emote-menu-button:focus {
 	box-shadow: none;
 }
 #emote-menu-button.active {
+	-webkit-filter: none;
+	filter: none;
+	opacity: 1;
 	box-shadow: 0 0 6px 0 #7d5bbe, inset 0 0 0 1px rgba(100, 65, 164, .5);
 }
 .emote-menu {
 	padding: 5px;
-	z-index: 1000;
+	z-index: 9999;
 	/* Hidden on load, display is handled by JS. */
 	display: none;
 }
@@ -118,6 +130,7 @@
 	padding: 5px 0 2px;
 	margin-top: 5px;
 	height: 18px;
+	background: none;
 }
 .emote-menu .footer .pull-left {
 	margin-right: 5px;

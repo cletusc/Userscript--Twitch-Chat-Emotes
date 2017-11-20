@@ -3,7 +3,7 @@ var logger = require('./logger');
 var ui = require('./ui');
 var api = {};
 var emoteStore = new EmoteStore();
-var $ = window.jQuery;
+var $ = require('jquery');
 
 /**
  * The entire emote storing system.
@@ -146,83 +146,49 @@ function EmoteStore() {
 		// Hash of emote set to forced channel.
 		var forcedSetsToChannels = {
 			// Globals.
-			0: '~global',
+			0: 'Global Twitch',
 			// Bubble emotes.
-			33: 'turbo',
+			33: 'Twitch Turbo',
 			// Monkey emotes.
-			42: 'turbo',
+			42: 'Twitch Turbo',
 			// Hidden turbo emotes.
-			457: 'turbo',
-			793: 'turbo',
-			19151: 'twitch_prime',
-			19194: 'twitch_prime'
-
+			457: 'Twitch Turbo',
+			793: 'Twitch Turbo',
+			19151: 'Twitch Prime',
+			19194: 'Twitch Prime'
 		};
 
-		logger.debug('Initializing emote set change listener.');
+		var setsToChannels = {};
 
-		twitchApi.getEmotes(function (emoteSets) {
-			logger.debug('Parsing emote sets.');
+		logger.debug('Getting emote sets and user emotes');
 
-			Object.keys(emoteSets).forEach(function (set) {
-				var emotes = emoteSets[set];
-				set = Number(set);
-				emotes.forEach(function (emote) {
-					// Set some required info.
-					emote.url = '//static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/1.0';
-					emote.text = getEmoteFromRegEx(emote.code);
-					emote.set = set;
-
-					// Hardcode the channels of certain sets.
-					if (forcedSetsToChannels[set]) {
-						emote.channel = forcedSetsToChannels[set];
-					}
-
-					var instance = new Emote(emote);
-
-					// Save the emote for use later.
-					nativeEmotes[emote.text] = instance;
-				});
-			});
-
-			logger.debug('Loading subscription data.');
-
-			// Get active subscriptions to find the channels.
-			twitchApi.getTickets(function (tickets) {
-				// Instances from each channel to preload channel data.
-				var deferredChannelGets = {};
-
-				logger.debug('Tickets loaded from the API.', tickets);
-				tickets.forEach(function (ticket) {
-					var product = ticket.product;
-					var channel = product.owner_name || product.short_name;
-
-					// Get subscriptions with emotes only.
-					if (!product.emoticons || !product.emoticons.length) {
-						return;
-					}
-					
-					// Set the channel on the emotes.
-					product.emoticons.forEach(function (emote) {
-						var instance = nativeEmotes[getEmoteFromRegEx(emote.regex)];
-						instance.setChannelName(channel);
-
-						// Save instance for later, but only one instance per channel.
-						if (!deferredChannelGets[channel]) {
-							deferredChannelGets[channel] = instance;
+		twitchApi.getEmoteSets(function (setsToChannels) {
+			twitchApi.getUserEmotes(function (emotesBySet) {
+				Object.keys(emotesBySet).forEach(function (set) {
+					var emotes = emotesBySet[set];
+					set = +set;
+					emotes.forEach(function (emote) {
+						// Set some required info.
+						emote.url = '//static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/2.0';
+						emote.text = getEmoteFromRegEx(emote.code);
+						emote.set = set;
+	
+						// Hardcode the channels of certain sets.
+						var forcedSetToChannel = forcedSetsToChannels[set];
+						if (forcedSetToChannel) {
+							emote.channel = forcedSetToChannel;
 						}
+	
+						var setToChannel = setsToChannels[set];
+						if (!emote.channel && setToChannel) {
+							emote.channel = setToChannel;
+						}
+	
+						// Save the emote for use later.
+						nativeEmotes[emote.text] = new Emote(emote);
 					});
 				});
-
-				// Preload channel data.
-				Object.keys(deferredChannelGets).forEach(function (key) {
-					var instance = deferredChannelGets[key];
-					instance.getChannelBadge();
-					instance.getChannelDisplayName();
-				});
-				ui.updateEmotes();
 			});
-			ui.updateEmotes();
 		});
 
 		hasInitialized = true;
@@ -244,7 +210,6 @@ EmoteStore.prototype.getEmote = function (text) {
  * @param {object} details              Object describing the emote.
  * @param {string} details.text         The text to use in the chat box when emote is clicked.
  * @param {string} details.url          The URL of the image for the emote.
- * @param {string} [details.badge]      The URL of the badge for the emote.
  * @param {string} [details.channel]    The channel the emote should be categorized under.
  * @param {string} [details.getterName] The 3rd party getter that registered the emote. Used internally only.
  */
@@ -252,11 +217,7 @@ function Emote(details) {
 	var text = null;
 	var url = null;
 	var getterName = null;
-	var channel = {
-		name: null,
-		displayName: null,
-		badge: null
-	};
+	var channel = {name: null};
 
 	/**
 	 * Gets the text of the emote.
@@ -303,6 +264,7 @@ function Emote(details) {
 	this.getUrl = function () {
 		return url;
 	};
+
 	/**
 	 * Sets the emote's image URL.
 	 * @param {string} theUrl The image URL to set.
@@ -319,11 +281,9 @@ function Emote(details) {
 	 * @return {string} The emote's channel or an empty string if it doesn't have one.
 	 */
 	this.getChannelName = function () {
-		if (!channel.name) {
-			channel.name = storage.channelNames.get(this.getText());
-		}
 		return channel.name || '';
 	};
+
 	/**
 	 * Sets the emote's channel name.
 	 * @param {string} theChannel The channel name to set.
@@ -333,174 +293,7 @@ function Emote(details) {
 			throw new Error('Invalid channel');
 		}
 
-		// Only save the channel to storage if it's dynamic.
-		if (theChannel !== '~global' && theChannel !== 'turbo' && theChannel !== 'twitch_prime') {
-			storage.channelNames.set(this.getText(), theChannel);
-		}
 		channel.name = theChannel;
-	};
-
-	/**
-	 * Gets the emote channel's badge image URL.
-	 * @return {string|null} The URL of the badge image for the emote's channel or `null` if it doesn't have a channel.
-	 */
-	this.getChannelBadge = function () {
-		var twitchApi = require('./twitch-api');
-		var channelName = this.getChannelName();
-		var defaultBadge = '//static-cdn.jtvnw.net/jtv_user_pictures/subscriber-star.png';
-
-		// No channel.
-		if (!channelName) {
-			return null;
-		}
-
-		// Give globals a default badge.
-		if (channelName === '~global') {
-			return '/favicon.ico';
-		}
-
-		// Already have one preset.
-		if (channel.badge) {
-			return channel.badge;
-		}
-
-		// Check storage.
-		channel.badge = storage.badges.get(channelName);
-		if (channel.badge !== null) {
-			return channel.badge;
-		}
-
-		// Set default until API returns something.
-		channel.badge = defaultBadge;
-
-		// Get from API.
-		logger.debug('Getting fresh badge for: ' + channelName);
-		twitchApi.getBadges(channelName, function (badges) {
-			var badge = null;
-
-			// Save turbo badge while we are here.
-			if (badges.turbo && badges.turbo.image) {
-				badge = badges.turbo.image;
-				storage.badges.set('turbo', badge, 86400000);
-
-				// Turbo is actually what we wanted, so we are done.
-				if (channelName === 'turbo') {
-					channel.badge = badge;
-					return;
-				}
-			}
-
-			// Save turbo badge while we are here.
-			if (badges.premium && badges.premium.image) {
-				badge = badges.premium.image;
-				storage.badges.set('twitch_prime', badge, 86400000);
-
-				// Turbo is actually what we wanted, so we are done.
-				if (channelName === 'twitch_prime') {
-					channel.badge = badge;
-					return;
-				}
-			}
-
-			// Save subscriber badge in storage.
-			if (badges.subscriber && badges.subscriber.image) {
-				channel.badge = badges.subscriber.image;
-				storage.badges.set(channelName, channel.badge, 86400000);
-				ui.updateEmotes();
-			}
-			// No subscriber badge.
-			else {
-				channel.badge = defaultBadge;
-				logger.debug('Failed to get subscriber badge for: ' + channelName);
-			}
-		});
-		
-		return channel.badge || defaultBadge;
-	};
-
-	/**
-	 * Sets the emote's channel badge image URL.
-	 * @param {string} theBadge The badge image URL to set.
-	 */
-	this.setChannelBadge = function (theBadge) {
-		if (typeof theBadge !== 'string' || theBadge.length < 1) {
-			throw new Error('Invalid badge');
-		}
-		channel.badge = theBadge;
-	};
-
-	/**
-	 * Get a channel's display name.
-	 * @return {string} The channel's display name. May be equivalent to the channel the first time the API needs to be called.
-	 */
-	this.getChannelDisplayName = function () {
-		var twitchApi = require('./twitch-api');
-		var channelName = this.getChannelName();
-		var self = this;
-
-		var forcedChannelToDisplayNames = {
-			'~global': 'Global',
-			'turbo': 'Twitch Turbo',
-			'twitch_prime': 'Twitch Prime'
-		};
-
-		// No channel.
-		if (!channelName) {
-			return '';
-		}
-
-		// Forced display name.
-		if (forcedChannelToDisplayNames[channelName]) {
-			return forcedChannelToDisplayNames[channelName];
-		}
-
-		// Already have one preset.
-		if (channel.displayName) {
-			return channel.displayName;
-		}
-
-		// Look for obvious bad channel names that shouldn't hit the API or storage. Use channel name instead.
-		if (/[^a-z0-9_]/.test(channelName)) {
-			logger.debug('Unable to get display name due to obvious non-standard channel name for: ' + channelName);
-			return channelName;
-		}
-
-		// Check storage.
-		channel.displayName = storage.displayNames.get(channelName);
-		if (channel.displayName !== null) {
-			return channel.displayName;
-		}
-		// Get from API.
-		else {
-			// Set default until API returns something.
-			channel.displayName = channelName;
-
-			logger.debug('Getting fresh display name for: ' + channelName);
-			twitchApi.getUser(channelName, function (user) {
-				if (!user || !user.display_name) {
-					logger.debug('Failed to get display name for: ' + channelName);
-					return;
-				}
-
-				// Save it.
-				self.setChannelDisplayName(user.display_name);
-				ui.updateEmotes();
-			});
-		}
-		
-		return channel.displayName;
-	};
-
-	/**
-	 * Sets the emote's channel badge image URL.
-	 * @param {string} theBadge The badge image URL to set.
-	 */
-	this.setChannelDisplayName = function (displayName) {
-		if (typeof displayName !== 'string' || displayName.length < 1) {
-			throw new Error('Invalid displayName');
-		}
-		channel.displayName = displayName;
-		storage.displayNames.set(this.getChannelName(), displayName, 86400000);
 	};
 
 	/**
@@ -517,12 +310,6 @@ function Emote(details) {
 	}
 	if (details.channel) {
 		this.setChannelName(details.channel);
-	}
-	if (details.channelDisplayName) {
-		this.setChannelDisplayName(details.channelDisplayName);
-	}
-	if (details.badge) {
-		this.setChannelBadge(details.badge);
 	}
 };
 
