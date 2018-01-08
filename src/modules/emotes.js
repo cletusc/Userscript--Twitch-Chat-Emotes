@@ -188,6 +188,7 @@ function EmoteStore() {
 						nativeEmotes[emote.text] = new Emote(emote);
 					});
 				});
+				ui.updateEmotes();
 			});
 		});
 
