@@ -37,7 +37,7 @@ function UIMenuButton() {
 
 UIMenuButton.prototype.init = function (timesFailed) {
 	var self = this;
-	var chatButtons = $('.chat-input .chat-input__buttons-container > .flex');
+	var chatButtons = $('.chat-input .chat-input__buttons-container > .tw-flex');
 	var failCounter = timesFailed || 0;
 	this.dom = $('#emote-menu-button');
 
