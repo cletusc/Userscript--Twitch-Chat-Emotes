@@ -282,7 +282,7 @@ UIMenu.prototype.updateEmotes = function (which) {
 	if (this.lazyLoader) {
 		this.lazyLoader.destroy();
 	}
-	this.lazyLoader = new LazyLoad(this.dom[0], {selector: '.lazy-emote'});
+	this.lazyLoader = new LazyLoad(this.dom.find('.scrollable')[0], {selector: '.lazy-emote'});
 
 	return this;
 };
@@ -601,6 +601,11 @@ UIEmote.prototype.init = function () {
 		isStarred: this.instance.isFavorite()
 	}));
 
+	if (this.instance.isFavorite()) {
+		var image = this.dom.find('img');
+		image.attr('src', this.instance.isFavorite() ? image.attr('data-src') : '');
+	}
+
 	// Enable clicking.
 	this.dom.on('click', function () {
 		if (!theMenu.isEditing()) {
@@ -654,6 +659,8 @@ UIEmote.prototype.isVisible = function () {
 UIEmote.prototype.toggleFavorite = function (forced, skipInstanceUpdate) {
 	var state = typeof forced !== 'undefined' ? !!forced : !this.isFavorite();
 	this.dom.toggleClass('emote-menu-starred', state);
+	var image = this.dom.find('img');
+	image.attr('src', state ? image.attr('data-src') : '');
 	if (!skipInstanceUpdate) {
 		this.instance.toggleFavorite(state);
 	}

@@ -27,74 +27,83 @@ function LazyLoad(root, options) {
 	this.init();
 }
 
-LazyLoad.prototype.init = function() {
+LazyLoad.prototype.init = function () {
 	/* Without observers load everything and bail out early. */
 	if (!window.IntersectionObserver) {
 		this.loadImages();
 		return;
 	}
 
-	var self = this;
 	var observerConfig = {
 		root: this.root,
-		rootMargin: "0px",
-		threshold: 0
+		rootMargin: "25px",
+		threshold: [0.00, 0.25, 0.50, 0.75, 1.00]
 	};
 
 	this.observer = new IntersectionObserver(function(entries) {
-		entries.forEach(function (entry) {
-			if (entry.isIntersecting) {
-				self.observer.unobserve(entry.target);
-				var src = entry.target.getAttribute(self.settings.src);
-				var srcset = entry.target.getAttribute(self.settings.srcset);
-				if ("img" === entry.target.tagName.toLowerCase()) {
-					if (src) {
-						entry.target.src = src;
-					}
-					if (srcset) {
-						entry.target.srcset = srcset;
-					}
-				} else {
-					entry.target.style.backgroundImage = "url(" + src + ")";
-				}
+		for (var i = 0; i < entries.length; i++) {
+			var entry = entries[i];
+			console.log(entry.target.alt, entry.intersectionRatio);
+			if (entry.intersectionRatio <= 0) {
+				return;
 			}
-		});
-	}, observerConfig);
 
-	this.images.forEach(function (image) {
-		self.observer.observe(image);
-	});
+			this.observer.unobserve(entry.target);
+			this.loadImage(entry.target);
+		}
+	}.bind(this), observerConfig);
+
+	for (var i = 0; i < this.images.length; i++) {
+		var image = this.images[i];
+		this.observer.observe(image);
+	}
 };
 
 LazyLoad.prototype.loadAndDestroy = function () {
-	if (!this.settings) { return; }
+	if (!this.settings) {
+		return;
+	}
 	this.loadImages();
 	this.destroy();
 };
 
 LazyLoad.prototype.loadImages = function () {
-	if (!this.settings) { return; }
+	if (!this.settings) {
+		return;
+	}
 
-	var self = this;
-	this.images.forEach(function (image) {
-		var src = image.getAttribute(self.settings.src);
-		var srcset = image.getAttribute(self.settings.srcset);
-		if ("img" === image.tagName.toLowerCase()) {
-			if (src) {
-				image.src = src;
-			}
-			if (srcset) {
-				image.srcset = srcset;
-			}
-		} else {
-			image.style.backgroundImage = "url(" + src + ")";
+	for (var i = 0; i < this.images.length; i++) {
+		var image = this.images[i];
+		this.loadImage(image);
+	}
+};
+
+LazyLoad.prototype.loadImage = function (image) {
+	if (!this.settings) {
+		return;
+	}
+
+	var src = image.getAttribute(this.settings.src);
+	var srcset = image.getAttribute(this.settings.srcset);
+	if ("img" === image.tagName.toLowerCase()) {
+		if (src) {
+			image.src = src;
 		}
-	});
+		if (srcset) {
+			image.srcset = srcset;
+		}
+	} else {
+		image.style.backgroundImage = "url(" + src + ")";
+	}
 };
 
 LazyLoad.prototype.destroy = function () {
-	if (!this.settings) { return; }
-	this.observer.disconnect();
+	if (!this.settings) {
+		return;
+	}
+	if (this.observer) {
+		this.observer.disconnect();
+	}
 	this.settings = null;
 };
 
