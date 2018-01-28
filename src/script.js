@@ -7,29 +7,12 @@ var $ = require('jquery');
 
 logger.log('(v'+ pkg.version + ') Initial load on ' + location.href);
 
+// init modules
+ui.init();
+emotes.init();
+
 // Expose public api.		
 if (typeof window.emoteMenu === 'undefined') {		
 	window.emoteMenu = publicApi;		
 }
 
-// lol this is stupid.. i know
-var chatSettingsButton;
-setInterval(function () {
-	var newChatSettingsButton = $('.chat-input button[data-a-target="chat-settings"]')[0];
-
-	if (newChatSettingsButton && chatSettingsButton !== newChatSettingsButton) {
-		chatSettingsButton = newChatSettingsButton;
-		activate();
-	} else if (!newChatSettingsButton) {
-		deactivate();
-	}
-}, 1000);
-
-function activate() {
-	ui.init();
-	emotes.init();
-}
-
-function deactivate() {
-	ui.hideMenu();
-}

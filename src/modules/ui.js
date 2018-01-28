@@ -19,6 +19,24 @@ api.init = function () {
 
 	theMenuButton.init();
 	theMenu.init();
+
+	// The Twitch chat pane which this attaches to can sometimes disappear,
+	// like when the user chooses the Hide Chat option or navigates to another
+	// Twitch page. This routine will monitor for that, hiding the menu if
+	// it is up when this happens and reattach it once we have a spot to
+	// attach to again.
+	setInterval(function () {
+		if (document.contains(theMenu.dom[0]) && document.contains(theMenuButton.dom[0])) return;
+
+		var newChatSettingsButton = $('.chat-input button[data-a-target="chat-settings"]')[0];
+
+		if (newChatSettingsButton) {
+			api.attach();
+		} else if (!newChatSettingsButton) {
+			api.hideMenu();
+		}
+	}, 1000);
+
 };
 
 api.hideMenu = function () {
@@ -26,6 +44,12 @@ api.hideMenu = function () {
 		theMenu.toggleDisplay(false);
 	}
 };
+
+api.attach = function () {
+	theMenuButton.attach();
+	theMenu.attach();
+	theMenu.updateEmotes();
+}
 
 api.updateEmotes = function () {
 	theMenu.updateEmotes();
@@ -35,40 +59,15 @@ function UIMenuButton() {
 	this.dom = null;
 }
 
-UIMenuButton.prototype.init = function (timesFailed) {
-	var self = this;
-	var chatButtons = $('.chat-input .chat-input__buttons-container > .tw-flex');
-	var failCounter = timesFailed || 0;
-	this.dom = $('#emote-menu-button');
-
+UIMenuButton.prototype.init = function () {
 	// Element already exists.
-	if (this.dom.length) {
+	if (this.dom) {
 		logger.debug('MenuButton already exists, stopping init.');
-		return this;
-	}
-
-	if (!chatButtons.length) {
-		failCounter += 1;
-		if (failCounter === 1) {
-			logger.log('MenuButton container missing, trying again.');
-		}
-		if (failCounter >= 10) {
-			logger.log('MenuButton container missing, MenuButton unable to be added, stopping init.');
-			return this;
-		}
-		setTimeout(function () {
-			self.init(failCounter);
-		}, 1000);
 		return this;
 	}
 
 	// Create element.
 	this.dom = $(templates.emoteButton());
-	this.dom.appendTo(chatButtons);
-
-	// Hide then fade it in.
-	this.dom.hide();
-	this.dom.fadeIn();
 
 	// Enable clicking.
 	this.dom.on('click', function () {
@@ -77,6 +76,22 @@ UIMenuButton.prototype.init = function (timesFailed) {
 
 	return this;
 };
+
+UIMenuButton.prototype.attach = function () {
+	var chatButtons = $('.chat-input .chat-input__buttons-container > .tw-flex');
+
+	if (!chatButtons.length) return;
+
+	this.dom.appendTo(chatButtons);
+
+	// Hide then fade it in.
+	this.dom.hide();
+	this.dom.fadeIn();
+}
+
+UIMenu.prototype.attach = function () {
+	$(document.body).append(this.dom);
+}
 
 UIMenuButton.prototype.toggleDisplay = function (forced) {
 	var state = typeof forced !== 'undefined' ? !!forced : !this.isVisible();
@@ -115,7 +130,6 @@ UIMenu.prototype.init = function () {
 
 	// Create element.
 	this.dom = $(templates.menu());
-	$(document.body).append(this.dom);
 
 	this.favorites = new UIFavoritesGroup();
 
@@ -134,7 +148,7 @@ UIMenu.prototype.init = function () {
 
 	// Enable resizing.
 	this.dom.resizable({
-		handle: '[data-command="resize-handle"]',
+		handle: this.dom.find('[data-command="resize-handle"]'),
 		stop: function () {
 			self.togglePinned(true);
 			self.toggleMovement(true);
@@ -555,7 +569,7 @@ UIGroup.prototype.removeEmote = function (name) {
 };
 
 function UIFavoritesGroup() {
-	this.dom = $('#starred-emotes-group');
+	this.dom = theMenu.dom.find('#starred-emotes-group');
 	this.emotes = {};
 }
 

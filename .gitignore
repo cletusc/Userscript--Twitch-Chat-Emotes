@@ -1,2 +1,6 @@
+# directories created by "npm install" or "gulp"
 node_modules
 build
+
+# jetbrains idea project directory
+.idea
