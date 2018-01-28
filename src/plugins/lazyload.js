@@ -43,7 +43,6 @@ LazyLoad.prototype.init = function () {
 	this.observer = new IntersectionObserver(function(entries) {
 		for (var i = 0; i < entries.length; i++) {
 			var entry = entries[i];
-			console.log(entry.target.alt, entry.intersectionRatio);
 			if (entry.intersectionRatio <= 0) {
 				return;
 			}
