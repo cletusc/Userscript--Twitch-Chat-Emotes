@@ -4,6 +4,7 @@ var templates = require('./templates');
 var storage = require('./storage');
 var emotes = require('./emotes');
 var logger = require('./logger');
+var LazyLoad = require('../plugins/lazyload');
 
 var theMenu = new UIMenu();
 var theMenuButton = new UIMenuButton();
@@ -277,6 +278,11 @@ UIMenu.prototype.updateEmotes = function (which) {
 	Object.keys(this.groups).forEach(function (group) {
 		self.getGroup(group).init();
 	});
+
+	if (this.lazyLoader) {
+		this.lazyLoader.destroy();
+	}
+	this.lazyLoader = new LazyLoad(this.dom[0], {selector: '.lazy-emote'});
 
 	return this;
 };
