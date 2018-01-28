@@ -170,7 +170,11 @@ UIMenu.prototype.init = function () {
 		self.toggleEditing();
 	});
 
-	this.dom.find('.scrollable').scrollbar()
+	try {
+		this.dom.find('.scrollable').scrollbar();
+	} catch (_) {
+		// e.getComputedStyle(s) can be null on Firefox
+	}
 
 	this.updateEmotes();
 
