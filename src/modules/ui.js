@@ -4,6 +4,7 @@ var templates = require('./templates');
 var storage = require('./storage');
 var emotes = require('./emotes');
 var logger = require('./logger');
+var twitchApi = require('./twitch-api');
 var LazyLoad = require('../plugins/lazyload');
 
 var theMenu = new UIMenu();
@@ -699,6 +700,14 @@ UIEmote.prototype.addToChat = function () {
 	element.value = text;
 	element.focus();
 	element.dispatchEvent(new Event('input', {bubbles: true}));
+	// Set the text in the twitch react component
+	var instance = twitchApi.getReactInstance(element);
+	if (instance) {
+		var props = instance.memoizedProps;
+		if (props && props.onChange) {
+			props.onChange({target: element});
+		}
+	}
 	// Put cursor at end.
 	selectionEnd = element.selectionStart + text.length;
 	element.setSelectionRange(selectionEnd, selectionEnd);

@@ -14,6 +14,16 @@ try {
 	logger.log('Error grabbing user from cookie');
 }
 
+api.getReactInstance = function (element) {
+	var key;
+	for (key in element) {
+		if (key.substr(0, 24) === '__reactInternalInstance$') {
+			return element[key];
+		}
+	}
+	return null;
+};
+
 api.getUserEmotes = function (callback) {
 	if (!user) {
 		return callback({});
