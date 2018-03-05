@@ -13,6 +13,16 @@
  *
  */
 
+function isAlreadyInView(root, el) {
+	var rootRect = root.getBoundingClientRect && root.getBoundingClientRect();
+	if (!rootRect) return false;
+
+	var elemRect = el.getBoundingClientRect && el.getBoundingClientRect();
+	if (!elemRect) return false;
+
+	return elemRect.top > rootRect.top && elemRect.bottom < rootRect.bottom;
+}
+
 var defaults = {
 	src: "data-src",
 	srcset: "data-srcset",
@@ -76,6 +86,15 @@ LazyLoad.prototype.loadImages = function () {
 		this.loadImage(image);
 	}
 };
+
+LazyLoad.prototype.loadVisibleImages = function () {
+	for (var i = 0; i < this.images.length; i++) {
+		var image = this.images[i];
+		if (isAlreadyInView(this.root, image)) {
+			this.loadImage(image);
+		}
+	}
+}
 
 LazyLoad.prototype.loadImage = function (image) {
 	if (!this.settings) {

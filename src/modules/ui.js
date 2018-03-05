@@ -209,6 +209,9 @@ UIMenu.prototype.toggleDisplay = function (forced) {
 	if (state) {
 		this.updateEmotes();
 		this.dom.show();
+		if (this.lazyLoader) {
+			this.lazyLoader.loadVisibleImages();
+		}
 
 		// Menu moved, move it back.
 		if (this.hasMoved()) {
