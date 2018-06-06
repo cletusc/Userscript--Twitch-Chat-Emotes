@@ -146,7 +146,7 @@ UIMenu.prototype.init = function () {
 			self.offset = self.dom.offset();
 		},
 		containment: containment
-	});
+	}).css('position', 'absolute');
 
 	// Enable resizing.
 	this.dom.resizable({
