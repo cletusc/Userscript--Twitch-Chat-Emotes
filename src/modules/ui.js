@@ -123,7 +123,7 @@ UIMenu.prototype.init = function () {
 	var self = this;
 
 	this.dom = $('#emote-menu-for-twitch');
-	var containment = $('.twilight-root, .twilight-minimal-root');
+	var containment = $('.twilight-root, .twilight-minimal-root, #root, .root');
 
 	// Element already exists.
 	if (this.dom.length) {
