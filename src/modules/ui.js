@@ -80,11 +80,12 @@ UIMenuButton.prototype.init = function () {
 };
 
 UIMenuButton.prototype.attach = function () {
-	var chatButtons = $('.chat-input .chat-input__buttons-container button[data-test-selector="chat-viewer-list"]');
+	if (document.contains(theMenuButton.dom[0])) return;
 
+	var chatButtons = $('.chat-input .chat-input__buttons-container').children('div').first();
 	if (!chatButtons.length) return;
 
-	this.dom.insertAfter(chatButtons);
+	this.dom.appendTo(chatButtons);
 
 	// Hide then fade it in.
 	this.dom.hide();
