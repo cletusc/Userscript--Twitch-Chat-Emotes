@@ -702,7 +702,6 @@ UIEmote.prototype.addToChat = function () {
 	text = beforeText + text + ' ' + afterText;
 	// Set the text.
 	element.value = text;
-	element.focus();
 	element.dispatchEvent(new Event('input', {bubbles: true}));
 	// Set the text in the twitch react component
 	var instance = twitchApi.getReactInstance(element);
@@ -712,6 +711,7 @@ UIEmote.prototype.addToChat = function () {
 			props.onChange({target: element});
 		}
 	}
+	element.focus();
 	// Put cursor at end.
 	selectionEnd = element.selectionStart + text.length;
 	element.setSelectionRange(selectionEnd, selectionEnd);
