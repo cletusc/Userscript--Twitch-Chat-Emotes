@@ -82,7 +82,7 @@ UIMenuButton.prototype.init = function () {
 UIMenuButton.prototype.attach = function () {
 	if (document.contains(theMenuButton.dom[0])) return;
 
-	var chatButtons = $('.chat-input button[data-a-target="chat-settings"]');
+	var chatButtons = $('.chat-input button[data-a-target="chat-settings"]').closest('.chat-input div[data-test-selector="chat-input-buttons-container"] .tw-tooltip-wrapper');
 	if (!chatButtons.length) return;
 
 	this.dom.insertBefore(chatButtons);
