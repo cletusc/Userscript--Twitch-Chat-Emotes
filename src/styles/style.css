@@ -15,6 +15,7 @@
 	-webkit-filter: grayscale(100%);
 	filter: grayscale(100%);
 	opacity: 0.9;
+	float: left;
 }
 #emote-menu-button:hover {
 	-webkit-filter: none;

@@ -82,10 +82,10 @@ UIMenuButton.prototype.init = function () {
 UIMenuButton.prototype.attach = function () {
 	if (document.contains(theMenuButton.dom[0])) return;
 
-	var chatButtons = $('.chat-input .chat-input__buttons-container').children('div').first();
+	var chatButtons = $('.chat-input button[data-a-target="chat-settings"]');
 	if (!chatButtons.length) return;
 
-	this.dom.appendTo(chatButtons);
+	this.dom.insertBefore(chatButtons);
 
 	// Hide then fade it in.
 	this.dom.hide();
