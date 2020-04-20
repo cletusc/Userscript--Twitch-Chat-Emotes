@@ -10,6 +10,18 @@ var LazyLoad = require('../plugins/lazyload');
 var theMenu = new UIMenu();
 var theMenuButton = new UIMenuButton();
 
+function getButton() {
+	var button = $('.chat-input button[data-a-target="chat-settings"]')
+		.closest('.chat-input div[data-test-selector="chat-input-buttons-container"] .tw-tooltip-wrapper');
+
+	// fallback to chat button (settings is disabled on some views)
+	if (!button.length) {
+		button = $('.chat-input button[data-a-target="chat-send-button"]');
+	}
+
+	return button;
+}
+
 api.init = function () {
 	// Load CSS.
 	require('../../build/styles');
@@ -30,11 +42,10 @@ api.init = function () {
 	setInterval(function () {
 		if (document.contains(theMenu.dom[0]) && document.contains(theMenuButton.dom[0])) return;
 
-		var newChatSettingsButton = $('.chat-input button[data-a-target="chat-settings"]')[0];
-
-		if (newChatSettingsButton) {
+		var button = getButton()[0];
+		if (button) {
 			api.attach();
-		} else if (!newChatSettingsButton) {
+		} else if (!button) {
 			api.hideMenu();
 		}
 	}, 1000);
@@ -82,10 +93,13 @@ UIMenuButton.prototype.init = function () {
 UIMenuButton.prototype.attach = function () {
 	if (document.contains(theMenuButton.dom[0])) return;
 
-	var chatButtons = $('.chat-input button[data-a-target="chat-settings"]').closest('.chat-input div[data-test-selector="chat-input-buttons-container"] .tw-tooltip-wrapper');
-	if (!chatButtons.length) return;
+	var button = getButton();
+	if (!button.length) return;
 
-	this.dom.insertBefore(chatButtons);
+	this.dom.insertBefore(button);
+
+	// adds additional margin if we're next to a button that has background by default
+	this.dom.toggleClass('tw-mg-r-05', button.hasClass('tw-core-button--primary'));
 
 	// Hide then fade it in.
 	this.dom.hide();
