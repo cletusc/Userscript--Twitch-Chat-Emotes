@@ -1,6 +1,6 @@
 var gulp = require('gulp');
 var cssBase64 = require('gulp-css-base64');
-var minify = require('gulp-minify-css');
+var minify = require('gulp-clean-css');
 var prefix = require('gulp-autoprefixer');
 var header = require('gulp-header');
 var concat = require('gulp-concat');
@@ -47,7 +47,8 @@ gulp.task('styles', function () {
 				'        }',
 				'    }',
 				'}(document, "'
-			].join('\n')
+			].join('\n'),
+			suffix: '"));'
 		}))
 		.pipe(gulp.dest('build'));
 });

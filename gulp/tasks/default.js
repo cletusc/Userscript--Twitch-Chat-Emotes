@@ -1,3 +1,5 @@
 var gulp = require('gulp');
 
-gulp.task('default', ['build', 'browserSync']);
+gulp.task('default', gulp.series(
+  'browser-sync'
+));
