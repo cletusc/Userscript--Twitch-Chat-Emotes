@@ -66,7 +66,7 @@
     "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.0",
     "hogan.js": "^3.0.2",
-    "jquery": "^3.5.0",
+    "jquery": "^3.5.1",
     "jquery-ui": "^1.12.1",
     "jquery.scrollbar": "^0.2.11",
     "pretty-hrtime": "^1.0.3",
