@@ -166,7 +166,13 @@ function EmoteStore() {
 				set.emotes.forEach(function (emote) {
 					// Set some required info.
 					emote.url = '//static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/2.0';
-					emote.text = getEmoteFromRegEx(emote.token);
+					var token;
+					try {
+						token = getEmoteFromRegEx(emote.token);
+					} catch (_) {
+						token = emote.token;
+					}
+					emote.text = token;
 					emote.set = set.id;
 					emote.channel = ownerDisplayName;
 
