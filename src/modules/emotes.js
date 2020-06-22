@@ -146,50 +146,45 @@ function EmoteStore() {
 		// Hash of emote set to forced channel.
 		var forcedSetsToChannels = {
 			// Globals.
-			0: 'Global Twitch',
+			'0': 'Global Twitch',
 			// Bubble emotes.
-			33: 'Twitch Turbo',
+			'33': 'Twitch Turbo',
 			// Monkey emotes.
-			42: 'Twitch Turbo',
+			'42': 'Twitch Turbo',
 			// Hidden turbo emotes.
-			457: 'Twitch Turbo',
-			793: 'Twitch Turbo',
-			19151: 'Twitch Prime',
-			19194: 'Twitch Prime'
+			'457': 'Twitch Turbo',
+			'793': 'Twitch Turbo',
+			'19151': 'Twitch Prime',
+			'19194': 'Twitch Prime'
 		};
-
-		var setsToChannels = {};
 
 		logger.debug('Getting emote sets and user emotes');
 
-		twitchApi.getEmoteSets(function (setsToChannels) {
-			twitchApi.getUserEmotes(function (emotesBySet) {
-				Object.keys(emotesBySet).forEach(function (set) {
-					var emotes = emotesBySet[set];
-					set = +set;
-					emotes.forEach(function (emote) {
-						// Set some required info.
-						emote.url = '//static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/2.0';
-						emote.text = getEmoteFromRegEx(emote.code);
-						emote.set = set;
-	
-						// Hardcode the channels of certain sets.
-						var forcedSetToChannel = forcedSetsToChannels[set];
-						if (forcedSetToChannel) {
-							emote.channel = forcedSetToChannel;
-						}
-	
-						var setToChannel = setsToChannels[set];
-						if (!emote.channel && setToChannel) {
-							emote.channel = setToChannel;
-						}
-	
-						// Save the emote for use later.
-						nativeEmotes[emote.text] = new Emote(emote);
-					});
+		twitchApi.getUserEmotes(function (emoteSets) {
+			emoteSets.forEach(function (set) {
+				var ownerDisplayName = set.owner && set.owner.displayName;
+				set.emotes.forEach(function (emote) {
+					// Set some required info.
+					emote.url = '//static-cdn.jtvnw.net/emoticons/v1/' + emote.id + '/2.0';
+					emote.text = getEmoteFromRegEx(emote.token);
+					emote.set = set.id;
+					emote.channel = ownerDisplayName;
+
+					// Hardcode the channels of certain sets.
+					var forcedSetToChannel = forcedSetsToChannels[emote.set];
+					if (forcedSetToChannel) {
+						emote.channel = forcedSetToChannel;
+					}
+
+					if (!emote.channel) {
+						emote.channel = forcedSetsToChannels['0'];
+					}
+
+					// Save the emote for use later.
+					nativeEmotes[emote.text] = new Emote(emote);
 				});
-				ui.updateEmotes();
 			});
+			ui.updateEmotes();
 		});
 
 		hasInitialized = true;

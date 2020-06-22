@@ -3,8 +3,8 @@ var cookies = require('browser-cookies');
 var logger = require('./logger');
 var api = {};
 
-var TWITCH_API_ENDPOINT = 'https://api.twitch.tv/v5';
-var TWITCH_SITE_API_ENDPOINT = 'https://api.twitch.tv/api';
+var TWITCH_GRAPHQL_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
+var TWITCH_GRAPHQL_ENDPOINT = 'https://gql.twitch.tv/gql';
 
 var user;
 
@@ -29,51 +29,35 @@ api.getUserEmotes = function (callback) {
 		return callback({});
 	}
 
+	var query = '\
+		query UserEmotes {\
+			currentUser {\
+				emoteSets {\
+					emotes {\
+						id,\
+						token\
+					},\
+					id,\
+					owner {\
+						displayName\
+					}\
+				}\
+			}\
+		}\
+	';
+
 	$.ajax({
-		url: TWITCH_API_ENDPOINT + '/users/' + user.id + '/emotes',
-		method: 'GET',
+		url: TWITCH_GRAPHQL_ENDPOINT,
+		method: 'POST',
+		data: JSON.stringify({query: query}),
 		dataType: 'json',
 		timeout: 30000,
 		headers: {
+			'Client-ID': TWITCH_GRAPHQL_CLIENT_ID,
 			'Authorization': 'OAuth ' + user.authToken
 		},
 		success: function (data) {
-			callback(data.emoticon_sets || {});
-		},
-		error: function () {
-			callback({});
-		}
-	});
-};
-
-api.getEmoteSets = function (callback) {
-	if (!user) {
-		return callback({});
-	}
-
-	$.ajax({
-		url: TWITCH_SITE_API_ENDPOINT + '/users/' + user.login + '/tickets?limit=100&with_gift_data=true',
-		method: 'GET',
-		dataType: 'json',
-		timeout: 30000,
-		headers: {
-			'Authorization': 'OAuth ' + user.authToken
-		},
-		success: function (data) {
-			var setsToChannels = {};
-
-			data.tickets.forEach(function (ticket) {
-				var product = ticket.product;
-				if (!product || !product.partner_login || !product.features || !product.features.emoticon_set_ids) {
-					return;
-				}
-
-				product.features.emoticon_set_ids.forEach(function (setId) {
-					setsToChannels[setId] = product.partner_login;
-				});
-			});
-
-			callback(setsToChannels);
+			callback((data.data && data.data.currentUser && data.data.currentUser.emoteSets) || []);
 		},
 		error: function () {
 			callback({});
