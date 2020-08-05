@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "browser-cookies": "^1.2.0",
-    "browserify": "^16.5.1",
+    "browserify": "^16.5.2",
     "deamdify": "^0.3.0",
     "generate-userscript-header": "^1.0.0",
     "gulp": "^4.0.2",
