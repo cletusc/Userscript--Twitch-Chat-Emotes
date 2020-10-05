@@ -234,7 +234,7 @@ UIMenu.prototype.toggleDisplay = function (forced) {
 		}
 		// Never moved, make it the same size as the chat window.
 		else {
-			var chatContainer = $('.chat-list');
+			var chatContainer = $('.chat-list,.chat-list--default,.chat-list--other');
 			
 			// Adjust the size to be the same as the chat container.
 			this.dom.height(chatContainer.outerHeight() - (this.dom.outerHeight() - this.dom.height()));
