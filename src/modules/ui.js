@@ -138,7 +138,7 @@ UIMenu.prototype.init = function () {
 	var self = this;
 
 	this.dom = $('#emote-menu-for-twitch');
-	var containment = $('.twilight-root, .twilight-minimal-root, #root, .root');
+	var containment = $('#root div, .root div');
 
 	// Element already exists.
 	if (this.dom.length) {
@@ -235,7 +235,7 @@ UIMenu.prototype.toggleDisplay = function (forced) {
 		// Never moved, make it the same size as the chat window.
 		else {
 			var chatContainer = $('.chat-list,.chat-list--default,.chat-list--other');
-			
+
 			// Adjust the size to be the same as the chat container.
 			this.dom.height(chatContainer.outerHeight() - (this.dom.outerHeight() - this.dom.height()));
 			this.dom.width(chatContainer.outerWidth() - (this.dom.outerWidth() - this.dom.width()));
