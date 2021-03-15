@@ -186,6 +186,11 @@ UIMenu.prototype.init = function () {
 		self.toggleEditing();
 	});
 
+	// Enable searching for emotes.
+	this.dom.find('[data-command="search-emotes"]').on('input', function (e) {
+		self.doEmoteSearch(e);
+	});
+
 	try {
 		this.dom.find('.scrollable').scrollbar();
 	} catch (_) {
@@ -253,6 +258,7 @@ UIMenu.prototype.toggleDisplay = function (forced) {
 		this.dom.hide();
 		this.toggleEditing(false);
 		this.togglePinned(false);
+		this.clearEmoteSearch();
 	}
 
 	// Also toggle the menu button.
@@ -455,6 +461,42 @@ UIMenu.prototype.getEmote = function (name) {
 	}
 
 	return null;
+};
+
+UIMenu.prototype.doEmoteSearch = function (event) {
+	var self = this;
+
+	// Skip if in Edit mode
+	if (this.isEditing()) {
+		return;
+	}
+
+	// Get the searched value
+	var val = event.target.value.trim().toLowerCase();
+	
+	// Update visibility on emotes based on search
+	this.emotes.forEach(function (emote) {
+		// Skip if emote is marked hidden via Edit mode
+		if (!emote.isVisible()) {
+			return;
+		}
+
+		emote = self.getEmote(emote.getText());
+		var shouldShowEmote = emote.instance.getText().toLowerCase().includes(val);
+		emote.dom.toggleClass('emote-menu-hidden', !shouldShowEmote);
+	});
+
+	// Hide groups with no visible emotes
+	Object.keys(this.groups).forEach(function (group) {
+		var group = self.getGroup(group);
+		var shouldShowGroup = group.dom.find('.emote:not(.emote-menu-hidden)').length > 0;
+		group.dom.toggleClass('emote-menu-hidden', !shouldShowGroup);
+	});
+};
+
+UIMenu.prototype.clearEmoteSearch = function () {
+	this.dom.find('[data-command="search-emotes"]').val('');
+	return this;
 };
 
 function UIGroup(emoteInstance) {
