@@ -26,7 +26,7 @@ api.getReactInstance = function (element) {
 
 api.getUserEmotes = function (callback) {
 	if (!user) {
-		return callback({});
+		return callback([]);
 	}
 
 	var query = '\
@@ -60,7 +60,7 @@ api.getUserEmotes = function (callback) {
 			callback((data.data && data.data.currentUser && data.data.currentUser.emoteSets) || []);
 		},
 		error: function () {
-			callback({});
+			callback([]);
 		}
 	});
 };
