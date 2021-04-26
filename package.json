@@ -61,7 +61,7 @@
     "gulp-css2js": "^1.2.1",
     "gulp-header": "^2.0.9",
     "gulp-hogan-compile": "^2.0.0",
-    "gulp-notify": "^3.2.0",
+    "gulp-notify": "^4.0.0",
     "gulp-rename": "^2.0.0",
     "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.0",
